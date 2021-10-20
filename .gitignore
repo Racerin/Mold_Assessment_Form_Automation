@@ -1,0 +1,9 @@
+venv
+
+# Personal
+file.tsv
+pseudo.txt
+
+# Noise
+*__pycache__
+*.pyc

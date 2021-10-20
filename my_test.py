@@ -1,8 +1,9 @@
 from library import *
 import app
 
-options = 5
-option = input("What option do you want?\n")
+options = 6
+option = None
+# option = input("What option do you want?\n")
 options = int(option) if option else options
 
 if options == 0:
@@ -26,8 +27,9 @@ elif options == 5:
     main_event_listener.start()
     print("Go ahead and start.\n")
     time.sleep(5)
-elif options == 1:
-    pass
+elif options == 6:
+    obj = Selenium()
+    obj.test()
 elif options == 1:
     pass
 elif options == 1:

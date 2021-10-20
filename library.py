@@ -4,10 +4,12 @@ import dataclasses
 import enum
 import csv
 
-import PARAM
-
 from pynput import keyboard
-from pynput.keyboard import Key, Controller, KeyCode
+from pynput.keyboard import Key, Controller
+import selenium
+import selenium.webdriver
+
+import PARAM
 
 
 keyboardController = Controller()
@@ -19,6 +21,7 @@ press_dt = 1e-1 #delay time to press and release key
 def_sleep = 5
 observer_name : str = "Darnell Baird"
 tsv_file = 'file.tsv'
+website_url = "https://forms.office.com/pages/responsepage.aspx?id=KupABOviREat2LyPNxBbYeaRdFMG3AdBl5FpMuhBKwdUOTlWWUlCVUxHUFU3TENVUUVaMDlMUkw3USQlQCN0PWcu"
 
 #Flags
 end = False
@@ -57,6 +60,32 @@ class Inputs:
                 ans.append(row_with_type)
                 print("this is row:", row_with_type)
         return ans
+
+
+class Selenium:
+    """Use Selenium to traverse the form."""
+    # driver = selenium.webdriver.Firefox()
+    driver = selenium.webdriver.Chrome()
+
+    def test(self, option=1):
+        if option == 1:
+            self.driver.get('http://www.google.com/')
+            time.sleep(5) # Let the user actually see something!
+            search_box = self.driver.find_element_by_name('q')
+            search_box.send_keys('ChromeDriver')
+            search_box.submit()
+            time.sleep(5) # Let the user actually see something!
+            self.driver.quit()
+        elif option == 2:
+            self.driver.get("https://google.co.in")
+            time.sleep(5)
+            self.driver.quit()
+
+    def main_instructions(self):
+        """Instruction set to carry out to fill out form."""
+        self.driver.get()
+        self.driver.get(website_url)
+        self.driver.quit()
 
 
 def unpause_callback(key):

@@ -18,7 +18,7 @@ import PARAM
 keyboardController = Controller()
 
 
-building = {
+buildings = {
     0:"Geomatics Engineering and Land Management",
     1:"George Moonsammy Building",
     2:"Systems Laboratory",
@@ -29,7 +29,7 @@ building = {
 }
 
 
-floor = {
+floors = {
     0:"Basement",
     'b':"Basement",
     1:"Ground",
@@ -39,6 +39,31 @@ floor = {
     4:3,
     5:4,
     6:5,
+}
+
+room_types = {
+    0:"Office",
+    1:"Classroom",
+    2:"Kitchen",
+    3:"Workshop",
+    4:"Lab",
+    5:"Store Room",
+    6:"Washroom",
+    7:"Conference room",
+}
+
+effect_zones = {
+    0:"Ceiling",
+    1:"Walls",
+    2:"Floor",
+    3:"Windows",
+    4:"Furnishings",
+    5:"HVAC systems",
+    6:"Supplies & Materials",
+    7:"Pipes",
+    8:"All components are more than 3 feet away from Exterior Wall",
+    9:"No Exterior Walls",
+    10:"No Effect/Zone",
 }
 
 
@@ -127,11 +152,10 @@ class Selenium:
         # assert 'mold' in self.driver.title.lower()
         self.dt()
         # Enter Date:
-        # date_input = self.driver.find_element_by_class_name("office-form-question-textbox form-control office-form-theme-focus-border border-no-radius datepicker")
         date_input = self.driver.find_element_by_css_selector(".office-form-question-textbox.form-control.office-form-theme-focus-border.border-no-radius.datepicker")
+        date_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
         date_input.send_keys(today_date())
         # Enter Observer name:
-        # observer_input = self.driver.find_element_by_css_selector("office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
         observer_input = self.driver.find_element_by_css_selector(".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
         observer_input.send_keys(observer_name)
         # Select Faculty/Office/Unit
@@ -139,16 +163,44 @@ class Selenium:
         self.driver.find_element_by_css_selector('[aria-label="Faculty of Engineering"]').click()
         # Select Building
         self.driver.find_elements_by_class_name("select-placeholder-text")[-1].click()
-        building_text = building[Inputs.building_id]
+        building_text = buildings[Inputs.building_id]
         self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(building_text)).click()
         # Select Floor
-        self.driver.find_element_by_id("SelectId_14_placeholder").click()
-        # self.driver.find_elements_by_class_name("select-placeholder-text")[-1].click()
-        floor_text = floor[Inputs.floor_id]
+        self.driver.find_element_by_id("SelectId_2_placeholder").click()
+        floor_text = floors[Inputs.floor_id]
         self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(floor_text)).click()
-        time.sleep(5)
+        # Room / Area Identification
+        room_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[7]/div/div[2]/div/div/input')
+        room_input.send_keys(Inputs.room_name)
+        # Room/Area Type
+        self.driver.find_element_by_id("SelectId_3_placeholder").click()
+        rm_typ_id = Inputs.room_type_id + 1
+        self.driver.find_element_by_xpath('//*[@id="SelectId_3"]/div[2]/div[{}]'.format(rm_typ_id)).click()
+        # Mold Odor
+        self.driver.find_element_by_id("SelectId_4_placeholder").click()
+        self.driver.find_element_by_css_selector('[aria-label="None"]').click()
+        # Select all N/A
+        # Damage or Stains
+        for i in range(2,2+8):
+            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[10]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
+        # Visible Mold
+        for i in range(2,2+8):
+            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[12]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
+        # Wet or Damp
+        for i in range(2,2+8):
+            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[14]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
+        # Within 3 feet of exterior wall?: 'No [whatever]' by default
+        # Damage or Stains
+        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[11]/div/div[2]/div/div[11]/div/label/input').click()
+        # Visible Mold
+        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[13]/div/div[2]/div/div[11]/div/label/input').click()
+        # Wet or Damp
+        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
+        # Press submit button
+        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
         # The End
-        self.driver.quit()
+        # time.sleep(10)
+        # self.driver.quit()
         print("that's the end of the main instruction set.")
 
 

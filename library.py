@@ -66,6 +66,71 @@ effect_zones = {
     10:"No Effect/Zone",
 }
 
+ceiling_material = {
+    0:"Ceiling Tile",
+    1:"Plaster",
+    2:"Concrete",
+    3:"Sheet rock",
+    4:"Metal",
+    5:"Wood",
+    6:"N/A",
+}
+
+wall_materials = {
+    0:"Sheet rock",
+    1:"Plaster",
+    2:"Concrete",
+    3:"Block",
+    4:"Tile",
+    5:"Wood",
+    6:"N/A",
+}
+
+floor_material = {
+    0:"Wood",
+    1:"Carpet",
+    2:"Vinyl",
+    3:"Ceramic",
+    4:"Concrete",
+    5:"N/A",
+}
+
+windows_material = {
+    0:"Exterior",
+    1:"Interior",
+    2:"skylight",
+    3:"N/A",
+}
+
+furnishing = {
+    0:"Furniture",
+    1:"Mechanical",
+    2:"Sink",
+    3:"Toilet",
+    4:"Copier",
+    5:"N/A",
+}
+
+hvac_material = {
+    0:"Forced Air",
+    1:"Fan",
+    2:"Unit Ventilator",
+    3:"Window Unit",
+    4:"N/A",
+}
+
+supplies_and_materials = {
+    0:"Books",
+    1:"Boxes",
+    2:"Equipment",
+    3:"N/A",
+}
+
+supplies_and_materials_desc = {
+    0:"Wrinkled pages",
+    1:"Crumpled boxes",
+    2:"Other",
+}
 
 #Configure
 key_cmd_dt = 1  #delay time between inputs
@@ -145,14 +210,22 @@ class Selenium:
         """Give the viewer some time to process."""
         time.sleep(1)
 
-    def main_instructions(self):
+    def click(self, xpath:str, *args) -> selenium.webdriver.remote.webelement.WebElement:
+        """ NOT USED AS YET.
+        Click on an element with xpath.
+        args: optional arguments for text formatting
+        """
+        ele = self.driver.find_element_by_xpath(xpath.format(*args))
+        ele.click()
+        return ele
+
+    def main_instructions(self, submit=True, continue_it=True, close=False):
         """Instruction set to carry out to fill out form."""
         # Load webpage with form
         self.driver.get(website_url)
         # assert 'mold' in self.driver.title.lower()
         self.dt()
         # Enter Date:
-        date_input = self.driver.find_element_by_css_selector(".office-form-question-textbox.form-control.office-form-theme-focus-border.border-no-radius.datepicker")
         date_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
         date_input.send_keys(today_date())
         # Enter Observer name:
@@ -198,10 +271,34 @@ class Selenium:
         self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
         # Press submit button
         self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
+        # PAGE 2
+        # Select all N/A by default, Select last input 'N/A' 7 times
+        for _ in range(7):
+            n_a = self.driver.find_elements_by_css_selector("input[value='N/A']")[-1].click()
+            # n_a = self.driver.find_elements_by_xpath("//input[@value='N/A']")[-1].click()
+        # Individual options
+        # Ceiling
+        # self.driver.find_element_by_xpath
+        # Walls
+        # Floor
+        # Windows
+        # Furnishings
+        # HVAC System
+        # Supplies and Materials
+        # Supplies and Materials Description?
+        # Additional Comments?
+
+        # Press submit button
+        if submit:
+            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div').click()
+
+        # Submit another form
+        if continue_it:
+            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a').click()
         # The End
-        # time.sleep(10)
-        # self.driver.quit()
-        print("that's the end of the main instruction set.")
+        if close:
+            self.driver.quit()
+            print("that's the end of the main instruction set.")
 
 
 def unpause_callback(key):

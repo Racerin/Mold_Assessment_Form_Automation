@@ -35,6 +35,9 @@ elif options == 7:
     Inputs.set_user_input(inputs[0])
     obj = Selenium()
     obj.main_instructions()
+    # with keyboard.Listener(on_release=lambda k:False if k==Key.space else True ) as lsnr:
+    #     lsnr.join()
+    print("The End.")
 elif options == 1:
     pass
 elif options == 1:

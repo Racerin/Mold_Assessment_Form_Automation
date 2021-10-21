@@ -1,7 +1,7 @@
 from library import *
 import app
 
-options = 6
+options = 7
 option = None
 # option = input("What option do you want?\n")
 options = int(option) if option else options
@@ -29,9 +29,12 @@ elif options == 5:
     time.sleep(5)
 elif options == 6:
     obj = Selenium()
-    obj.test()
-elif options == 1:
-    pass
+    obj.test(2)
+elif options == 7:
+    inputs = Inputs.get_user_inputs()
+    Inputs.set_user_input(inputs[0])
+    obj = Selenium()
+    obj.main_instructions()
 elif options == 1:
     pass
 elif options == 1:

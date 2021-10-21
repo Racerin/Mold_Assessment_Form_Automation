@@ -6,13 +6,40 @@ import csv
 
 from pynput import keyboard
 from pynput.keyboard import Key, Controller
+
 import selenium
 import selenium.webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.select import Select
 
 import PARAM
 
 
 keyboardController = Controller()
+
+
+building = {
+    0:"Geomatics Engineering and Land Management",
+    1:"George Moonsammy Building",
+    2:"Systems Laboratory",
+    3:"Max Richards Building",
+    4:"Kenneth S. Julien Building",
+    5:"IDC Imbert Building",
+    6:"Civil, Chemical and Mechanical Engineering Laboratories",
+}
+
+
+floor = {
+    0:"Basement",
+    'b':"Basement",
+    1:"Ground",
+    'g':"Ground",
+    2:1,
+    3:2,
+    4:3,
+    5:4,
+    6:5,
+}
 
 
 #Configure
@@ -61,6 +88,10 @@ class Inputs:
                 print("this is row:", row_with_type)
         return ans
 
+    @classmethod
+    def set_user_input(cls, row):
+        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
+
 
 class Selenium:
     """Use Selenium to traverse the form."""
@@ -78,14 +109,47 @@ class Selenium:
             self.driver.quit()
         elif option == 2:
             self.driver.get("https://google.co.in")
+            print("Dir of driver.", dir(self.driver))
+            print("vars of driver.:", vars(self.driver))
+            print("Title:", self.driver.title)
             time.sleep(5)
             self.driver.quit()
+        print("Good bye.")
+
+    def dt(self):
+        """Give the viewer some time to process."""
+        time.sleep(1)
 
     def main_instructions(self):
         """Instruction set to carry out to fill out form."""
-        self.driver.get()
+        # Load webpage with form
         self.driver.get(website_url)
+        # assert 'mold' in self.driver.title.lower()
+        self.dt()
+        # Enter Date:
+        # date_input = self.driver.find_element_by_class_name("office-form-question-textbox form-control office-form-theme-focus-border border-no-radius datepicker")
+        date_input = self.driver.find_element_by_css_selector(".office-form-question-textbox.form-control.office-form-theme-focus-border.border-no-radius.datepicker")
+        date_input.send_keys(today_date())
+        # Enter Observer name:
+        # observer_input = self.driver.find_element_by_css_selector("office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
+        observer_input = self.driver.find_element_by_css_selector(".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
+        observer_input.send_keys(observer_name)
+        # Select Faculty/Office/Unit
+        self.driver.find_element_by_id("SelectId_0_placeholder").click()
+        self.driver.find_element_by_css_selector('[aria-label="Faculty of Engineering"]').click()
+        # Select Building
+        self.driver.find_elements_by_class_name("select-placeholder-text")[-1].click()
+        building_text = building[Inputs.building_id]
+        self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(building_text)).click()
+        # Select Floor
+        self.driver.find_element_by_id("SelectId_14_placeholder").click()
+        # self.driver.find_elements_by_class_name("select-placeholder-text")[-1].click()
+        floor_text = floor[Inputs.floor_id]
+        self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(floor_text)).click()
+        time.sleep(5)
+        # The End
         self.driver.quit()
+        print("that's the end of the main instruction set.")
 
 
 def unpause_callback(key):
@@ -125,7 +189,7 @@ def k_press(key : Key, dt=press_dt, release_time=False):
         else:
             time.sleep(dt)
 
-def today_date(option="chrome") -> str:
+def today_date(option="mozilla") -> str:
     "Returns today's date for form."
     now = datetime.datetime.now()
     if option == 'mozilla':

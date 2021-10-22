@@ -129,12 +129,13 @@ class Inputs:
                 rd.writerow(ele)
 
     @classmethod
-    def load_tsv(cls, filename=tsv_load_file) -> list:
+    def load_tsv(cls, filename=tsv_load_file, ignore_header=True) -> list:
         """Load tsv file"""
         ans_list = list()
         with open(filename) as fd:
             rd = csv.reader(fd, delimiter="\t")
-            for row in rd:
+            for i, row in enumerate(rd):
+                if ignore_header and i==0 and row[0].startswith("Room "): continue
                 ans_list.append(row)
         return ans_list
 

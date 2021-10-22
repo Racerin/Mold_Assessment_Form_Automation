@@ -1,12 +1,5 @@
-import enum
 
 CONFIG_FILE = "config.json"
-
-class FIND_BY(enum.Enum):
-    ID = enum.auto()
-    CLASS = enum.auto()
-    CSS = enum.auto()
-    XPATH = enum.auto()
 
 
 ROOM_NAME_PROMPT = "Enter the Room/Area name: "

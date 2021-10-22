@@ -1,19 +1,25 @@
 from library import *
 import app
 
-options = 7
+options = 4
 option = None
 # option = input("What option do you want?\n")
 options = int(option) if option else options
 
-if options == 3:
+if options == 1:
     # Evaluation direction
     print("1st"), print("2nd")
-elif option == 1:
-    pass
-elif option == 1:
-    pass
-elif option == 1:
+elif option == 2:
+    """Run loop over each input."""
+    inputs = Inputs.get_user_inputs()
+    # with open
+    for i in range(3):
+        Inputs.set_user_input(inputs[])
+elif option == 3:
+    # Write text to a file
+    with open("done.txt") as file:
+        file.write("I do this")
+elif option == 4:
     pass
 elif option == 1:
     pass

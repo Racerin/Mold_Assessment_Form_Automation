@@ -5,7 +5,7 @@ import enum
 import csv
 
 from pynput import keyboard
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Key
 
 import selenium
 import selenium.webdriver
@@ -13,9 +13,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 
 import PARAM
-
-
-keyboardController = Controller()
 
 
 #Configure
@@ -30,6 +27,32 @@ website_url = "https://forms.office.com/pages/responsepage.aspx?id=KupABOviREat2
 #Flags
 end = False
 pause = False
+
+
+class KeyboardManager():
+
+    class Intermission():
+        pass
+
+    end = False
+    pause = False
+
+    def __init__(self):
+        self.main_listener = keyboard.Listener(on_release=self._main_on_release_callback)
+
+    @classmethod
+    def _main_on_release_callback(cls, key:Key):
+        try:
+            if key.char == 'q':
+                cls.end = True
+                print("Quit it.")
+            if key.char == 'p':
+                # print("I am printing.")
+                cls.pause = True
+                print("Paused it.")
+        except AttributeError:
+            pass
+
 
 #Inputs
 @dataclasses.dataclass
@@ -206,28 +229,6 @@ class Selenium:
             print("that's the end of the main instruction set.")
 
 
-def unpause_callback(key):
-    try:
-        if key.char == 'p':
-            global pause
-            pause = True
-    except AttributeError:
-        pass
-
-
-def state_check():
-    global end, pause
-    if end:
-        quit()
-        exit()
-    if pause:
-        while(pause):
-            with keyboard.Listener(on_release=unpause_callback) as lsnr:
-                lsnr.join()
-        else:
-            print("Unpaused.")
-
-
 def today_date(option="mozilla") -> str:
     "Returns today's date for form."
     now = datetime.datetime.now()
@@ -237,21 +238,3 @@ def today_date(option="mozilla") -> str:
         str1 = now.strftime('%m/%d/%Y')
     print("Today's date is|", str1)
     return str1
-
-
-def main_on_release(key : Key):
-    try:
-        if key.char == 'q':
-            global end
-            end = True
-            print("Quit.")
-        if key.char == 'p':
-            # print("I am printing.")
-            global pause
-            pause = True
-            print("Paused.")
-    except AttributeError:
-        pass
-
-
-main_event_listener = keyboard.Listener(on_release=main_on_release)

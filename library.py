@@ -4,6 +4,7 @@ import dataclasses
 import enum
 import csv
 import json
+from functools import partial
 
 from pynput import keyboard
 from pynput.keyboard import Key
@@ -13,12 +14,7 @@ import selenium.webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 
-import PARAM
-
-
-from selenium.webdriver.chrome.options import Options
-chrome_options = Options()
-chrome_options.add_experimental_option("detach", True)
+from PARAM import *
 
 
 def today_date(option="world") -> str:
@@ -50,7 +46,7 @@ class Config():
         # Assign variables
         self.assign_configs()
 
-    def load_config(self, filename=PARAM.config_file):
+    def load_config(self, filename=CONFIG_FILE):
         """Load data with json file info."""
         with open(filename, mode="r") as file:
             self.data = json.load(file)
@@ -108,11 +104,11 @@ class Inputs:
     @classmethod
     def user_input_prompt(cls):
         """Prompt user for input data."""
-        # observer_name = input(PARAM.observer_name_prompt)
-        cls.room_name = input(PARAM.room_name_prompt)
-        cls.floor_id = int(input(PARAM.floor_prompt))
-        cls.room_type_id = int(input(PARAM.room_type_prompt))
-        cls.building_id = int(input(PARAM.building_prompt))
+        # observer_name = input(OBSERVER_NAME_PROMPT)
+        cls.room_name = input(ROOM_NAME_PROMPT)
+        cls.floor_id = int(input(FLOOR_PROMPT))
+        cls.room_type_id = int(input(ROOM_TYPE_PROMPT))
+        cls.building_id = int(input(BUILDING_PROMPT))
 
     @classmethod
     def row_update(cls, row):
@@ -149,16 +145,30 @@ class Inputs:
         return ans_list
 
     @classmethod
-    def set_user_input(cls, row:'list[4]'):
-        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
+    def set_user_input(cls, row:list):
+        """Assign arguments to/in Inputs"""
+        # Assign variables
+        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, *cls.other_arguments = row
+        # Create object parsers of other_arguments
+        cls.parse_other_arguments()
+
+    @classmethod
+    def parse_other_arguments(cls):
+        """Use factory to parse arguments."""
+        cls.other_actions = list()
+        for arg_str in cls.other_arguments:
+            action = Action(arg_str)
+            cls.other_actions.append(action)
 
 
 class Selenium:
     """Use Selenium to traverse the form."""
+    driver = None
 
     def __init__(self):
-        # self.driver = selenium.webdriver.Firefox()
-        self.driver = selenium.webdriver.Chrome()
+        if Selenium.driver is None:
+            # self.driver = selenium.webdriver.Firefox()
+            self.driver = selenium.webdriver.Chrome()
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
@@ -195,11 +205,11 @@ class Selenium:
         self.driver.find_element_by_css_selector('[aria-label="Faculty of Engineering"]').click()
         # Select Building
         self.driver.find_elements_by_class_name("select-placeholder-text")[-1].click()
-        building_text = PARAM.buildings[Inputs.building_id]
+        building_text = BUILDINGS[Inputs.building_id]
         self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(building_text)).click()
         # Select Floor
         self.driver.find_element_by_id("SelectId_2_placeholder").click()
-        floor_text = PARAM.floors[Inputs.floor_id]
+        floor_text = FLOORS[Inputs.floor_id]
         self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(floor_text)).click()
         # Room / Area Identification
         room_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[7]/div/div[2]/div/div/input')

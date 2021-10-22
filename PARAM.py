@@ -1,8 +1,17 @@
-config_file = "config.json"
+import enum
 
-room_name_prompt = "Enter the Room/Area name: "
+CONFIG_FILE = "config.json"
 
-floor_prompt = """Enter the corresponding number for the Floor.
+class FIND_BY(enum.Enum):
+    ID = enum.auto()
+    CLASS = enum.auto()
+    CSS = enum.auto()
+    XPATH = enum.auto()
+
+
+ROOM_NAME_PROMPT = "Enter the Room/Area name: "
+
+FLOOR_PROMPT = """Enter the corresponding number for the Floor.
 0. Basement
 1. Ground
 2. Floor 1
@@ -11,13 +20,13 @@ floor_prompt = """Enter the corresponding number for the Floor.
 etc
 """
 
-room_type_prompt = """Enter the corresponding number for the Room/Area type.
+ROOM_TYPE_PROMPT = """Enter the corresponding number for the Room/Area type.
 0. Office, 1. Classroom, 2. Kitchen, 3. Workshop, 4. Lab, 
 5. Store Room, 6. Washroom, 7. Conference Room, 
 8. Meeting Room, 9. Changing/Locker Room, 10. Electrical Room
 """
 
-building_prompt = """Enter the corresponding number for the Building that the room is in.
+BUILDING_PROMPT = """Enter the corresponding number for the Building that the room is in.
 0. Geomatics Engineering and Land Management, 
 1. George Moonsammy Building (Block 9), 
 2. Systems Lab (Block 11), 
@@ -27,15 +36,14 @@ building_prompt = """Enter the corresponding number for the Building that the ro
 6. Civil/Chemical/Mechanical Labs
 """
 
-observer_name_prompt = """What was the obeserver's name?
+OBSERVER_NAME_PROMPT = """What was the obeserver's name?
 """
 
-interlude_listener_options = """q:quit, space:next,
+INTERLUDE_LISTENER_OPTIONS = """q:quit, space:next,
 """
 
 
-
-buildings = {
+BUILDINGS = {
     0:"Geomatics Engineering and Land Management",
     1:"George Moonsammy Building",
     2:"Systems Laboratory",
@@ -46,7 +54,7 @@ buildings = {
 }
 
 
-floors = {
+FLOORS = {
     0:"Basement",
     'b':"Basement",
     1:"Ground",
@@ -58,7 +66,7 @@ floors = {
     6:5,
 }
 
-room_types = {
+ROOM_TYPES = {
     0:"Office",
     1:"Classroom",
     2:"Kitchen",
@@ -69,7 +77,7 @@ room_types = {
     7:"Conference room",
 }
 
-effect_zones = {
+EFFECT_ZONES = {
     0:"Ceiling",
     1:"Walls",
     2:"Floor",
@@ -83,7 +91,7 @@ effect_zones = {
     10:"No Effect/Zone",
 }
 
-ceiling_material = {
+CEILING_MATERIAL = {
     0:"Ceiling Tile",
     1:"Plaster",
     2:"Concrete",
@@ -93,7 +101,7 @@ ceiling_material = {
     6:"N/A",
 }
 
-wall_materials = {
+WALL_MATERIALS = {
     0:"Sheet rock",
     1:"Plaster",
     2:"Concrete",
@@ -103,7 +111,7 @@ wall_materials = {
     6:"N/A",
 }
 
-floor_material = {
+FLOOR_MATERIAL = {
     0:"Wood",
     1:"Carpet",
     2:"Vinyl",
@@ -112,14 +120,14 @@ floor_material = {
     5:"N/A",
 }
 
-windows_material = {
+WINDOWS_MATERIAL = {
     0:"Exterior",
     1:"Interior",
     2:"skylight",
     3:"N/A",
 }
 
-furnishing = {
+FURNISHING = {
     0:"Furniture",
     1:"Mechanical",
     2:"Sink",
@@ -128,7 +136,7 @@ furnishing = {
     5:"N/A",
 }
 
-hvac_material = {
+HVAC_MATERIAL = {
     0:"Forced Air",
     1:"Fan",
     2:"Unit Ventilator",
@@ -136,20 +144,20 @@ hvac_material = {
     4:"N/A",
 }
 
-supplies_and_materials = {
+SUPPLIES_AND_MATERIALS = {
     0:"Books",
     1:"Boxes",
     2:"Equipment",
     3:"N/A",
 }
 
-supplies_and_materials_desc = {
+SUPPLIES_AND_MATERIALS_DESC = {
     0:"Wrinkled pages",
     1:"Crumpled boxes",
     2:"Other",
 }
 
-mold_odor = {
+MOLD_ODOR = {
     0:"None",
     1:"Mild",
     2:"Moderate",

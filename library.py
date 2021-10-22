@@ -137,7 +137,8 @@ key_cmd_dt = 1  #delay time between inputs
 press_dt = 1e-1 #delay time to press and release key
 def_sleep = 5
 observer_name : str = "Darnell Baird"
-tsv_file = 'file.tsv'
+tsv_load_file = 'file.tsv'
+tsv_save_file = "completed.tsv"
 website_url = "https://forms.office.com/pages/responsepage.aspx?id=KupABOviREat2LyPNxBbYeaRdFMG3AdBl5FpMuhBKwdUOTlWWUlCVUxHUFU3TENVUUVaMDlMUkw3USQlQCN0PWcu"
 
 #Flags
@@ -167,16 +168,32 @@ class Inputs:
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
 
     @classmethod
-    def get_user_inputs(cls) -> 'list[tuple[4]]':
-        """Use tsv file to load in user inputs."""
-        ans = []
-        with open(tsv_file) as fd:
+    def save_tsv(cls, container:'list|tuple', filename=tsv_save_file):
+        """Save container to tsv file."""
+        with open(filename) as fd:
+            rd = csv.writer(fd, delimiter='\t')
+            # Each element of container on a new line
+            for ele in container:
+                rd.writerow(ele)
+
+    @classmethod
+    def load_tsv(cls, filename=tsv_load_file) -> list:
+        """Load tsv file"""
+        ans_list = list()
+        with open(filename) as fd:
             rd = csv.reader(fd, delimiter="\t")
             for row in rd:
-                row_with_type = [int(str1) if str1.isdigit() else str1 for str1 in row ]
-                ans.append(row_with_type)
-                print("this is row:", row_with_type)
-        return ans
+                ans_list.append(row)
+        return ans_list
+
+    @classmethod
+    def get_user_inputs(cls) -> 'list[tuple[4]]':
+        """Use tsv file to load in user inputs."""
+        ans_list = list()
+        for row in cls.load_tsv():
+            row_with_type = [int(str1) if str1.isdigit() else str1 for str1 in row ]
+            ans_list.append(row_with_type)
+        return ans_list
 
     @classmethod
     def set_user_input(cls, row):

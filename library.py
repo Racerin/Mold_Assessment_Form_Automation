@@ -254,12 +254,13 @@ class Selenium:
             print("that's the end of the main instruction set.")
 
 
-def today_date(option="mozilla") -> str:
+def today_date(option="world") -> str:
     "Returns today's date for form."
     now = datetime.datetime.now()
-    if option == 'mozilla':
+    if option == 'world':
         str1 = now.strftime('%d/%m/%Y')
+    elif option == "usa":
+        str1 = now.strftime('%m/%d/%Y')
     else:
         str1 = now.strftime('%m/%d/%Y')
-    print("Today's date is|", str1)
     return str1

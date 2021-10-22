@@ -1,4 +1,5 @@
 import unittest
+import os
 import datetime
 import uuid
 
@@ -8,7 +9,8 @@ class TestInputs(unittest.TestCase):
     def test_tsv(self):
         """Test the saving and loading of tsv files function."""
         # Inputs
-        filename = 'test/{}.txt'.format(get_rand_str())
+        # filename = os.path.join(os.getcwd(), 'trash', '{}.txt'.format(get_rand_str()), )
+        filename = 'trash/{}.txt'.format(get_rand_str())
         container = [
             [1, 2, 3, 4],
             ['a', 'b', 'c', 'd'],
@@ -19,6 +21,7 @@ class TestInputs(unittest.TestCase):
         loaded_container = Inputs.load_tsv(filename=filename)
         # Checks
         assert container[1] in loaded_container
+        assert [str(ele) for ele in container[0]] in loaded_container
 
 
 class TestSelenium(unittest.TestCase):

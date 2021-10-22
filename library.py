@@ -79,7 +79,7 @@ class Inputs:
     @classmethod
     def save_tsv(cls, container:'list|tuple', filename=tsv_save_file):
         """Save container to tsv file."""
-        with open(filename) as fd:
+        with open(filename, mode="w") as fd:
             rd = csv.writer(fd, delimiter='\t')
             # Each element of container on a new line
             for ele in container:

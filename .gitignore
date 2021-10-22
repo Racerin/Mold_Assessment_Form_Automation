@@ -3,6 +3,7 @@ venv
 # Personal
 file.tsv
 pseudo.txt
+trash
 
 # Noise
 *__pycache__

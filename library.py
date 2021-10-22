@@ -3,6 +3,7 @@ import time
 import dataclasses
 import enum
 import csv
+import json
 
 from pynput import keyboard
 from pynput.keyboard import Key
@@ -16,17 +17,41 @@ import PARAM
 
 
 #Configure
-key_cmd_dt = 1  #delay time between inputs
-press_dt = 1e-1 #delay time to press and release key
-def_sleep = 5
 observer_name : str = "Darnell Baird"
 tsv_load_file = 'file.tsv'
 tsv_save_file = "completed.tsv"
 website_url = "https://forms.office.com/pages/responsepage.aspx?id=KupABOviREat2LyPNxBbYeaRdFMG3AdBl5FpMuhBKwdUOTlWWUlCVUxHUFU3TENVUUVaMDlMUkw3USQlQCN0PWcu"
 
-#Flags
-end = False
-pause = False
+class Config():
+    data = dict()
+
+    def __init__(self):
+        """Load config file and assign variables"""
+        # Load config file
+        self.load_config()
+        # Assign variables
+        self.assign_configs()
+
+    def load_config(self, filename=PARAM.config_file):
+        """Load data with json file info."""
+        with open(filename, mode="r") as file:
+            self.data = json.load(file)
+
+    def assign_configs(self):
+        """Assign config values to classes/variables."""
+        classes = [Inputs, ]
+        for clas in classes:
+            # Get class dict
+            if clas in self.data:
+                clas_nm = clas.__name__
+                # Pop/remove dict from config 
+                dict1 = self.data.pop(clas_nm)
+                # Assign variables of dict to class
+                for k,v in dict1.items():
+                    setattr(clas, k, v)
+        # Assign other variables globally
+        for k,v in self.data.items():
+            globals()[k] = v
 
 
 class KeyboardManager():

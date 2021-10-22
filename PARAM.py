@@ -1,3 +1,5 @@
+config_file = "config.json"
+
 room_name_prompt = "Enter the Room/Area name: "
 
 floor_prompt = """Enter the corresponding number for the Floor.

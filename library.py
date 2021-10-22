@@ -202,8 +202,10 @@ class Inputs:
 
 class Selenium:
     """Use Selenium to traverse the form."""
-    # driver = selenium.webdriver.Firefox()
-    driver = selenium.webdriver.Chrome()
+
+    def __init__(self):
+        # self.driver = selenium.webdriver.Firefox()
+        self.driver = selenium.webdriver.Chrome()
 
     def test(self, option=1):
         if option == 1:

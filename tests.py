@@ -2,10 +2,17 @@ import unittest
 import os
 import datetime
 import uuid
+from random import randrange
 
 from library import *
 
 class TestInputs(unittest.TestCase):
+    @classmethod
+    def set_test_values(cls):
+        """Set values for input to test with."""
+        row = get_rand_str(), randrange(5), randrange(3), randrange(3)
+        Inputs.set_user_input(row)
+
     def test_tsv(self):
         """Test the saving and loading of tsv files function."""
         # Inputs
@@ -25,7 +32,20 @@ class TestInputs(unittest.TestCase):
 
 
 class TestSelenium(unittest.TestCase):
-    pass
+    def t5est_open_form(self):
+        """Just open the window on form."""
+        obj = Selenium()
+        obj.driver.get(website_url)
+        obj.hold_open()
+        # time.sleep(60)
+
+    def test_main_instructions_mold(self):
+        """Test whether main_instructions mold input clicks button."""
+        # Get inputs
+        TestInputs.set_test_values()
+        # Start your engines
+        obj = Selenium()
+        obj.main_instructions(submit=False, continue_it=False,  mold_odor=True)
 
 
 class TestKeyboardManager(unittest.TestCase):

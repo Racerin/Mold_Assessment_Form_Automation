@@ -4,6 +4,7 @@ import dataclasses
 import enum
 import csv
 import json
+import typing
 from functools import partial
 
 from pynput import keyboard
@@ -12,6 +13,8 @@ from pynput.keyboard import Key
 import selenium
 import selenium.webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+import selenium.common.exceptions
 from selenium.webdriver.support.select import Select
 
 from PARAM import *
@@ -27,6 +30,26 @@ def today_date(option="world") -> str:
     else:
         str1 = now.strftime('%m/%d/%Y')
     return str1
+
+def best_of_dict(dict1:dict, key:typing.Any):
+    """Returns the best value of dict1 given key."""
+    # Check dict1 for key directly
+    try:
+        dict1[key]
+        # dict1.get(key)
+    except KeyError:
+    # Match key as best as possible
+        # return 'key' if it is in values
+        if key in dict1.values(): return key
+        # text match
+        keys = list(dict1.keys())
+        if isinstance(key, str):
+            # Case insensitive key match
+            best_key = [k for k in keys if key.lower() == k.lower()]
+            if best_key: return best_key[0]
+            # Levenshtein Distance
+            # TO BE DONE
+
 
 
 #Configure
@@ -93,6 +116,80 @@ class KeyboardManager():
             pass
 
 
+class Action:
+    str : str = ""
+    actions = list()
+
+    def __init__(self, str1:str=""):
+        """Create an action object by parsing str1"""
+        self.get_driver()
+        self.factory_parse_string(str1)
+
+    def factory_parse_string(self, str1:str):
+        """Parse str1 to define object"""
+        self.str = str1
+        if str1.lower().startswith("odor"):
+            # Deal with mold odor
+            # Get partitions
+            try:
+                _odor, intensity, message = str1.split(' ', 2)
+            except ValueError:
+                _odor, intensity = str1.split(' ', 1)
+                message = ""
+            intensity_option = best_of_dict(MOLD_ODOR, intensity)
+            # Add actions to object
+            self.actions = [
+                # Open 'Mold Odor' dropdown
+                partial(self.click_by, By.ID, "SelectId_4_placeholder", ),
+                # Select intensity
+                partial(self.click_by, By.CSS_SELECTOR, '[aria-label="{}"]'.format(intensity_option), ),
+                # Input text: Describing Source of Mold Odor
+                partial(self.send_keys_to_x(By.CSS_SELECTOR, "textarea", message, silent=True))
+            ]
+        elif str1.lower().startwith(""):
+            pass
+        elif str1.lower().startwith(""):
+            pass
+
+    def get_driver(self) -> selenium.webdriver:
+        """Get driver from Selenium"""
+        self.driver = Selenium.driver
+        return self.driver
+
+    def click_by_x(self, method:By, key, silent=False) -> selenium.webdriver.remote.webelement.WebElement:
+        """Use driver to click on an element by method."""
+        print("This is 'By' method:", method)
+        try:
+            element = self.driver.find_element(method, key)
+            element.click()
+        except selenium.common.exceptions.NoSuchElementException as err:
+            if silent:
+                pass
+            else:
+                raise err from None
+        return element
+
+    def send_keys_to_x(self, method:By, key, message, silent=False) -> selenium.webdriver.remote.webelement.WebElement:
+        """ Send text/'send_keys to html element, text input.
+        Search for element by method and with key.
+        """
+        try:
+            element = self.driver.find_element(method, key)
+            element.send_keys(message)
+        except selenium.common.exceptions.NoSuchElementException as err:
+            if silent:
+                pass
+            else:
+                # https://stackoverflow.com/a/18188660/6556801
+                raise err from None
+        return element
+
+    def run(self):
+        """Carry-out the functions in action."""
+        for func in self.actions:
+            func()
+
+
 #Inputs
 @dataclasses.dataclass
 class Inputs:
@@ -100,6 +197,9 @@ class Inputs:
     floor_id : int = None
     room_type_id : int = None
     building_id : int = None
+
+    other_arguments = list()
+    other_actions = list()
 
     @classmethod
     def user_input_prompt(cls):
@@ -174,20 +274,6 @@ class Selenium:
         """Checks whether driver window is open."""
         # https://www.codegrepper.com/code-examples/python/selenium+check+if+driver+is+open+python
         return bool(self.driver.session_id)
-
-    def hold_open(self):
-        """Pause script while window is open."""
-        while(self.is_open()):
-            time.sleep(1)
-
-    def click(self, xpath:str, *args) -> selenium.webdriver.remote.webelement.WebElement:
-        """ NOT USED AS YET.
-        Click on an element with xpath.
-        args: optional arguments for text formatting
-        """
-        ele = self.driver.find_element_by_xpath(xpath.format(*args))
-        ele.click()
-        return ele
 
     def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False):
         """Instruction set to carry out to fill out form."""

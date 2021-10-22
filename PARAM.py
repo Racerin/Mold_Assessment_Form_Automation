@@ -148,3 +148,10 @@ supplies_and_materials_desc = {
     1:"Crumpled boxes",
     2:"Other",
 }
+
+mold_odor = {
+    0:"None",
+    1:"Mild",
+    2:"Moderate",
+    3:"Strong",
+}

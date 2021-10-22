@@ -16,8 +16,26 @@ from selenium.webdriver.support.select import Select
 import PARAM
 
 
+from selenium.webdriver.chrome.options import Options
+chrome_options = Options()
+chrome_options.add_experimental_option("detach", True)
+
+
+def today_date(option="world") -> str:
+    "Returns today's date for form."
+    now = datetime.datetime.now()
+    if option == 'world':
+        str1 = now.strftime('%d/%m/%Y')
+    elif option == "usa":
+        str1 = now.strftime('%m/%d/%Y')
+    else:
+        str1 = now.strftime('%m/%d/%Y')
+    return str1
+
+
 #Configure
 observer_name : str = "Darnell Baird"
+date : str = today_date()
 tsv_load_file = 'file.tsv'
 tsv_save_file = "completed.tsv"
 website_url = "https://forms.office.com/pages/responsepage.aspx?id=KupABOviREat2LyPNxBbYeaRdFMG3AdBl5FpMuhBKwdUOTlWWUlCVUxHUFU3TENVUUVaMDlMUkw3USQlQCN0PWcu"
@@ -130,7 +148,7 @@ class Inputs:
         return ans_list
 
     @classmethod
-    def set_user_input(cls, row):
+    def set_user_input(cls, row:'list[4]'):
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
 
 
@@ -141,27 +159,15 @@ class Selenium:
         # self.driver = selenium.webdriver.Firefox()
         self.driver = selenium.webdriver.Chrome()
 
-    def test(self, option=1):
-        if option == 1:
-            self.driver.get('http://www.google.com/')
-            time.sleep(5) # Let the user actually see something!
-            search_box = self.driver.find_element_by_name('q')
-            search_box.send_keys('ChromeDriver')
-            search_box.submit()
-            time.sleep(5) # Let the user actually see something!
-            self.driver.quit()
-        elif option == 2:
-            self.driver.get("https://google.co.in")
-            print("Dir of driver.", dir(self.driver))
-            print("vars of driver.:", vars(self.driver))
-            print("Title:", self.driver.title)
-            time.sleep(5)
-            self.driver.quit()
-        print("Good bye.")
+    def is_open(self) -> bool:
+        """Checks whether driver window is open."""
+        # https://www.codegrepper.com/code-examples/python/selenium+check+if+driver+is+open+python
+        return bool(self.driver.session_id)
 
-    def dt(self):
-        """Give the viewer some time to process."""
-        time.sleep(1)
+    def hold_open(self):
+        """Pause script while window is open."""
+        while(self.is_open()):
+            time.sleep(1)
 
     def click(self, xpath:str, *args) -> selenium.webdriver.remote.webelement.WebElement:
         """ NOT USED AS YET.
@@ -172,12 +178,11 @@ class Selenium:
         ele.click()
         return ele
 
-    def main_instructions(self, submit=True, continue_it=True, close=False):
+    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False):
         """Instruction set to carry out to fill out form."""
         # Load webpage with form
         self.driver.get(website_url)
         # assert 'mold' in self.driver.title.lower()
-        self.dt()
         # Enter Date:
         date_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
         date_input.send_keys(today_date())
@@ -222,8 +227,16 @@ class Selenium:
         self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[13]/div/div[2]/div/div[11]/div/label/input').click()
         # Wet or Damp
         self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
+        if mold_odor:
+            # Select potency of mold odor
+            # Open options
+            self.driver.find_element_by_id("SelectId_4_placeholder").click()
+            # Select option
+            str1 = '[aria-label="{}"]'.format("Strong")
+            self.driver.find_element_by_css_selector(str1).click()
         # Press submit button
         self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
+        # Now, put in mold odor info
         # PAGE 2
         # Select all N/A by default, Select last input 'N/A' 7 times
         for _ in range(7):
@@ -242,25 +255,15 @@ class Selenium:
         # Additional Comments?
 
         # Press submit button
+        submit_button = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div')
         if submit:
-            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div').click()
-
-        # Submit another form
-        if continue_it:
-            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a').click()
-        # The End
+            submit_button.click()
+        # Next Page
+            # Submit another form
+            submit_link = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a')
+            if continue_it:
+                submit_link.click()
         if close:
+            # The End
             self.driver.quit()
             print("that's the end of the main instruction set.")
-
-
-def today_date(option="world") -> str:
-    "Returns today's date for form."
-    now = datetime.datetime.now()
-    if option == 'world':
-        str1 = now.strftime('%d/%m/%Y')
-    elif option == "usa":
-        str1 = now.strftime('%m/%d/%Y')
-    else:
-        str1 = now.strftime('%m/%d/%Y')
-    return str1

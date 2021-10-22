@@ -1,7 +1,12 @@
 # Automate Fillinf-out forms
 from library import *
+import tests
+
+import click
 
 
+@click.command()
+@click.option("--observer_name", default=observer_name, help="The person that filled out the doc.")
 def main_event():
     main_event_listener.start()
     # Get user inputs
@@ -16,26 +21,28 @@ def main_event():
             # Main event loop
             pass
 
-def one_form(option=2):
+def one_form(option=3):
     """Fill out one form."""
-    main_event_listener.start()
+    obj = Selenium()
     # Input
     if option == 1:
         # Prompt user inputs
         Inputs.user_input_prompt()
+        obj.main_instructions(submit=False, mold_odor=True)
     elif option == 2:
         # Get inputs from tsv file
         rows = Inputs.get_user_inputs()
         # Assign only the 1st row
         Inputs.row_update(rows[0])
+        obj.main_instructions(submit=False, mold_odor=True)
+    elif option == 3:
+        tests.TestInputs.set_test_values()
+        obj.main_instructions(submit=False, mold_odor=True)
     # Custom config for one form?
-    print("Whe you are ready to go, press 'Space'.")
-    with keyboard.Listener(on_release=when_you_are_ready_callback) as listener:
-        listener.join()
-    print("GO!!!")
-    state_check()
-    # Fill out one form
-    main_instructions()
+
+def one_form2():
+    pass
+
 
 if __name__ == "__main__":
     # main_event()

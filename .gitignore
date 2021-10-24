@@ -8,3 +8,6 @@ trash
 # Noise
 *__pycache__
 *.pyc
+
+# VSCode
+.vscode

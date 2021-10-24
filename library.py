@@ -281,58 +281,58 @@ class Selenium:
         self.driver.get(website_url)
         # assert 'mold' in self.driver.title.lower()
         # Enter Date:
-        date_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
+        date_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
         date_input.send_keys(today_date())
         # Enter Observer name:
-        observer_input = self.driver.find_element_by_css_selector(".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
+        observer_input = self.driver.find_element(By.CSS_SELECTOR, ".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
         observer_input.send_keys(observer_name)
         # Select Faculty/Office/Unit
-        self.driver.find_element_by_id("SelectId_0_placeholder").click()
-        self.driver.find_element_by_css_selector('[aria-label="Faculty of Engineering"]').click()
+        self.driver.find_element(By.ID, "SelectId_0_placeholder").click()
+        self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Faculty of Engineering"]').click()
         # Select Building
-        self.driver.find_elements_by_class_name("select-placeholder-text")[-1].click()
+        self.driver.find_elements(By.CLASS_NAME, "select-placeholder-text")[-1].click()
         building_text = BUILDINGS[Inputs.building_id]
-        self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(building_text)).click()
+        self.driver.find_element(By.CSS_SELECTOR, '[aria-label="{}"]'.format(building_text)).click()
         # Select Floor
-        self.driver.find_element_by_id("SelectId_2_placeholder").click()
+        self.driver.find_element(By.ID, "SelectId_2_placeholder").click()
         floor_text = FLOORS[Inputs.floor_id]
-        self.driver.find_element_by_css_selector('[aria-label="{}"]'.format(floor_text)).click()
+        self.driver.find_element(By.CSS_SELECTOR, '[aria-label="{}"]'.format(floor_text)).click()
         # Room / Area Identification
-        room_input = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[7]/div/div[2]/div/div/input')
+        room_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[7]/div/div[2]/div/div/input')
         room_input.send_keys(Inputs.room_name)
         # Room/Area Type
-        self.driver.find_element_by_id("SelectId_3_placeholder").click()
+        self.driver.find_element(By.ID, "SelectId_3_placeholder").click()
         rm_typ_id = Inputs.room_type_id + 1
-        self.driver.find_element_by_xpath('//*[@id="SelectId_3"]/div[2]/div[{}]'.format(rm_typ_id)).click()
+        self.driver.find_element(By.XPATH, '//*[@id="SelectId_3"]/div[2]/div[{}]'.format(rm_typ_id)).click()
         # Mold Odor
-        self.driver.find_element_by_id("SelectId_4_placeholder").click()
-        self.driver.find_element_by_css_selector('[aria-label="None"]').click()
+        self.driver.find_element(By.ID, "SelectId_4_placeholder").click()
+        self.driver.find_element(By.CSS_SELECTOR, '[aria-label="None"]').click()
         # Select all N/A
         # Damage or Stains
         for i in range(2,2+8):
-            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[10]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
+            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[10]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
         # Visible Mold
         for i in range(2,2+8):
-            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[12]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
+            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[12]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
         # Wet or Damp
         for i in range(2,2+8):
-            self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[14]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
+            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[14]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
         # Within 3 feet of exterior wall?: 'No [whatever]' by default
         # Damage or Stains
-        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[11]/div/div[2]/div/div[11]/div/label/input').click()
+        self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[11]/div/div[2]/div/div[11]/div/label/input').click()
         # Visible Mold
-        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[13]/div/div[2]/div/div[11]/div/label/input').click()
+        self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[13]/div/div[2]/div/div[11]/div/label/input').click()
         # Wet or Damp
-        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
+        self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
         if mold_odor:
             # Select potency of mold odor
             # Open options
-            self.driver.find_element_by_id("SelectId_4_placeholder").click()
+            self.driver.find_element(By.ID, "SelectId_4_placeholder").click()
             # Select option
             str1 = '[aria-label="{}"]'.format("Strong")
-            self.driver.find_element_by_css_selector(str1).click()
+            self.driver.find_element(By.CSS_SELECTOR, str1).click()
         # Press submit button
-        self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
+        self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
         # Now, put in mold odor info
         # PAGE 2
         # Select all N/A by default, Select last input 'N/A' 7 times
@@ -342,7 +342,7 @@ class Selenium:
         # Individual options
         # Ceiling
         # self.driver.find_element_by_xpath
-        # Walls
+         # Walls
         # Floor
         # Windows
         # Furnishings
@@ -352,12 +352,12 @@ class Selenium:
         # Additional Comments?
 
         # Press submit button
-        submit_button = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div')
+        submit_button = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div')
         if submit:
             submit_button.click()
         # Next Page
             # Submit another form
-            submit_link = self.driver.find_element_by_xpath('//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a')
+            submit_link = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a')
             if continue_it:
                 submit_link.click()
         if close:

@@ -23,7 +23,7 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-1. You must provide information to fill-out the form. This information must be stored in a spreadsheet. Look at the [documentation]() for more information. You can also use [this template]() to get started with the layout.
+1. You must provide information to fill-out the form. This information must be stored in a spreadsheet. Look at the [documentation](https://github.com/Racerin/Mold_Assessment_Form_Automation/blob/master/documentation.md) for more information. You can also use [this template](https://github.com/Racerin/Mold_Assessment_Form_Automation/blob/master/template.tsv) to get started with the layout.
 
 2. Save the spreadsheet file as 'file.tsv'. If not an option, save as 'file.csv' but with the 'separator' changed to 'Tab' or **'\t'**. (Google 'tsv', 'csv' for further understanding.)
 

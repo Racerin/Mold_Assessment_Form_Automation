@@ -44,4 +44,4 @@ Follow the instructions below to complete the task.
         4 Kenneth S. Julien Building (Block 1)
         5 Block 2 Civil Building
         6 Civil/Chemical/Mechanical Labs
-3. Save the file as 'file.tsv'. If any issues, refer to the [README](www.example.com)
+3. Save the file as 'file.tsv'. If any issues, refer to the [README](https://github.com/Racerin/Mold_Assessment_Form_Automation/blob/master/README.md)

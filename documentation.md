@@ -36,7 +36,7 @@ Follow the instructions below to complete the task.
         * 8 : Meeting Room
         * 9 : Changing/Locker Room
         * 10 : Electrical Room
-    * Building ID - As before, insert the number corresponding with 
+    * Building ID - As before, insert the number corresponding with the region.
         * 0 : Geomatics Engineering and Land Management
         * 1 : George Moonsammy Building (Block 9)
         * 2 : Systems Lab (Block 11)

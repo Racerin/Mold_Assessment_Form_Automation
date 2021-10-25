@@ -1,6 +1,7 @@
 
 CONFIG_FILE = "config.json"
 
+TSV_HEADER = ["Room Name", "Floor ID", "Room Type ID", "Building ID", "FUTURE"]
 
 ROOM_NAME_PROMPT = "Enter the Room/Area name: "
 

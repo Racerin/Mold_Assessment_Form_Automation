@@ -216,10 +216,13 @@ class Inputs:
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
 
     @classmethod
-    def save_tsv(cls, container:'list|tuple', filename=tsv_save_file):
+    def save_tsv(cls, container:'list|tuple', filename=tsv_save_file, add_header=False):
         """Save container to tsv file."""
         with open(filename, mode="w") as fd:
             rd = csv.writer(fd, delimiter='\t')
+            if add_header:
+                # Adds header to top of document
+                rd.writerow(TSV_HEADER)
             # Each element of container on a new line
             for ele in container:
                 rd.writerow(ele)

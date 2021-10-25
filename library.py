@@ -116,6 +116,27 @@ class KeyboardManager():
             pass
 
 
+class Xpath(str):
+    
+    @classmethod
+    def index(xpath:str|Xpath, index:int) -> Xpath:
+        """Returns an xpath of index of nodes"""
+        str1 = "({})[]".format(xpath, index)
+        return Xpath(str1)
+
+    @classmethod
+    def ancestor_of(self_xpath:str|Xpath, ancestor_xpath:str|Xpath) -> Xpath:
+        """Formulate and return xpath of self node and ancestor xpath"""
+        str1 = "{}//ancestor::{}".format(self_xpath, ancestor_xpath)
+        return Xpath(str1)
+
+    @classmethod
+    def descendant_of(self_xpath:str|Xpath, descendant_xpath:str|Xpath) -> Xpath:
+        """Formulate and return xpath of self node and descendant xpath"""
+        str1 = "{}//descendant::{}".format(self_xpath, descendant_xpath)
+        return Xpath(str1)
+
+
 class Action:
     str : str = ""
     actions = list()

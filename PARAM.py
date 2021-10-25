@@ -10,7 +10,8 @@ FLOOR_PROMPT = """Enter the corresponding number for the Floor.
 2. Floor 1
 3. Floor 2
 4. Floor 3
-etc
+5. Floor 4
+6. Floor 5
 """
 
 ROOM_TYPE_PROMPT = """Enter the corresponding number for the Room/Area type.

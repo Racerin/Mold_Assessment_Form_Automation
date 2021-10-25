@@ -197,6 +197,7 @@ class Inputs:
     floor_id : int = None
     room_type_id : int = None
     building_id : int = None
+    date : int = today_date()
 
     other_arguments = list()
     other_actions = list()
@@ -209,6 +210,8 @@ class Inputs:
         cls.floor_id = int(input(FLOOR_PROMPT))
         cls.room_type_id = int(input(ROOM_TYPE_PROMPT))
         cls.building_id = int(input(BUILDING_PROMPT))
+        date_response = input(BUILDING_PROMPT)
+        cls.date = int(date_response) if date_response else today_date()
 
     @classmethod
     def row_update(cls, row):

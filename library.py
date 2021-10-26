@@ -116,27 +116,6 @@ class KeyboardManager():
             pass
 
 
-class Xpath(str):
-    
-    @classmethod
-    def index(xpath:str|Xpath, index:int) -> Xpath:
-        """Returns an xpath of index of nodes"""
-        str1 = "({})[]".format(xpath, index)
-        return Xpath(str1)
-
-    @classmethod
-    def ancestor_of(self_xpath:str|Xpath, ancestor_xpath:str|Xpath) -> Xpath:
-        """Formulate and return xpath of self node and ancestor xpath"""
-        str1 = "{}//ancestor::{}".format(self_xpath, ancestor_xpath)
-        return Xpath(str1)
-
-    @classmethod
-    def descendant_of(self_xpath:str|Xpath, descendant_xpath:str|Xpath) -> Xpath:
-        """Formulate and return xpath of self node and descendant xpath"""
-        str1 = "{}//descendant::{}".format(self_xpath, descendant_xpath)
-        return Xpath(str1)
-
-
 class Action:
     str : str = ""
     actions = list()
@@ -288,6 +267,81 @@ class Inputs:
             cls.other_actions.append(action)
 
 
+class Xpath:
+    @classmethod
+    def xpath_index(cls, xpath:str, index:int) -> str:
+        """Returns an xpath of index of nodes"""
+        str1 = "({})[]".format(xpath, index)
+        return str1
+
+    @classmethod
+    def ancestor_of(cls, self_xpath:str, ancestor_xpath:str) -> str:
+        """Formulate and return xpath of self node and ancestor xpath"""
+        str1 = "{}//ancestor::{}".format(self_xpath, ancestor_xpath)
+        return str1
+
+    @classmethod
+    def descendant_of(cls, self_xpath:str, descendant_xpath:str) -> str:
+        """Formulate and return xpath of self node and descendant xpath"""
+        str1 = "{}//descendant::{}".format(self_xpath, descendant_xpath)
+        return str1
+
+
+@dataclasses.dataclass
+class Question:
+    label : str
+    page : int
+    element_type : ELEMENT_TYPE
+    
+    # Do not put in question_no unless you will be using it
+    question_no : int = None
+
+    def __post_init__(self):
+        self.get_driver()
+
+    def get_driver(self) -> selenium.webdriver:
+        """Get driver from Selenium"""
+        self.driver = Selenium.driver
+        return self.driver
+
+    def answer_question(self, value):
+        """Select/input an answer value for the element according to its element type."""
+        # Get question (by label/index)
+        xpath1 = ""
+        if self.question_no:
+            xpath1 = XPATH_QUESTION_BY_NUMBER.format(self.question_no)
+        elif self.label:
+            xpath1 = XPATH_QUESTION_BY_LABEL.format(self.label)
+        else:
+            # NB: May not be the proper error raised.
+            raise AttributeError("There isn't a parameter to input the question???.")
+        # Get question element
+        xpath_to_question_element = Xpath.ancestor_of(xpath1, XPATH_ELEMENT)
+        # With the element type
+            # Get input element
+            # Set value on input element
+            # OR
+            # Set the selections as active/true/ON
+        if self.element_type == ELEMENT_TYPE.TEXT:
+            xpath_input = Xpath.descendant_of(xpath_to_question_element, XPATH_TEXTINPUT)
+            element = self.driver.find_element(By.XPATH, xpath_input)
+            element.send_keys(value)
+        elif self.element_type == ELEMENT_TYPE.DROPDOWN:
+            xpath_dropdown = Xpath.descendant_of(xpath_to_question_element, )
+        elif self.element_type == ELEMENT_TYPE.TEXTAREA:
+            xpath_input = Xpath.descendant_of(xpath_to_question_element, XPATH_TEXTAREA)
+            element = self.driver.find_element(By.XPATH, xpath_input)
+            element.send_keys(value)
+        elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON:
+            pass
+        elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON_GROUP:
+            pass
+        elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON:
+            pass
+        elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON_GROUP:
+            pass
+
+
 class Selenium:
     """Use Selenium to traverse the form."""
     driver = None
@@ -309,7 +363,8 @@ class Selenium:
         # assert 'mold' in self.driver.title.lower()
         # Enter Date:
         date_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
-        date_input.send_keys(today_date())
+        # date_input.send_keys(today_date())
+        date_input.send_keys(Inputs.date)
         # Enter Observer name:
         observer_input = self.driver.find_element(By.CSS_SELECTOR, ".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
         observer_input.send_keys(observer_name)
@@ -360,6 +415,7 @@ class Selenium:
             self.driver.find_element(By.CSS_SELECTOR, str1).click()
         # Press submit button
         self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
+        
         # Now, put in mold odor info
         # PAGE 2
         # Select all N/A by default, Select last input 'N/A' 7 times
@@ -391,3 +447,7 @@ class Selenium:
             # The End
             self.driver.quit()
             print("that's the end of the main instruction set.")
+
+    def main_instructions_1(self, submit=True, continue_it=True, mold_odor=False, close=False):
+        """Instruction set to carry out to fill out form."""
+        

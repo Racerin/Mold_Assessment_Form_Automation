@@ -275,15 +275,15 @@ class Xpath:
         return str1
 
     @classmethod
-    def ancestor_of(cls, self_xpath:str, ancestor_xpath:str) -> str:
+    def ancestor(cls, self_xpath:str, ancestor_xpath:str) -> str:
         """Formulate and return xpath of self node and ancestor xpath"""
         str1 = "{}//ancestor::{}".format(self_xpath, ancestor_xpath)
         return str1
 
     @classmethod
-    def descendant_of(cls, self_xpath:str, descendant_xpath:str) -> str:
+    def descendant(cls, xpath_current:str, xpath_descending_to:str) -> str:
         """Formulate and return xpath of self node and descendant xpath"""
-        str1 = "{}//descendant::{}".format(self_xpath, descendant_xpath)
+        str1 = "{}//descendant::{}".format(xpath_current, xpath_descending_to)
         return str1
 
 
@@ -304,7 +304,7 @@ class Question:
         self.driver = Selenium.driver
         return self.driver
 
-    def answer_question(self, value):
+    def answer_question(self, value:typing.Any):
         """Select/input an answer value for the element according to its element type."""
         # Get question (by label/index)
         xpath1 = ""
@@ -316,20 +316,31 @@ class Question:
             # NB: May not be the proper error raised.
             raise AttributeError("There isn't a parameter to input the question???.")
         # Get question element
-        xpath_to_question_element = Xpath.ancestor_of(xpath1, XPATH_ELEMENT)
+        xpath_to_question_element = Xpath.ancestor(xpath1, XPATH_ELEMENT)
         # With the element type
             # Get input element
             # Set value on input element
             # OR
             # Set the selections as active/true/ON
         if self.element_type == ELEMENT_TYPE.TEXT:
-            xpath_input = Xpath.descendant_of(xpath_to_question_element, XPATH_TEXTINPUT)
+            xpath_input = Xpath.descendant(xpath_to_question_element, XPATH_TEXTINPUT)
             element = self.driver.find_element(By.XPATH, xpath_input)
             element.send_keys(value)
         elif self.element_type == ELEMENT_TYPE.DROPDOWN:
-            xpath_dropdown = Xpath.descendant_of(xpath_to_question_element, )
+            xpath_dropdown = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN)
+            element_dropdown = self.driver.find_element(By.XPATH, xpath_dropdown)
+            element_dropdown.click()
+            if isinstance(value, int):
+                # Select by order of dropdown
+                xpath_option = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN_OPTION_INDEX)
+            elif isinstance(value, str):
+                # Select by 
+                xpath_option = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN_OPTION_INDEX)
+            # Select the option
+            element = self.driver.find_element(By.XPATH, xpath_option)
+            element.click()
         elif self.element_type == ELEMENT_TYPE.TEXTAREA:
-            xpath_input = Xpath.descendant_of(xpath_to_question_element, XPATH_TEXTAREA)
+            xpath_input = Xpath.descendant(xpath_to_question_element, XPATH_TEXTAREA)
             element = self.driver.find_element(By.XPATH, xpath_input)
             element.send_keys(value)
         elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON:

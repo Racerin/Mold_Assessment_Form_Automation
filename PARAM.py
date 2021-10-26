@@ -1,3 +1,4 @@
+import enum
 
 CONFIG_FILE = "config.json"
 
@@ -36,6 +37,28 @@ OBSERVER_NAME_PROMPT = """What was the obeserver's name?
 
 INTERLUDE_LISTENER_OPTIONS = """q:quit, space:next,
 """
+
+
+class ELEMENT_TYPE(enum.Enum):
+    NONE = enum.auto()
+    TEXT = enum.auto()
+    DROPDOWN = enum.auto()
+    TEXTAREA = enum.auto()
+    RADIO_BUTTON = enum.auto()
+    RADIO_BUTTON_GROUP = enum.auto()
+    CHECK_BUTTON = enum.auto()
+    CHECK_BUTTON_GROUP = enum.auto()
+
+
+#XPaths
+XPATH_QUESTIONS = '//*[contains(@class, "__question__")]'
+XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and text()="{}"]'
+XPATH_QUESTION_BY_NUMBER = '(//*[contains(@class, "__question__")])[{}]'
+XPATH_ELEMENT = '//*[@class="office-form-question-element"]'
+XPATH_INPUT = '//input'
+XPATH_TEXTINPUT = XPATH_INPUT
+XPATH_DROPDOWN = '//span[contains(@class,"text-format-content")|contains(@class, "default")]'
+XPATH_TEXTAREA = '//textarea'
 
 
 BUILDINGS = {

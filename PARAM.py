@@ -51,14 +51,18 @@ class ELEMENT_TYPE(enum.Enum):
 
 
 class PAUSE(enum.Enum):
+    NONE = enum.auto()
     START = enum.auto()
     FIRST_PAGE_UPDATE = enum.auto()
     FIRST_CHECKBOX = enum.auto()
     MOLD_ODOR = enum.auto()
+
+    BEFORE_NEXT_PAGE = enum.auto()
     NEXT_PAGE = enum.auto()
     PAGE_ONE = enum.auto()
     PAGE_TWO = enum.auto()
     PAGE_THREE = enum.auto()
+
     SUBMIT = enum.auto()
     NEXT_FORM = enum.auto()
 

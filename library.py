@@ -268,26 +268,6 @@ class Inputs:
             cls.other_actions.append(action)
 
 
-class Xpath:
-    @classmethod
-    def xpath_index(cls, xpath:str, index:int) -> str:
-        """Returns an xpath of index of nodes"""
-        str1 = "({})[]".format(xpath, index)
-        return str1
-
-    @classmethod
-    def ancestor(cls, self_xpath:str, ancestor_xpath:str) -> str:
-        """Formulate and return xpath of self node and ancestor xpath"""
-        str1 = "{}//ancestor::{}".format(self_xpath, ancestor_xpath)
-        return str1
-
-    @classmethod
-    def descendant(cls, xpath_current:str, xpath_descending_to:str) -> str:
-        """Formulate and return xpath of self node and descendant xpath"""
-        str1 = "{}//descendant::{}".format(xpath_current, xpath_descending_to)
-        return str1
-
-
 @dataclasses.dataclass
 class Question:
     label : str

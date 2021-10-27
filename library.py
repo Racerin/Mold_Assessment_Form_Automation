@@ -5,6 +5,7 @@ import enum
 import csv
 import json
 import typing
+from collections.abc import Sequence, Mapping, Container
 from functools import partial
 
 from pynput import keyboard
@@ -304,6 +305,58 @@ class Question:
         self.driver = Selenium.driver
         return self.driver
 
+    def find_element(self, xpath:str) -> selenium.webdriver.remote.webelement.WebElement:
+        """Shortcut for finding xpath element."""
+        return self.driver.find_element(By.XPATH, xpath)
+
+    def find_elements(self, xpath:str) -> 'list[selenium.webdriver.remote.webelement.WebElement]':
+        """Shortcut for finding xpath elements."""
+        return self.driver.find_elements(By.XPATH, xpath)
+
+    def _answer_question_select_column(self):
+        pass
+
+    def _answer_question_select_row(self):
+        pass
+
+    def _answer_question_radio_button_group(self, value:Container, xpath_to_question_element:str):
+        """Abstraction level for evaluating 'answer_question' 
+        for radio button group.
+        """
+        # Get header texts
+        xpath_radio_group_header = Xpath.descendant(xpath_to_question_element, XPATH_RADIOGROUP_HEADER)
+        xpath_span = Xpath.descendant(xpath_radio_group_header, XPATH_SPAN)
+        spans = self.find_elements(xpath_span)
+        headings = [span.text for span in spans]
+        # Get radio button groups
+        xpath_radiogroup_row = Xpath.descendant(xpath_to_question_element, XPATH_RADIOGROUP)
+        radio_groups = self.find_elements(xpath_radiogroup_row)
+        # Select rows based on container 'value'.
+        if isinstance(value, Sequence):
+            """Each list element deals with a row, in order."""
+            # pair = zip(value, radio_groups)
+            # for answer,element in pair:
+            for row, answer in enumerate(value):
+                if isinstance(answer, str):
+                    # Select radio button according to header
+                    index = headings.index(answer)
+                elif isinstance(answer, int):
+                    # Select radio button according to position
+                    index = answer
+                # Get radio button
+                xpath_radiogroup_row_by_index = Xpath.xpath_index(xpath_radiogroup_row, row)
+                xpath_radiogroup_button = Xpath.descendant(xpath_radiogroup_row_by_index, XPATH_RADIOGROUP_BUTTON)
+                # Click radio button
+                radio_elements = self.find_elements(xpath_radiogroup_button)
+                radio_elements[index].click()
+        elif isinstance(value, Mapping):
+            """Each row_header_text,answer pair deals with row header id, and table header selection"""
+            for row_header_text,answer in value.items():
+                # Get row by side header
+                xpath_row_by_header = Xpath.descendant(xpath_radiogroup_row, XPATH_RADIOGROUP_BY_SIDE_HEADER)
+                xpath_row_header = xpath_row_by_header.format(row_header_text)
+                
+
     def answer_question(self, value:typing.Any):
         """Select/input an answer value for the element according to its element type."""
         # Get question (by label/index)
@@ -314,22 +367,20 @@ class Question:
             xpath1 = XPATH_QUESTION_BY_LABEL.format(self.label)
         else:
             # NB: May not be the proper error raised.
-            raise AttributeError("There isn't a parameter to input the question???.")
+            raise AttributeError("There isn't a parameter to select question.")
         # Get question element
-        xpath_to_question_element = Xpath.ancestor(xpath1, XPATH_ELEMENT)
-        # With the element type
-            # Get input element
-            # Set value on input element
-            # OR
-            # Set the selections as active/true/ON
+        xpath_to_question_element = Xpath.ancestor(xpath1, XPATH_QUESTION_ELEMENT)
         if self.element_type == ELEMENT_TYPE.TEXT:
+            # Get input element
             xpath_input = Xpath.descendant(xpath_to_question_element, XPATH_TEXTINPUT)
-            element = self.driver.find_element(By.XPATH, xpath_input)
+            element = self.find_element(xpath_input)
             element.send_keys(value)
         elif self.element_type == ELEMENT_TYPE.DROPDOWN:
+            # Get dropdown element and open dropdown
             xpath_dropdown = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN)
-            element_dropdown = self.driver.find_element(By.XPATH, xpath_dropdown)
+            element_dropdown = self.find_element(xpath_dropdown)
             element_dropdown.click()
+            # Select dropdown
             if isinstance(value, int):
                 # Select by order of dropdown
                 xpath_option = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN_OPTION_INDEX)
@@ -337,16 +388,16 @@ class Question:
                 # Select by 
                 xpath_option = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN_OPTION_INDEX)
             # Select the option
-            element = self.driver.find_element(By.XPATH, xpath_option)
+            element = self.find_element(xpath_option)
             element.click()
         elif self.element_type == ELEMENT_TYPE.TEXTAREA:
             xpath_input = Xpath.descendant(xpath_to_question_element, XPATH_TEXTAREA)
-            element = self.driver.find_element(By.XPATH, xpath_input)
+            element = self.find_element(xpath_input)
             element.send_keys(value)
         elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON:
             pass
         elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON_GROUP:
-            pass
+            self._answer_question_radio_button_group(value, xpath_to_question_element)
         elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON:
             pass
         elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON_GROUP:

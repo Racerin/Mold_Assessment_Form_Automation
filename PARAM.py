@@ -69,7 +69,8 @@ class PAUSE(enum.Enum):
 
 #XPaths
 XPATH_QUESTIONS = '//*[contains(@class, "__question__")]'
-XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and text()="{}"]'
+# XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and text()="{}"]'
+XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and contains(text(),"{}")]'
 XPATH_QUESTION_BY_NUMBER = '(//*[contains(@class, "__question__")])[{}]'
 XPATH_QUESTION_ELEMENT = '//*[@class="office-form-question-element"]'
 XPATH_QUESTION_CONTENT = '//*[@class="office-form-question-content"]'
@@ -80,7 +81,7 @@ XPATH_TEXTINPUT = XPATH_INPUT
 XPATH_DROPDOWN = '//span[contains(@class, "select-placeholder-text")]'
 # XPATH_DROPDOWN_OPTION_TEXT = '//span[text()="{}"]'
 XPATH_DROPDOWN_OPTION_TEXT = '//div[contains(@class,"select-option-content")]/span[text()="{}"]'
-XPATH_DROPDOWN_OPTION_INDEX = '(//div[contains(@class, "select-option-content")])[4]'
+XPATH_DROPDOWN_OPTION_INDEX = '(//div[contains(@class, "select-option-content")])[{}]'
 XPATH_LABEL = '//label'
 XPATH_TEXTAREA = '//textarea'
 XPATH_RADIOGROUP = '//div[@role="radiogroup"]'

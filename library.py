@@ -198,7 +198,7 @@ class Inputs:
     floor_id : int = None
     room_type_id : int = None
     building_id : int = None
-    date : int = today_date()
+    date : str = today_date()
 
     other_arguments = list()
     other_actions = list()
@@ -266,6 +266,26 @@ class Inputs:
         for arg_str in cls.other_arguments:
             action = Action(arg_str)
             cls.other_actions.append(action)
+
+
+class Xpath:
+    @classmethod
+    def xpath_index(cls, xpath:str, index:int) -> str:
+        """Returns an xpath of index of nodes"""
+        str1 = "({})[]".format(xpath, index)
+        return str1
+
+    @classmethod
+    def ancestor(cls, self_xpath:str, ancestor_xpath:str) -> str:
+        """Formulate and return xpath of self node and ancestor xpath"""
+        str1 = "{}/ancestor::{}".format(self_xpath, ancestor_xpath)
+        return str1
+
+    @classmethod
+    def descendant(cls, xpath_current:str, xpath_descending_to:str) -> str:
+        """Formulate and return xpath of self node and descendant xpath"""
+        str1 = "{}/descendant::{}".format(xpath_current, xpath_descending_to)
+        return str1
 
 
 @dataclasses.dataclass
@@ -435,7 +455,9 @@ class Selenium:
         return bool(self.driver.session_id)
 
     def get_element_question(self, key:'str|int'):
-        """Get element question in webpage."""
+        """Get element question in webpage.
+        NB: key|int is NOT zero-based. i.e. starts with 1
+        """
         if isinstance(key, int):
             xpath = XPATH_QUESTION_BY_NUMBER.format(key)
         elif isinstance(key, str):
@@ -560,8 +582,31 @@ class Selenium:
             self.driver.get(website_url)
             if yield_:
                 yield PAUSE.START
+            time.sleep(2)
             # Enter Date
-            date_element = self.get_element_question(0)
+            xpath_date = XPATH_QUESTION_BY_NUMBER.format(1)
+            xpath_date_input = Xpath.descendant(xpath_date, XPATH_INPUT[2:])
+            date_element_input = self.driver.find_element(By.XPATH, xpath_date_input)
+            date_element_input.send_keys(Inputs.date)
+            time.sleep(5)
+            # Enter Observer name
+            xpath_observer = XPATH_QUESTION_BY_NUMBER.format(2)
+            xpath_observer_input = Xpath.descendant(xpath_observer, XPATH_INPUT[2:])
+            observer_element_input = self.driver.find_element(By.XPATH, xpath_observer_input)
+            observer_element_input.send_keys(observer_name)
+            time.sleep(5)
+            # Select Faculty/Office/Unit
+            xpath_faculty = XPATH_QUESTION_BY_NUMBER.format(3)
+            xpath_faculty_dropdown = Xpath.descendant(xpath_faculty, XPATH_DROPDOWN[2:])
+            faculty_element_dropdown = self.driver.find_element(By.XPATH, xpath_faculty_dropdown)
+            faculty_element_dropdown.click()
+            time.sleep(5)
+            faculty_dropdown_option = XPATH_DROPDOWN_OPTION_INDEX.format(7)
+            faculty_element_option = self.driver.find_element(By.XPATH, faculty_dropdown_option)
+            faculty_element_option.click()
+            if yield_:
+                yield PAUSE.FIRST_PAGE_UPDATE
+            # 
 
 
 @dataclasses.dataclass
@@ -570,9 +615,10 @@ class Runner:
     and handling interludes/pauses.
     """
     submit : bool = False
-    continue_it_pauses : 'list[PAUSE]' = []
-    sleep_pauses : 'dict[PAUSE]' = dict()
-    keyboard_pauses : 'dict[PAUSE]' = dict()
+    
+    continue_it_pauses : list = dataclasses.field(default_factory=list)
+    sleep_pauses : dict = dataclasses.field(default_factory=dict)
+    keyboard_pauses : dict = dataclasses.field(default_factory=dict)
 
     sleep_time : float = 1
 
@@ -592,7 +638,7 @@ class Runner:
 
     def main_instruction_args(self) -> dict:
         """Returns args to apss into 'main_instruction' of 'Selenium'."""
-        kwargs = dict(yield_=True, )
+        kwargs = dict(yield_=True, submit=self.submit, )
         return kwargs
     
     def run(self, selenium:Selenium):

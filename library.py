@@ -562,3 +562,40 @@ class Selenium:
                 yield PAUSE.START
             # Enter Date
             date_element = self.get_element_question(0)
+
+
+@dataclasses.dataclass
+class Runner:
+    """Responsible for handling running of Selenium's 'main_instruction'
+    and handling interludes/pauses.
+    """
+    submit : bool = False
+    continue_it_pauses : 'list[PAUSE]' = []
+    sleep_pauses : 'dict[PAUSE]' = dict()
+    keyboard_pauses : 'dict[PAUSE]' = dict()
+
+    sleep_time : float = 1
+
+    def pause_handle(self, pause_type:PAUSE):
+        """Responsible for actions based on the pause type and configuration."""
+        if pause_type in self.continue_it_pauses:
+            return
+        elif pause_type in self.sleep_pauses:
+            duration = self.sleep_pauses[pause_type]
+            if isinstance(duration, (int,float)):
+                time.sleep(duration)
+            else:
+                time.sleep(self.sleep_time)
+        elif pause_type in self.keyboard_pauses:
+            key = self.keyboard_pauses[pause_type]
+            # TO BE CONTINUED
+
+    def main_instruction_args(self) -> dict:
+        """Returns args to apss into 'main_instruction' of 'Selenium'."""
+        kwargs = dict(yield_=True, )
+        return kwargs
+    
+    def run(self, selenium:Selenium):
+        """Run 'Selenium' object according to config."""
+        for yielded in selenium.main_instructions(*self.main_instruction_args()):
+            self.pause_handle(yielded)

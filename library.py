@@ -319,45 +319,84 @@ class Question:
     def _answer_question_select_row(self):
         pass
 
-    def _answer_question_radio_button_group(self, value:Container, xpath_to_question_element:str):
+    def _answer_question_get_index(self, headings:'list[str]', answer:'int|str')->int:
+        if isinstance(answer, str):
+            # Select radio button according to header
+            index = headings.index(answer)
+        elif isinstance(answer, int):
+            # Select radio button according to position
+            index = answer
+        else:
+            AttributeError("You dont have an index.")
+        return index
+
+    def _answer_question_radiobutton_group(self, answer_container:Container, question_element:'selenium.webdriver.remote.webelement.WebElement'):
         """Abstraction level for evaluating 'answer_question' 
-        for radio button group.
+        for radiobutton group.
         """
         # Get header texts
-        xpath_radio_group_header = Xpath.descendant(xpath_to_question_element, XPATH_RADIOGROUP_HEADER)
-        xpath_span = Xpath.descendant(xpath_radio_group_header, XPATH_SPAN)
-        spans = self.find_elements(xpath_span)
+        header_element = question_element.find_elements(By.XPATH, '.'+XPATH_RADIOGROUP_HEADER)
+        spans = header_element.find_elements(By.XPATH, '.'+XPATH_SPAN)
         headings = [span.text for span in spans]
         # Get radio button groups
-        xpath_radiogroup_row = Xpath.descendant(xpath_to_question_element, XPATH_RADIOGROUP)
-        radio_groups = self.find_elements(xpath_radiogroup_row)
-        # Select rows based on container 'value'.
-        if isinstance(value, Sequence):
+        radiogroup_elements = question_element.find_elements(By.XPATH, '.'+XPATH_RADIOGROUP)
+        # Select rows based on container 'answer_container'.
+        if isinstance(answer_container, Sequence):
             """Each list element deals with a row, in order."""
-            # pair = zip(value, radio_groups)
-            # for answer,element in pair:
-            for row, answer in enumerate(value):
-                if isinstance(answer, str):
-                    # Select radio button according to header
-                    index = headings.index(answer)
-                elif isinstance(answer, int):
-                    # Select radio button according to position
-                    index = answer
-                # Get radio button
-                xpath_radiogroup_row_by_index = Xpath.xpath_index(xpath_radiogroup_row, row)
-                xpath_radiogroup_button = Xpath.descendant(xpath_radiogroup_row_by_index, XPATH_RADIOGROUP_BUTTON)
+            pairs = zip(radiogroup_elements, answer_container)
+            for radiogroup_element, answer_option in pairs:
+                # Get column radiobutton
+                index = self._answer_question_get_index(headings, answer_option)
+                radio_button = radiogroup_element.find_element(By.XPATH, '.'+XPATH_RADIOGROUP_BUTTON)[index]
                 # Click radio button
-                radio_elements = self.find_elements(xpath_radiogroup_button)
-                radio_elements[index].click()
-        elif isinstance(value, Mapping):
-            """Each row_header_text,answer pair deals with row header id, and table header selection"""
-            for row_header_text,answer in value.items():
-                # Get row by side header
-                xpath_row_by_header = Xpath.descendant(xpath_radiogroup_row, XPATH_RADIOGROUP_BY_SIDE_HEADER)
-                xpath_row_header = xpath_row_by_header.format(row_header_text)
-                
+                radio_button.click()
+        elif isinstance(answer_container, Mapping):
+            """Each row_header_key,answer_option pair deals with row header id, and table header selection"""
+            for row_header_key, answer_option in answer_container.items():
+                # Get row radiogroup by side header
+                xpath_radiogroup_by_side_header = XPATH_RADIOGROUP_BY_SIDE_HEADER.format(row_header_key)
+                radiogroup_element = question_element.find_element(By.XPATH, '.'+xpath_radiogroup_by_side_header)
+                # Get column radiobutton
+                index = self._answer_question_get_index(headings, answer_option)
+                radio_button = radiogroup_element.find_element(By.XPATH, '.'+XPATH_RADIOGROUP_BUTTON)[index]
+                # Click radio button
+                radio_button.click()
 
-    def answer_question(self, value:typing.Any):
+    def _answer_question_checkbox_tick_accordingly(self, ticked:bool, tick_it:bool)->bool:
+        return bool(ticked) != bool(tick_it)    # XOR logic gate
+
+    def _answer_question_checkbox_group(self, answer_container:Container, question_element:'selenium.webdriver.remote.webelement.WebElement'):
+        """Abstraction level for evaluating 'answer_question' 
+        for checkbox group.
+        """
+        # Get check boxes
+        element_checkboxes = question_element.find_elements(By.XPATH, '.'+XPATH_CHECKBOX)
+        if isinstance(answer_container, Sequence):
+            pairs = zip(element_checkboxes, answer_container)
+            for element_checkbox, decision in pairs:
+                # Verify checkbox value before clicking it.
+                if self._answer_question_checkbox_tick_accordingly(element_checkbox.isSelected(), bool(decision)):
+                    element_checkbox.click()
+        elif isinstance(answer_container, Mapping):
+            # For each label, if there is a matching answer_container element, check it and tick checkbox accordingly.
+            label_texts = [element_checkbox.value for element_checkbox in element_checkboxes]
+            container_keys = list(answer_container.keys())
+            for i, label_text in enumerate(label_texts):
+                # Match conatiner key to label text
+                matches = [key for key in container_keys if label_text.lower() in key.lower()]
+                if matches:
+                    # Click checkbox if answer suggests that.
+                    match_key = matches[0]
+                    match_answer = answer_container[match_key]
+                    # Get checkbox
+                    element_checkbox = element_checkboxes[i]
+                    # Evaluate whether to click the button.
+                    if self._answer_question_checkbox_tick_accordingly(element_checkbox.isSelected(), bool(match_answer)):
+                        element_checkbox.click()
+                else:
+                    raise AttributeError("Something wrong")
+
+    def answer_question(self, value:Container|str):
         """Select/input an answer value for the element according to its element type."""
         # Get question (by label/index)
         xpath1 = ""
@@ -369,39 +408,36 @@ class Question:
             # NB: May not be the proper error raised.
             raise AttributeError("There isn't a parameter to select question.")
         # Get question element
-        xpath_to_question_element = Xpath.ancestor(xpath1, XPATH_QUESTION_ELEMENT)
+        question_element = self.find_element(xpath1)
         if self.element_type == ELEMENT_TYPE.TEXT:
             # Get input element
-            xpath_input = Xpath.descendant(xpath_to_question_element, XPATH_TEXTINPUT)
-            element = self.find_element(xpath_input)
+            element = question_element.find_element(By.XPATH, '.'+XPATH_TEXTINPUT)
             element.send_keys(value)
         elif self.element_type == ELEMENT_TYPE.DROPDOWN:
             # Get dropdown element and open dropdown
-            xpath_dropdown = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN)
-            element_dropdown = self.find_element(xpath_dropdown)
+            element_dropdown = question_element.find_element(By.XPATH, '.'+XPATH_DROPDOWN)
             element_dropdown.click()
             # Select dropdown
             if isinstance(value, int):
                 # Select by order of dropdown
-                xpath_option = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN_OPTION_INDEX)
+                element = question_element.find_element(By.XPATH, '.'+XPATH_DROPDOWN_OPTION_INDEX)
             elif isinstance(value, str):
-                # Select by 
-                xpath_option = Xpath.descendant(xpath_to_question_element, XPATH_DROPDOWN_OPTION_INDEX)
+                # Select by text of dropdown option
+                element = question_element.find_element(By.XPATH, '.'+XPATH_DROPDOWN_OPTION_TEXT)
             # Select the option
-            element = self.find_element(xpath_option)
             element.click()
         elif self.element_type == ELEMENT_TYPE.TEXTAREA:
-            xpath_input = Xpath.descendant(xpath_to_question_element, XPATH_TEXTAREA)
-            element = self.find_element(xpath_input)
+            # Get textarea (should only have 1 textarea in entire page 1. Still explicit)
+            element = question_element.find_element(By.XPATH, '.'+XPATH_TEXTAREA)
             element.send_keys(value)
         elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON:
             pass
         elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON_GROUP:
-            self._answer_question_radio_button_group(value, xpath_to_question_element)
+            self._answer_question_radiobutton_group(value, question_element)
         elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON:
             pass
         elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON_GROUP:
-            pass
+            self._answer_question_checkbox_group(value, question_element)
 
 
 class Selenium:

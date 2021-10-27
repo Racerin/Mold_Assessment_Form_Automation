@@ -50,15 +50,42 @@ class ELEMENT_TYPE(enum.Enum):
     CHECK_BUTTON_GROUP = enum.auto()
 
 
+class PAUSE(enum.Enum):
+    START = enum.auto()
+    FIRST_PAGE_UPDATE = enum.auto()
+    FIRST_CHECKBOX = enum.auto()
+    MOLD_ODOR = enum.auto()
+    NEXT_PAGE = enum.auto()
+    PAGE_ONE = enum.auto()
+    PAGE_TWO = enum.auto()
+    PAGE_THREE = enum.auto()
+    SUBMIT = enum.auto()
+    NEXT_FORM = enum.auto()
+
+
 #XPaths
 XPATH_QUESTIONS = '//*[contains(@class, "__question__")]'
 XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and text()="{}"]'
 XPATH_QUESTION_BY_NUMBER = '(//*[contains(@class, "__question__")])[{}]'
-XPATH_ELEMENT = '//*[@class="office-form-question-element"]'
+XPATH_QUESTION_ELEMENT = '//*[@class="office-form-question-element"]'
+XPATH_QUESTION_CONTENT = '//*[@class="office-form-question-content"]'
+XPATH_SPAN = '//span'
 XPATH_INPUT = '//input'
 XPATH_TEXTINPUT = XPATH_INPUT
-XPATH_DROPDOWN = '//span[contains(@class,"text-format-content")|contains(@class, "default")]'
+# XPATH_DROPDOWN = '//span[contains(@class,"text-format-content")|contains(@class, "default")]'
+XPATH_DROPDOWN = '//span[contains(@class, "select-placeholder-text")]'
+# XPATH_DROPDOWN_OPTION_TEXT = '//span[text()="{}"]'
+XPATH_DROPDOWN_OPTION_TEXT = '//div[contains(@class,"select-option-content")]/span[text()="{}"]'
+XPATH_DROPDOWN_OPTION_INDEX = '(//div[contains(@class, "select-option-content")])[4]'
+XPATH_LABEL = '//label'
 XPATH_TEXTAREA = '//textarea'
+XPATH_RADIOGROUP = '//div[@role="radiogroup"]'
+XPATH_RADIOGROUP_BUTTON = '//input[@type="radio"]'
+XPATH_RADIOGROUP_HEADER = '//div[@class="office-form-matrix-header"]'
+XPATH_RADIOGROUP_BY_SIDE_HEADER = '//span[@class="text-format-content" and contains(text(), "{}")]'
+XPATH_RADIOGROUP_HEADER_TEXT = ''
+XPATH_CHECKBOX = '//input[@type="checkbox"]'
+XPATH_CHECKBOX_LABEL = '//div[@class="checkbox"]/label'
 
 
 BUILDINGS = {

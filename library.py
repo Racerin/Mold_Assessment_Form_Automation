@@ -454,12 +454,14 @@ class Selenium:
         # https://www.codegrepper.com/code-examples/python/selenium+check+if+driver+is+open+python
         return bool(self.driver.session_id)
 
-    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, option=1):
+    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False, option=1):
         """Instruction set to carry out to fill out form."""
         if option == 1:
             # Load webpage with form
             self.driver.get(website_url)
             # assert 'mold' in self.driver.title.lower()
+            if yield_:
+                yield PAUSE.START
             # Enter Date:
             date_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
             # date_input.send_keys(today_date())
@@ -470,6 +472,8 @@ class Selenium:
             # Select Faculty/Office/Unit
             self.driver.find_element(By.ID, "SelectId_0_placeholder").click()
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Faculty of Engineering"]').click()
+            if yield_:
+                yield PAUSE.FIRST_PAGE_UPDATE
             # Select Building
             self.driver.find_elements(By.CLASS_NAME, "select-placeholder-text")[-1].click()
             building_text = BUILDINGS[Inputs.building_id]
@@ -488,6 +492,8 @@ class Selenium:
             # Mold Odor
             self.driver.find_element(By.ID, "SelectId_4_placeholder").click()
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="None"]').click()
+            if yield_:
+                yield PAUSE.FIRST_CHECKBOX
             # Select all N/A
             # Damage or Stains
             for i in range(2,2+8):
@@ -505,6 +511,8 @@ class Selenium:
             self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[13]/div/div[2]/div/div[11]/div/label/input').click()
             # Wet or Damp
             self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
+            if yield_:
+                yield PAUSE.MOLD_ODOR
             if mold_odor:
                 # Select potency of mold odor
                 # Open options
@@ -512,11 +520,15 @@ class Selenium:
                 # Select option
                 str1 = '[aria-label="{}"]'.format("Strong")
                 self.driver.find_element(By.CSS_SELECTOR, str1).click()
-            # Press submit button
+            if yield_:
+                yield PAUSE.BEFORE_NEXT_PAGE
+            # Press next button
             self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
             
-            # Now, put in mold odor info
             # PAGE 2
+            # Now, put in mold odor info
+            if yield_:
+                yield PAUSE.NEXT_PAGE
             # Select all N/A by default, Select last input 'N/A' 7 times
             for _ in range(7):
                 n_a = self.driver.find_elements_by_css_selector("input[value='N/A']")[-1].click()
@@ -533,11 +545,16 @@ class Selenium:
             # Supplies and Materials Description?
             # Additional Comments?
 
+            if yield_:
+                yield PAUSE.SUBMIT
+                yield PAUSE.BEFORE_NEXT_PAGE
             # Press submit button
             submit_button = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div')
             if submit:
                 submit_button.click()
-            # Next Page
+                # Next Page
+                if yield_:
+                    yield PAUSE.NEXT_PAGE
                 # Submit another form
                 submit_link = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a')
                 if continue_it:

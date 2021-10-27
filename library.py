@@ -396,7 +396,7 @@ class Question:
                 else:
                     raise AttributeError("Something wrong")
 
-    def answer_question(self, value:Container|str):
+    def answer_question(self, value:'Container|str'):
         """Select/input an answer value for the element according to its element type."""
         # Get question (by label/index)
         xpath1 = ""
@@ -454,7 +454,18 @@ class Selenium:
         # https://www.codegrepper.com/code-examples/python/selenium+check+if+driver+is+open+python
         return bool(self.driver.session_id)
 
-    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False, option=1):
+    def get_element_question(self, key:'str|int'):
+        """Get element question in webpage."""
+        if isinstance(key, int):
+            xpath = XPATH_QUESTION_BY_NUMBER.format(key)
+        elif isinstance(key, str):
+            xpath = XPATH_QUESTION_BY_LABEL.format(key)
+        else:
+            raise AttributeError("Key is not of the appriate type (str,int).")
+        element_question = self.driver.find_element(By.XPATH, xpath)
+        return element_question
+
+    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False, option=2):
         """Instruction set to carry out to fill out form."""
         if option == 1:
             # Load webpage with form
@@ -565,4 +576,9 @@ class Selenium:
                 print("that's the end of the main instruction set.")
         
         elif option == 2:
-            pass
+            # Load webpage form
+            self.driver.get(website_url)
+            if yield_:
+                yield PAUSE.START
+            # Enter Date
+            date_element = self.get_element_question(0)

@@ -21,7 +21,8 @@ def main_event():
             # Main event loop
             pass
 
-def one_form(option=3):
+
+def one_form(option=4):
     """Fill out one form."""
     obj = Selenium()
     # Input
@@ -38,10 +39,8 @@ def one_form(option=3):
     elif option == 3:
         tests.TestInputs.set_test_values()
         obj.main_instructions(submit=False, mold_odor=True)
-    # Custom config for one form?
-
-def one_form2():
-    pass
+    elif option == 4:
+        obj.main_instructions(submit=False, option=2)
 
 
 if __name__ == "__main__":

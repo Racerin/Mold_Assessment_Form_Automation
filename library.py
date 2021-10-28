@@ -1,9 +1,11 @@
 import datetime
+from os import remove
 import time
 import dataclasses
 import enum
 import csv
 import json
+import re
 import pydoc
 import typing
 from collections.abc import Sequence, Mapping, Container
@@ -204,6 +206,13 @@ class Inputs:
     other_arguments = list()
     other_actions = list()
 
+    damage_or_stains = [4] * 8
+    damage_or_stains_exterior = {-1:True, }
+    visible_mold = [4] * 8
+    visible_mold_exterior = {-1:True, }
+    wet_or_damp = [4] * 8
+    wet_or_damp_exterior = {-1: True, }
+
     @classmethod
     def user_input_prompt(cls):
         """Prompt user for input data."""
@@ -271,27 +280,38 @@ class Inputs:
 
 class Xpath:
     @classmethod
-    def xpath_index(cls, xpath:str, index:int) -> str:
+    def xpath_index(cls, xpath:str, index:int=None) -> str:
         """Returns an xpath of index of nodes"""
-        str1 = "({})[]".format(xpath, index)
+        if index is None:
+            str = "({})[]".format(xpath)
+        else:
+            str1 = "({})[{}]".format(xpath, index)
         return str1
 
     @classmethod
-    def ancestor(cls, self_xpath:str, ancestor_xpath:str) -> str:
+    def ancestor(cls, xpath_current:str, xpath_ascending_to:str, remove_trailings=True) -> str:
         """Formulate and return xpath of self node and ancestor xpath"""
-        str1 = "{}/ancestor::{}".format(self_xpath, ancestor_xpath)
+        if remove_trailings:
+            xpath_ascending_to = re.sub(RE_TRAILING_DASH, '', xpath_ascending_to)
+        str1 = "{}/ancestor::{}".format(xpath_current, xpath_ascending_to)
         return str1
 
     @classmethod
-    def descendant(cls, xpath_current:str, xpath_descending_to:str) -> str:
+    def descendant(cls, xpath_current:str, xpath_descending_to:str, remove_trailings=True) -> str:
         """Formulate and return xpath of self node and descendant xpath"""
+        if remove_trailings:
+            xpath_descending_to = re.sub(RE_TRAILING_DASH, '', xpath_descending_to)
         str1 = "{}/descendant::{}".format(xpath_current, xpath_descending_to)
         return str1
 
     @classmethod
     def get_xpath_format_to_input_type(self, mappings:dict, key:typing.Any):
+        """Returns appropriate xpath based on type of input.
+        NB: Python may turns key 'typ' into a string (dict constructor). 
+        Key is reverted to type with pydoc if needed.
+        """
         for typ_str, xpath_to_format in mappings.items():
-            typ = pydoc.locate(typ_str)
+            typ = pydoc.locate(typ_str) if isinstance(typ_str) else typ_str
             if isinstance(key, typ):
                 xpath = xpath_to_format.format(key)
                 return xpath
@@ -455,16 +475,6 @@ class Selenium:
         if Selenium.driver is None:
             # self.driver = selenium.webdriver.Firefox()
             self.driver = selenium.webdriver.Chrome()
-
-    def get_question_xpath1(self, question_key:'int|str'):
-        """Returns xpath for question."""
-        if isinstance(question_key, int):
-            xpath_question = XPATH_QUESTION_BY_NUMBER.format(question_key)
-        elif isinstance(question_key, str):
-            xpath_question = XPATH_QUESTION_BY_LABEL.format(question_key)
-        else:
-            raise AttributeError("Not the proper question_key(must be 'str' or 'int'). ")
-        return xpath_question
 
     @classmethod
     def get_question_xpath(cls, question_key:'int|str'):
@@ -635,18 +645,28 @@ class Selenium:
             self.driver.get(website_url)
             if yield_:
                 yield PAUSE.START
-            time.sleep(2)
             # Enter Date
             self.answer_text_element(1, Inputs.date)
-            time.sleep(5)
             # Enter Observer name
             self.answer_text_element(2, observer_name)
-            time.sleep(5)
             # Select Faculty/Office/Unit
             self.answer_dropdown_element(3, 7)
             if yield_:
                 yield PAUSE.FIRST_PAGE_UPDATE
-            # 
+            # Select Building
+            self.answer_dropdown_element(4, Inputs.building_id)
+            # Select Floor
+            self.answer_dropdown_element(5, Inputs.floor_id)
+            # Enter Room/Area Identification
+            self.answer_dropdown_element(6, Inputs.room_name)
+            # Enter Room/Area Type
+            self.answer_dropdown_element(7, Inputs.room_type_id)
+            # Mold Odor, default to None for now
+            self.answer_dropdown_element(8, 'None')
+            # Select Damage or Stains (DS)
+            self.answer_radiogroups_element(9, )
+
+
 
 
 @dataclasses.dataclass

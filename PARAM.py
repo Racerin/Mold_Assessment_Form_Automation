@@ -67,6 +67,10 @@ class PAUSE(enum.Enum):
     NEXT_FORM = enum.auto()
 
 
+# Regular Expressions
+RE_TRAILING_DASH = r'^/+'
+
+
 #XPaths
 XPATH_QUESTIONS = '//*[contains(@class, "__question__")]'
 # XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and text()="{}"]'

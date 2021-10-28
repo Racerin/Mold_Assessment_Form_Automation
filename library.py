@@ -4,6 +4,7 @@ import dataclasses
 import enum
 import csv
 import json
+import pydoc
 import typing
 from collections.abc import Sequence, Mapping, Container
 from functools import partial
@@ -287,6 +288,18 @@ class Xpath:
         str1 = "{}/descendant::{}".format(xpath_current, xpath_descending_to)
         return str1
 
+    @classmethod
+    def get_xpath_format_to_input_type(self, mappings:dict, key:typing.Any):
+        for typ_str, xpath_to_format in mappings.items():
+            typ = pydoc.locate(typ_str)
+            if isinstance(key, typ):
+                xpath = xpath_to_format.format(key)
+                return xpath
+        else:
+            types = tuple(mappings.keys())
+            types_str = ', '.join(types)
+            raise AttributeError("Key not of proper format({}).".format(types_str))
+
 
 @dataclasses.dataclass
 class Question:
@@ -312,12 +325,6 @@ class Question:
     def find_elements(self, xpath:str) -> 'list[selenium.webdriver.remote.webelement.WebElement]':
         """Shortcut for finding xpath elements."""
         return self.driver.find_elements(By.XPATH, xpath)
-
-    def _answer_question_select_column(self):
-        pass
-
-    def _answer_question_select_row(self):
-        pass
 
     def _answer_question_get_index(self, headings:'list[str]', answer:'int|str')->int:
         if isinstance(answer, str):
@@ -448,6 +455,52 @@ class Selenium:
         if Selenium.driver is None:
             # self.driver = selenium.webdriver.Firefox()
             self.driver = selenium.webdriver.Chrome()
+
+    def get_question_xpath1(self, question_key:'int|str'):
+        """Returns xpath for question."""
+        if isinstance(question_key, int):
+            xpath_question = XPATH_QUESTION_BY_NUMBER.format(question_key)
+        elif isinstance(question_key, str):
+            xpath_question = XPATH_QUESTION_BY_LABEL.format(question_key)
+        else:
+            raise AttributeError("Not the proper question_key(must be 'str' or 'int'). ")
+        return xpath_question
+
+    @classmethod
+    def get_question_xpath(cls, question_key:'int|str'):
+        """Returns xpath for question."""
+        mappings = dict(int=XPATH_QUESTION_BY_NUMBER, str=XPATH_QUESTION_BY_LABEL,)
+        # Get the final xpath
+        xpath_question = Xpath.get_xpath_format_to_input_type(mappings=mappings, key=question_key)
+        return xpath_question
+
+    @classmethod
+    def get_dropdown_option_xpath(cls, option_key:'int|str'):
+        """Returns xpath for dropdown options."""
+        mappings = dict(int=XPATH_DROPDOWN_OPTION_INDEX, str=XPATH_DROPDOWN_OPTION_TEXT)
+        # Get the final xpath
+        xpath_dropdown_option = Xpath.get_xpath_format_to_input_type(mappings=mappings, key=option_key)
+        return xpath_dropdown_option
+
+    def answer_text_element(self, question_key:'int|str', input_answer:str):
+        """Answer a text input question."""
+        xpath_question = self.get_question_xpath(question_key)
+        xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT[2:])
+        element_input = self.driver.find_element(By.XPATH, xpath_input)
+        element_input.send_keys(input_answer)
+
+    def answer_dropdown_element(self, question_key:'int|str', option_answer:'int|str'):
+        """Answer a dropdown menu question."""
+        # Get/open dropdown menu
+        xpath_question = self.get_question_xpath(question_key)
+        xpath_dropdown = Xpath.descendant(xpath_question, XPATH_DROPDOWN[2:])
+        dropdown_element = self.driver.find_element(By.XPATH, xpath_dropdown)
+        dropdown_element.click()
+        # TODO: ensure dropdown menu is open
+        # Select dropdown option
+        xpath_dropdown_option = self.get_dropdown_option_xpath(7)
+        dropdown_option_element = self.driver.find_element(By.XPATH, xpath_dropdown_option)
+        dropdown_option_element.click()
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
@@ -584,26 +637,13 @@ class Selenium:
                 yield PAUSE.START
             time.sleep(2)
             # Enter Date
-            xpath_date = XPATH_QUESTION_BY_NUMBER.format(1)
-            xpath_date_input = Xpath.descendant(xpath_date, XPATH_INPUT[2:])
-            date_element_input = self.driver.find_element(By.XPATH, xpath_date_input)
-            date_element_input.send_keys(Inputs.date)
+            self.answer_text_element(1, Inputs.date)
             time.sleep(5)
             # Enter Observer name
-            xpath_observer = XPATH_QUESTION_BY_NUMBER.format(2)
-            xpath_observer_input = Xpath.descendant(xpath_observer, XPATH_INPUT[2:])
-            observer_element_input = self.driver.find_element(By.XPATH, xpath_observer_input)
-            observer_element_input.send_keys(observer_name)
+            self.answer_text_element(2, observer_name)
             time.sleep(5)
             # Select Faculty/Office/Unit
-            xpath_faculty = XPATH_QUESTION_BY_NUMBER.format(3)
-            xpath_faculty_dropdown = Xpath.descendant(xpath_faculty, XPATH_DROPDOWN[2:])
-            faculty_element_dropdown = self.driver.find_element(By.XPATH, xpath_faculty_dropdown)
-            faculty_element_dropdown.click()
-            time.sleep(5)
-            faculty_dropdown_option = XPATH_DROPDOWN_OPTION_INDEX.format(7)
-            faculty_element_option = self.driver.find_element(By.XPATH, faculty_dropdown_option)
-            faculty_element_option.click()
+            self.answer_dropdown_element(3, 7)
             if yield_:
                 yield PAUSE.FIRST_PAGE_UPDATE
             # 

@@ -10,7 +10,7 @@ class TestInputs(unittest.TestCase):
     @classmethod
     def set_test_values(cls):
         """Set values for input to test with."""
-        row = get_rand_str(), randrange(5), randrange(3), randrange(3)
+        row = get_rand_str(), randrange(1, 5), randrange(1, 3), randrange(1, 3)
         Inputs.set_user_input(row)
 
     def test_tsv(self):

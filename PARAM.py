@@ -71,11 +71,16 @@ class PAUSE(enum.Enum):
 RE_TRAILING_DASH = r'^/+'
 
 
+# Selenium Answers
+ANS_RADIOGROUPS_DEFAULT = ['N/A'] * 8
+ANS_CHECKBOXES_DEFAULT = [11]
+
+
 #XPaths
-XPATH_QUESTIONS = '//*[contains(@class, "__question__")]'
+XPATH_QUESTIONS = r'//div[contains(@class, "__question__")]'
 # XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and text()="{}"]'
 XPATH_QUESTION_BY_LABEL = '//*[@class="office-form-question-title"]/span/span[@class="text-format-content" and contains(text(),"{}")]'
-XPATH_QUESTION_BY_NUMBER = '(//*[contains(@class, "__question__")])[{}]'
+XPATH_QUESTION_BY_NUMBER = '(' + XPATH_QUESTIONS + ')[{}]'
 XPATH_QUESTION_ELEMENT = '//*[@class="office-form-question-element"]'
 XPATH_QUESTION_CONTENT = '//*[@class="office-form-question-content"]'
 XPATH_SPAN = '//span'
@@ -84,7 +89,7 @@ XPATH_TEXTINPUT = XPATH_INPUT
 # XPATH_DROPDOWN = '//span[contains(@class,"text-format-content")|contains(@class, "default")]'
 XPATH_DROPDOWN = '//span[contains(@class, "select-placeholder-text")]'
 # XPATH_DROPDOWN_OPTION = '//div[contains(@class, "select-option-content")]'
-XPATH_DROPDOWN_OPTION = '//div[@class="select-option-content"]'
+XPATH_DROPDOWN_OPTION = r'//div[@class="select-option-content"]'
 XPATH_DROPDOWN_OPTION_TEXT = XPATH_DROPDOWN_OPTION+'/span[text()="{}"]'
 XPATH_DROPDOWN_OPTION_INDEX = '('+XPATH_DROPDOWN_OPTION+')[{}]'
 XPATH_LABEL = '//label'

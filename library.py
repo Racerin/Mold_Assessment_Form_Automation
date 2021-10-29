@@ -283,7 +283,7 @@ class Xpath:
     def xpath_index(cls, xpath:str, index:int=None) -> str:
         """Returns an xpath of index of nodes"""
         if index is None:
-            str = "({})[]".format(xpath)
+            str1 = "({})[]".format(xpath)
         else:
             str1 = "({})[{}]".format(xpath, index)
         return str1
@@ -291,6 +291,7 @@ class Xpath:
     @classmethod
     def ancestor(cls, xpath_current:str, xpath_ascending_to:str, remove_trailings=True) -> str:
         """Formulate and return xpath of self node and ancestor xpath"""
+        # Remove '//' at the start of the extending xpath
         if remove_trailings:
             xpath_ascending_to = re.sub(RE_TRAILING_DASH, '', xpath_ascending_to)
         str1 = "{}/ancestor::{}".format(xpath_current, xpath_ascending_to)
@@ -299,6 +300,7 @@ class Xpath:
     @classmethod
     def descendant(cls, xpath_current:str, xpath_descending_to:str, remove_trailings=True) -> str:
         """Formulate and return xpath of self node and descendant xpath"""
+        # Remove '//' at the start of the extending xpath
         if remove_trailings:
             xpath_descending_to = re.sub(RE_TRAILING_DASH, '', xpath_descending_to)
         str1 = "{}/descendant::{}".format(xpath_current, xpath_descending_to)
@@ -474,8 +476,16 @@ class Selenium:
 
     def __init__(self):
         if Selenium.driver is None:
-            # self.driver = selenium.webdriver.Firefox()
             self.driver = selenium.webdriver.Chrome()
+            self.driver.maximize_window()
+
+    def find_element(self, xpath:str) -> 'selenium.webdriver.remote.webelement.WebElement':
+        """Shortcut for finding xpath element."""
+        return self.driver.find_element(By.XPATH, xpath)
+
+    def find_elements(self, xpath:str) -> 'list[selenium.webdriver.remote.webelement.WebElement]':
+        """Shortcut for finding xpath elements."""
+        return self.driver.find_elements(By.XPATH, xpath)
 
     @classmethod
     def get_question_xpath(cls, question_key:'int|str'):
@@ -497,7 +507,7 @@ class Selenium:
         """Answer a text input question."""
         xpath_question = self.get_question_xpath(question_key)
         xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT)
-        element_input = self.driver.find_element(By.XPATH, xpath_input)
+        element_input = self.find_element(xpath_input)
         element_input.send_keys(input_answer)
 
     def answer_dropdown_element(self, question_key:'int|str', option_answer:'int|str'):
@@ -505,12 +515,12 @@ class Selenium:
         # Get/open dropdown menu
         xpath_question = self.get_question_xpath(question_key)
         xpath_dropdown = Xpath.descendant(xpath_question, XPATH_DROPDOWN)
-        dropdown_element = self.driver.find_element(By.XPATH, xpath_dropdown)
+        dropdown_element = self.find_element(xpath_dropdown)
         dropdown_element.click()
         # TODO: ensure dropdown menu is open
         # Select dropdown option
         xpath_dropdown_option = self.get_dropdown_option_xpath(option_answer)
-        dropdown_option_element = self.driver.find_element(By.XPATH, xpath_dropdown_option)
+        dropdown_option_element = self.find_element(xpath_dropdown_option)
         dropdown_option_element.click()
 
     def answer_radiogroups_element(self, question_key:'int|str', container_answers:'Sequence|Mapping'):
@@ -518,7 +528,10 @@ class Selenium:
         xpath_question = self.get_question_xpath(question_key)
         # Get Header values
         xpath_header_sub = Xpath.xpath_index(XPATH_RADIOGROUP_HEADER, )
+        xpath_header_sub = XPATH_RADIOGROUP_HEADER
         xpath_headers = Xpath.descendant(xpath_question, xpath_header_sub)
+        headers_elements = self.find_elements(xpath_headers)
+        headers_str = [ele.text for ele in headers_elements]
         # Get Side-Header Values
         xpath_header_spans = Xpath.descendant(xpath_headers, XPATH_SPAN)
         xpath_side_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_BY_SIDE_HEADER)
@@ -663,6 +676,7 @@ class Selenium:
             self.driver.get(website_url)
             if yield_:
                 yield PAUSE.START
+                time.sleep(1)
             # Enter Date
             self.answer_text_element(1, Inputs.date)
             # Enter Observer name
@@ -682,7 +696,7 @@ class Selenium:
             # Mold Odor, default to None for now
             self.answer_dropdown_element(8, 'None')
             # Select Damage or Stains (DS)
-            self.answer_radiogroups_element(9, )
+            self.answer_radiogroups_element(9, ANS_RADIOGROUPS_DEFAULT)
 
 
 

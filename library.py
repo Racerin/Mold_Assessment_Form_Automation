@@ -311,7 +311,8 @@ class Xpath:
         Key is reverted to type with pydoc if needed.
         """
         for typ_str, xpath_to_format in mappings.items():
-            typ = pydoc.locate(typ_str) if isinstance(typ_str) else typ_str
+            # Ensure 'type' is a type(i.e. str, int, float, etc.)
+            typ = pydoc.locate(typ_str) if isinstance(typ_str, str) else typ_str
             if isinstance(key, typ):
                 xpath = xpath_to_format.format(key)
                 return xpath
@@ -495,7 +496,7 @@ class Selenium:
     def answer_text_element(self, question_key:'int|str', input_answer:str):
         """Answer a text input question."""
         xpath_question = self.get_question_xpath(question_key)
-        xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT[2:])
+        xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT)
         element_input = self.driver.find_element(By.XPATH, xpath_input)
         element_input.send_keys(input_answer)
 
@@ -503,14 +504,31 @@ class Selenium:
         """Answer a dropdown menu question."""
         # Get/open dropdown menu
         xpath_question = self.get_question_xpath(question_key)
-        xpath_dropdown = Xpath.descendant(xpath_question, XPATH_DROPDOWN[2:])
+        xpath_dropdown = Xpath.descendant(xpath_question, XPATH_DROPDOWN)
         dropdown_element = self.driver.find_element(By.XPATH, xpath_dropdown)
         dropdown_element.click()
         # TODO: ensure dropdown menu is open
         # Select dropdown option
-        xpath_dropdown_option = self.get_dropdown_option_xpath(7)
+        xpath_dropdown_option = self.get_dropdown_option_xpath(option_answer)
         dropdown_option_element = self.driver.find_element(By.XPATH, xpath_dropdown_option)
         dropdown_option_element.click()
+
+    def answer_radiogroups_element(self, question_key:'int|str', container_answers:'Sequence|Mapping'):
+        """Answer a group of radiogroups question."""
+        xpath_question = self.get_question_xpath(question_key)
+        # Get Header values
+        xpath_header_sub = Xpath.xpath_index(XPATH_RADIOGROUP_HEADER, )
+        xpath_headers = Xpath.descendant(xpath_question, xpath_header_sub)
+        # Get Side-Header Values
+        xpath_header_spans = Xpath.descendant(xpath_headers, XPATH_SPAN)
+        xpath_side_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_BY_SIDE_HEADER)
+        if isinstance(container_answers, Sequence):
+            pass
+        elif isinstance(container_answers, Mapping):
+            pass
+
+    def answer_checkboxgroup_element(self):
+        pass
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
@@ -658,7 +676,7 @@ class Selenium:
             # Select Floor
             self.answer_dropdown_element(5, Inputs.floor_id)
             # Enter Room/Area Identification
-            self.answer_dropdown_element(6, Inputs.room_name)
+            self.answer_text_element(6, Inputs.room_name)
             # Enter Room/Area Type
             self.answer_dropdown_element(7, Inputs.room_type_id)
             # Mold Odor, default to None for now

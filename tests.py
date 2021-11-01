@@ -47,6 +47,16 @@ class TestSelenium(unittest.TestCase):
         obj = Selenium()
         obj.main_instructions(submit=False, continue_it=False,  mold_odor=True)
 
+    def test_progressively(self):
+        """This unittest is used often to help build the app itself."""
+        obj = Selenium()
+        TestInputs.set_test_values()
+        runner = Runner(
+            sleep_time=20,
+            sleep_pauses=[PAUSE.BEFORE_NEXT_PAGE,]
+        )
+        runner.run(obj)
+
 
 class TestKeyboardManager(unittest.TestCase):
     pass

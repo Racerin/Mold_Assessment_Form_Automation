@@ -2,16 +2,32 @@ import unittest
 import os
 import datetime
 import uuid
+import string
+import random
 from random import randrange
 
 from library import *
+
+
+def randstr(length):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
+
+
+def get_rand_str() -> str:
+    str1 = str(uuid.uuid4().hex)
+    str1 = datetime.datetime.now().strftime("%y%m%d_%H%M%S%f")
+    return str1
+
 
 class TestInputs(unittest.TestCase):
     @classmethod
     def set_test_values(cls):
         """Set values for input to test with."""
-        row = get_rand_str(), randrange(1, 5), randrange(1, 3), randrange(1, 3)
-        Inputs.set_user_input(row)
+        row = get_rand_str(), randrange(1, 5), randrange(1, 3), randrange(1, 3), randrange(0,4)
+        kwa = {
+            'mold_odor_desc':randstr,
+            }
+        Inputs.set_user_input(row, **kwa)
 
     def test_tsv(self):
         """Test the saving and loading of tsv files function."""
@@ -60,9 +76,3 @@ class TestSelenium(unittest.TestCase):
 
 class TestKeyboardManager(unittest.TestCase):
     pass
-
-
-def get_rand_str() -> str:
-    str1 = str(uuid.uuid4().hex)
-    str1 = datetime.datetime.now().strftime("%y%m%d_%H%M%S%f")
-    return str1

@@ -280,12 +280,20 @@ class Inputs:
 
 class Xpath:
     @classmethod
-    def xpath_index(cls, xpath:str, index:int=None) -> str:
+    def xpath_index(cls, xpath:str, index:int=None, xpath_index=True, encapsulate=False) -> str:
         """Returns an xpath of index of nodes"""
+        # Convert 'index' from programming/Python index to xpath index
+        if xpath_index: index += 1
         if index is None:
-            str1 = "({})[]".format(xpath)
+            if encapsulate:
+                str1 = "({})[]".format(xpath)
+            else:
+                str1 = "{}[]".format(xpath)
         else:
-            str1 = "({})[{}]".format(xpath, index)
+            if encapsulate:
+                str1 = "({})[{}]".format(xpath, index)
+            else:
+                str1 = "{}[{}]".format(xpath, index)
         return str1
 
     @classmethod
@@ -307,18 +315,19 @@ class Xpath:
         return str1
 
     @classmethod
-    def get_xpath_format_to_input_type(self, mappings:dict, key:typing.Any):
+    def get_xpath_format_to_input_type(self, mappings:dict, key:typing.Any) -> str:
         """Returns appropriate xpath based on type of input.
         NB: Python may turns key 'typ' into a string (dict constructor). 
         Key is reverted to type with pydoc if needed.
         """
         for typ_str, xpath_to_format in mappings.items():
-            # Ensure 'type' is a type(i.e. str, int, float, etc.)
+            # Ensure 'type' is a type(i.e. str, int, float, etc.) and not a str itself
             typ = pydoc.locate(typ_str) if isinstance(typ_str, str) else typ_str
             if isinstance(key, typ):
                 xpath = xpath_to_format.format(key)
                 return xpath
         else:
+            # Raise error
             types = tuple(mappings.keys())
             types_str = ', '.join(types)
             raise AttributeError("Key not of proper format({}).".format(types_str))
@@ -523,29 +532,27 @@ class Selenium:
         dropdown_option_element = self.find_element(xpath_dropdown_option)
         dropdown_option_element.click()
 
-    def answer_radiogroups_element(self, question_key:'int|str', container_answers:'Sequence|Mapping'):
+    def answer_radiogroups_element(self, question_key:'int|str', container_of_answers:'Sequence|Mapping'):
         """Answer a group of radiogroups question.
-        answer:str"""
+        """
+        # Get basic xpath strings
         xpath_question = self.get_question_xpath(question_key)
-        # Get Header values
-        xpath_headers = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_HEADER)
-        xpath_header_spans = Xpath.descendant(xpath_headers, XPATH_SPAN)
-        header_strs = [ele.text for ele in xpath_header_spans]
-        # Get Side-Header Values
-        xpath_side_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_BY_SIDE_HEADER)
-        side_headers_elements = self.find_elements(xpath_side_header)
-        side_header_strs = list()
-        for ele in side_headers_elements:
-            span = ele.find_element_by_xpath('.'+XPATH_SPAN)
-            side_header_str = span.text
-            side_header_strs.append(side_header_str)
-        # Get Radiogroups
         xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
-        radiogroup_elements = self.find_elements(xpath_radiogroup)
-        # Set-up 'container_answers' for sequence if it is type 'Mapping'
-        if isinstance(container_answers, Mapping):
+        # Get Header string values
+        xpath_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_HEADER)
+        xpath_header_span = Xpath.descendant(xpath_header, XPATH_SPAN)
+        header_spans = self.find_elements(xpath_header_span)
+        header_strs = [ele.text for ele in header_spans]
+        # Get Side-Header string values
+        xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
+        xpath_side_header = Xpath.descendant(xpath_radiogroup, XPATH_RADIOGROUP_BY_SIDE_HEADER)
+        xpath_side_header_span = Xpath.descendant(xpath_side_header, XPATH_SPAN)
+        side_headers_spans = self.find_elements(xpath_side_header_span)
+        side_header_strs = [ele.text for ele in side_headers_spans]
+        # Convert 'container_of_answers' to a sequence of answers if it is type 'Mapping'.
+        if isinstance(container_of_answers, Mapping):
             pairs_container_answers = list()
-            for key,val in container_answers:
+            for key,val in container_of_answers:
                 # Create the pairs of radiogroup's index and its answer
                 if isinstance(key, int):
                     index = key
@@ -553,27 +560,32 @@ class Selenium:
                     indices = [side_header_str for side_header_str in side_header_strs if key in side_header_str].sort()
                     index = indices[0]
                 pairs_container_answers.append((index, val))
-        elif isinstance(container_answers, Sequence):
-            pairs_container_answers = enumerate(container_answers)
-        # Now, Iterate through the radiogroup answers
-        if isinstance(container_answers, Sequence):
+        elif isinstance(container_of_answers, Sequence):
+            pairs_container_answers = enumerate(container_of_answers)
+        # Now, Iterate through the radiogroups and their answers
+        if isinstance(container_of_answers, Sequence):
             # Each element of 'Sequence' corresponds to a radiogroup in order
-            for index, option_response in pairs_container_answers:
+            for radiogroup_index, option_response in pairs_container_answers:
+                """ 'option_response' is either a str or an int.
+                int: an answer corresponding to the header value
+                str: an answer (may be imperfect) that suppose to match radio button value
+                """
                 if isinstance(option_response, int):
                     # Choose header answer by index
-                    answer = header_strs[option_response]
+                    header_answer_index = option_response
                 elif isinstance(option_response, str):
-                    # Choose header answer by string matching
-                    answersQ = [header_str for header_str in header_strs if option_response in header_str].sort()
+                    # Choose header's answer's index by string matching
+                    answersQ = [header_str for header_str in header_strs if option_response in header_str]
+                    answersQ.sort()
                     answer = answersQ[0]
+                    header_answer_index = header_strs.index(answer)
                 # Select the correct radiobutton of the radiogroup
-                radiogroup_element = radiogroup_elements[index]
-                radiobuttons = radiogroup_element.find_elements_by_xpath('.'+XPATH_RADIOBUTTON)
-                for radiobutton in radiobuttons:
-                    if radiobutton.get_attribute("aria-label") == answer:
-                        radiobutton.click()
-                else:
-                    raise AttributeError("Did not find the radio button.")
+                xpath_radiogroup_index = Xpath.xpath_index(xpath_radiogroup, radiogroup_index)
+                xpath_radiogroup_index_radiobutton = Xpath.descendant(xpath_radiogroup_index, XPATH_RADIOBUTTON)
+                radiobuttons = self.find_elements(xpath_radiogroup_index_radiobutton)
+                # Select the radio button with the answer according to index
+                answer_radiobutton = radiobuttons[header_answer_index]
+                answer_radiobutton.click()
 
     def answer_checkboxgroup_element(self):
         pass
@@ -732,6 +744,7 @@ class Selenium:
             self.answer_dropdown_element(8, 'None')
             # Select Damage or Stains (DS)
             self.answer_radiogroups_element(9, ANS_RADIOGROUPS_DEFAULT)
+            print(1)
 
 
 

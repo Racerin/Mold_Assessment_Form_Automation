@@ -524,21 +524,56 @@ class Selenium:
         dropdown_option_element.click()
 
     def answer_radiogroups_element(self, question_key:'int|str', container_answers:'Sequence|Mapping'):
-        """Answer a group of radiogroups question."""
+        """Answer a group of radiogroups question.
+        answer:str"""
         xpath_question = self.get_question_xpath(question_key)
         # Get Header values
-        xpath_header_sub = Xpath.xpath_index(XPATH_RADIOGROUP_HEADER, )
-        xpath_header_sub = XPATH_RADIOGROUP_HEADER
-        xpath_headers = Xpath.descendant(xpath_question, xpath_header_sub)
-        headers_elements = self.find_elements(xpath_headers)
-        headers_str = [ele.text for ele in headers_elements]
-        # Get Side-Header Values
+        xpath_headers = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_HEADER)
         xpath_header_spans = Xpath.descendant(xpath_headers, XPATH_SPAN)
+        header_strs = [ele.text for ele in xpath_header_spans]
+        # Get Side-Header Values
         xpath_side_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_BY_SIDE_HEADER)
+        side_headers_elements = self.find_elements(xpath_side_header)
+        side_header_strs = list()
+        for ele in side_headers_elements:
+            span = ele.find_element_by_xpath('.'+XPATH_SPAN)
+            side_header_str = span.text
+            side_header_strs.append(side_header_str)
+        # Get Radiogroups
+        xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
+        radiogroup_elements = self.find_elements(xpath_radiogroup)
+        # Set-up 'container_answers' for sequence if it is type 'Mapping'
+        if isinstance(container_answers, Mapping):
+            pairs_container_answers = list()
+            for key,val in container_answers:
+                # Create the pairs of radiogroup's index and its answer
+                if isinstance(key, int):
+                    index = key
+                elif isinstance(key, str):
+                    indices = [side_header_str for side_header_str in side_header_strs if key in side_header_str].sort()
+                    index = indices[0]
+                pairs_container_answers.append((index, val))
+        elif isinstance(container_answers, Sequence):
+            pairs_container_answers = enumerate(container_answers)
+        # Now, Iterate through the radiogroup answers
         if isinstance(container_answers, Sequence):
-            pass
-        elif isinstance(container_answers, Mapping):
-            pass
+            # Each element of 'Sequence' corresponds to a radiogroup in order
+            for index, option_response in pairs_container_answers:
+                if isinstance(option_response, int):
+                    # Choose header answer by index
+                    answer = header_strs[option_response]
+                elif isinstance(option_response, str):
+                    # Choose header answer by string matching
+                    answersQ = [header_str for header_str in header_strs if option_response in header_str].sort()
+                    answer = answersQ[0]
+                # Select the correct radiobutton of the radiogroup
+                radiogroup_element = radiogroup_elements[index]
+                radiobuttons = radiogroup_element.find_elements_by_xpath('.'+XPATH_RADIOBUTTON)
+                for radiobutton in radiobuttons:
+                    if radiobutton.get_attribute("aria-label") == answer:
+                        radiobutton.click()
+                else:
+                    raise AttributeError("Did not find the radio button.")
 
     def answer_checkboxgroup_element(self):
         pass

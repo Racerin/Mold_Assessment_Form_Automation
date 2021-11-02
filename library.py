@@ -634,10 +634,10 @@ class Selenium:
         # Set checkbox according 
         for checkbox_index, bool_answer in checkbox_answer_pairs:
             # Ignore checkbox is an option
-            if isinstance(bool_answer, None):
+            if bool_answer is None:
                 continue
             else:
-                checkbox = checkboxes[checkbox]
+                checkbox = checkboxes[checkbox_index - 1]
                 # Make sure checkbox is active if answer is True
                 if checkbox.is_selected() and bool_answer:
                     # Leave as is, checkbox is already activated
@@ -808,6 +808,10 @@ class Selenium:
             self.answer_radiogroups_element(9, ANS_RADIOGROUPS_DEFAULT)
             # Select DS within range of external walls
             self.answer_checkboxgroup_element(10, ANS_CHECKBOXES_DEFAULT)
+            # Select Visible Mold (VM)
+            self.answer_radiogroups_element(11, ANS_RADIOGROUPS_DEFAULT)
+            # Select VM within range of external walls
+            self.answer_checkboxgroup_element(12, ANS_CHECKBOXES_DEFAULT)
             print(1)
 
 

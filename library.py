@@ -587,8 +587,52 @@ class Selenium:
                 answer_radiobutton = radiobuttons[header_answer_index]
                 answer_radiobutton.click()
 
-    def answer_checkboxgroup_element(self):
-        pass
+    def answer_checkboxgroup_element(self, question_key:'int|str', container_of_answers:'Sequence|Mapping'):
+        """Answer a group of checkboxes.
+        Reminiscent of 'answer_radiogroups_element'.
+        """
+        # Get basic xpath strings
+        xpath_question = self.get_question_xpath(question_key)
+        # Get Checkbox values
+        xpath_checkbox_input = Xpath.descendant(xpath_question, XPATH_CHECKBOX)
+        checkboxes = self.find_elements(xpath_checkbox_input)
+        checkbox_label_strs = [checkbox.get_attribute('value') for checkbox in checkboxes]
+        # Convert 'container_of_answers' to a sequence of pairs
+        if isinstance(container_of_answers, Mapping):
+            checkbox_answer_pairs = list()
+            for label_str, ans in container_of_answers.items():
+                # Get index of checkbox by string matching
+                checkboxes_label_matched = [cb_l for cb_l in checkbox_label_strs if label_str in cb_l]
+                checkboxes_label_matched.sort()
+                checkbox_index = checkboxes_label_matched[0]
+                """Turn the answer to a bool, EXCEPT if it's 'None'. 
+                'None' is used to ignore checkbox."""
+                answer = bool(ans) if ans is not None else None
+                # Add to paired sequence
+                tup = (checkbox_index, answer, )
+                checkbox_answer_pairs.append(tup)
+        elif isinstance(container_of_answers, Sequence):
+            checkbox_answer_pairs = enumerate(container_of_answers)
+        # Set checkbox according 
+        for checkbox_index, bool_answer in checkbox_answer_pairs:
+            # Ignore checkbox is an option
+            if isinstance(bool_answer, None):
+                continue
+            else:
+                checkbox = checkboxes[checkbox]
+                # Make sure checkbox is active if answer is True
+                if checkbox.is_selected() and bool_answer:
+                    # Leave as is, checkbox is already activated
+                    pass
+                elif checkbox.is_selected() and not bool_answer:
+                    # Deactivate checkbox
+                    checkbox.click()
+                elif not checkbox.is_selected() and bool_answer:
+                    # Activate checkbox
+                    checkbox.click()
+                elif not checkbox.is_selected() and not bool_answer:
+                    # Leave as is, checkbox is already deactivated
+                    pass
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
@@ -744,6 +788,7 @@ class Selenium:
             self.answer_dropdown_element(8, 'None')
             # Select Damage or Stains (DS)
             self.answer_radiogroups_element(9, ANS_RADIOGROUPS_DEFAULT)
+            # 
             print(1)
 
 

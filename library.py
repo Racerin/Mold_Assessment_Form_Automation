@@ -598,21 +598,39 @@ class Selenium:
         checkboxes = self.find_elements(xpath_checkbox_input)
         checkbox_label_strs = [checkbox.get_attribute('value') for checkbox in checkboxes]
         # Convert 'container_of_answers' to a sequence of pairs
+        checkbox_answer_pairs = list()
         if isinstance(container_of_answers, Mapping):
-            checkbox_answer_pairs = list()
-            for label_str, ans in container_of_answers.items():
+            for label_str, answer in container_of_answers.items():
                 # Get index of checkbox by string matching
                 checkboxes_label_matched = [cb_l for cb_l in checkbox_label_strs if label_str in cb_l]
                 checkboxes_label_matched.sort()
-                checkbox_index = checkboxes_label_matched[0]
+                best_checkbox_label = checkboxes_label_matched[0]
+                checkbox_index = checkbox_label_strs.index(best_checkbox_label)
                 """Turn the answer to a bool, EXCEPT if it's 'None'. 
                 'None' is used to ignore checkbox."""
-                answer = bool(ans) if ans is not None else None
+                bool_answer = bool(answer) if answer is not None else None
                 # Add to paired sequence
-                tup = (checkbox_index, answer, )
+                tup = checkbox_index, bool_answer
                 checkbox_answer_pairs.append(tup)
         elif isinstance(container_of_answers, Sequence):
-            checkbox_answer_pairs = enumerate(container_of_answers)
+            for answer in container_of_answers:
+                if isinstance(answer, int):
+                    # Return index of checkbox with answer True
+                    tup = answer, True
+                    checkbox_answer_pairs.append(tup)
+                elif isinstance(answer, str):
+                    # Convert the label to index then do as above
+                    # Each ele of sequence is a label string. Therefore label will correspond to True
+                    matched_labels = [cb_l for cb_l in checkbox_label_strs if answer in cb_l]
+                    matched_labels.sort()
+                    best_checkbox_label = matched_labels[0]
+                    checkbox_index = checkbox_label_strs.index(best_checkbox_label)
+                    """Turn the answer to a bool, EXCEPT if it's 'None'. 
+                    'None' is used to ignore checkbox."""
+                    bool_answer = bool(answer) if answer is not None else None
+                    # Add to paired sequence
+                    tup = (checkbox_index, bool_answer, )
+                    checkbox_answer_pairs.append(tup)
         # Set checkbox according 
         for checkbox_index, bool_answer in checkbox_answer_pairs:
             # Ignore checkbox is an option
@@ -788,7 +806,8 @@ class Selenium:
             self.answer_dropdown_element(8, 'None')
             # Select Damage or Stains (DS)
             self.answer_radiogroups_element(9, ANS_RADIOGROUPS_DEFAULT)
-            # 
+            # Select DS within range of external walls
+            self.answer_checkboxgroup_element(10, ANS_CHECKBOXES_DEFAULT)
             print(1)
 
 

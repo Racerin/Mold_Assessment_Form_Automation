@@ -206,6 +206,9 @@ class Inputs:
     other_arguments = list()
     other_actions = list()
 
+    mold_odor_id = None
+    mold_odor_desc : str = ""
+
     damage_or_stains = [4] * 8
     damage_or_stains_exterior = {-1:True, }
     visible_mold = [4] * 8
@@ -262,10 +265,14 @@ class Inputs:
         return ans_list
 
     @classmethod
-    def set_user_input(cls, row:list):
+    def set_user_input(cls, row:list, **kwargs):
         """Assign arguments to/in Inputs"""
         # Assign variables
-        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, *cls.other_arguments = row
+        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, cls.mold_odor_id, *cls.other_arguments = row
+        cls_dir = dir(cls)
+        for k,v in kwargs:
+            if k in cls_dir:
+                setattr(cls, k, v)
         # Create object parsers of other_arguments
         cls.parse_other_arguments()
 
@@ -516,6 +523,13 @@ class Selenium:
         """Answer a text input question."""
         xpath_question = self.get_question_xpath(question_key)
         xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT)
+        element_input = self.find_element(xpath_input)
+        element_input.send_keys(input_answer)
+
+    def answer_textarea_element(self, question_key:'int|str', input_answer:str):
+        """Answer a textarea question."""
+        xpath_question = self.get_question_xpath(question_key)
+        xpath_input = Xpath.descendant(xpath_question, XPATH_TEXTAREA)
         element_input = self.find_element(xpath_input)
         element_input.send_keys(input_answer)
 
@@ -812,6 +826,18 @@ class Selenium:
             self.answer_radiogroups_element(11, ANS_RADIOGROUPS_DEFAULT)
             # Select VM within range of external walls
             self.answer_checkboxgroup_element(12, ANS_CHECKBOXES_DEFAULT)
+            # Select Wet or Damp(WD)
+            self.answer_radiogroups_element(13, ANS_RADIOGROUPS_DEFAULT)
+            # Select WD within range of external walls
+            self.answer_checkboxgroup_element(14, ANS_CHECKBOXES_DEFAULT)
+            # NOW, ANSWER Mold Odor Option
+            self.answer_dropdown_element(8, Inputs.mold_odor_id)
+            if Inputs.mold_odor_id != 0:    # 'None' option
+                # Input any text for mold odor description if any mold smell
+                self.answer_textarea_element(9, Inputs.mold_odor_desc)
+            # Go to next page
+            self.find_element(XPATH_NEXT_BUTTON).click()
+            # NEXT PAGE
             print(1)
 
 

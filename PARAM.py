@@ -105,6 +105,7 @@ XPATH_RADIOGROUP_BY_SIDE_HEADER = 'div[@class="office-form-matrix-cell"]'
 XPATH_RADIOGROUP_HEADER_TEXT = ''
 XPATH_CHECKBOX = '//input[@type="checkbox"]'
 XPATH_CHECKBOX_LABEL = '//div[@class="checkbox"]/label'
+XPATH_NEXT_BUTTON = '//button[@role="button"]/div[text()="Next"]'
 
 
 BUILDINGS = {

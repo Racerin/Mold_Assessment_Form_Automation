@@ -223,7 +223,7 @@ class Inputs:
     furnishing_materials = ANS_RADIOGROUP_DEFAULT
     hvac_materials = ANS_RADIOGROUP_DEFAULT
     supplies_and_materials = ANS_RADIOGROUP_DEFAULT
-    supplies_and_materials_desc : list = list()
+    supplies_and_materials_desc : dict = dict()
     additional_comments : str = ""
 
     @classmethod
@@ -695,6 +695,24 @@ class Selenium:
         best_match_index = radiobutton_label_strs.index(best_match)
         radiobutton = input_radiobutton_elements[best_match_index]
         radiobutton.click()
+
+    def answer_checkboxgroup_other_element(self, question_key:'int|str', answers:dict):
+        """Answer a group of checkboxes with an optional 'other'.
+        Select checkboxes and fill-out 'other' based on 'dict' answer.
+        """
+        # Get basic xpath strings
+        xpath_question = self.get_question_xpath(question_key)
+        xpath_other_input = Xpath.descendant(xpath_question, XPATH_INPUT_PLACEHOLDER_INPUT.format("Other"))
+        # Get Others
+        other = answers.pop('other')
+        # Deal with checkboxes xpaths selection
+        discrete_answers = answers.copy()
+        if other:
+            discrete_answers.update({"Other":True})
+        self.answer_checkboxgroup_element(question_key, discrete_answers)
+        # Now, fill-out others
+        other_element = self.find_element(xpath_other_input)
+        other_element.send_keys(other)
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""

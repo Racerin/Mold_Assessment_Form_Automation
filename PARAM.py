@@ -87,6 +87,7 @@ XPATH_QUESTION_ELEMENT = '//*[@class="office-form-question-element"]'
 XPATH_QUESTION_CONTENT = '//*[@class="office-form-question-content"]'
 XPATH_SPAN = '//span'
 XPATH_INPUT = '//input'
+XPATH_INPUT_PLACEHOLDER_INPUT = '//input[@placeholder="{}"]'
 XPATH_TEXTINPUT = XPATH_INPUT
 # XPATH_DROPDOWN = '//span[contains(@class,"text-format-content")|contains(@class, "default")]'
 XPATH_DROPDOWN = '//span[contains(@class, "select-placeholder-text")]'

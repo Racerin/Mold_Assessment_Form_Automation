@@ -9,7 +9,7 @@ from random import randrange
 from library import *
 
 
-def randstr(length):
+def randstr(length=randrange(1,20)):
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
@@ -25,7 +25,8 @@ class TestInputs(unittest.TestCase):
         """Set values for input to test with."""
         row = get_rand_str(), randrange(1, 5), randrange(1, 3), randrange(1, 3), randrange(0,4)
         kwa = {
-            'mold_odor_desc':randstr,
+            'mold_odor_desc':randstr(20),
+            'supplies_and_materials_desc':["Lunch kit", 'box', 0],
             }
         Inputs.set_user_input(row, **kwa)
 

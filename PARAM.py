@@ -74,7 +74,9 @@ RE_TRAILING_DASH = r'^/+'
 # Selenium Answers
 ANS_RADIOGROUPS_DEFAULT = ['N/A'] * 8
 ANS_CHECKBOXES_DEFAULT = [11]
-ANS_RADIOGROUP_DEFAULT = ['N/A']
+ANS_RADIOGROUP_DEFAULT = 'N/A'
+ANS_CHECKBOX2_DEFAULT = ['N/A']
+ANS_CHECKBOX_OTHER_DEFAULT = []
 
 
 #XPaths
@@ -108,6 +110,7 @@ XPATH_RADIOGROUP_HEADER_TEXT = ''
 XPATH_CHECKBOX = '//input[@type="checkbox"]'
 XPATH_CHECKBOX_LABEL = '//div[@class="checkbox"]/label'
 XPATH_NEXT_BUTTON = '//button[@role="button"]/div[text()="Next"]'
+XPATH_SUBMIT_BUTTON = '//button[@role="button"]/div[text()="Submit"]'
 
 
 BUILDINGS = {

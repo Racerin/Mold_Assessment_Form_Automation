@@ -222,8 +222,8 @@ class Inputs:
     windows_materials = ANS_RADIOGROUP_DEFAULT
     furnishing_materials = ANS_RADIOGROUP_DEFAULT
     hvac_materials = ANS_RADIOGROUP_DEFAULT
-    supplies_and_materials = ANS_RADIOGROUP_DEFAULT
-    supplies_and_materials_desc : dict = dict()
+    supplies_and_materials = ANS_CHECKBOX2_DEFAULT
+    supplies_and_materials_desc = ANS_CHECKBOX_OTHER_DEFAULT
     additional_comments : str = ""
 
     @classmethod
@@ -280,7 +280,7 @@ class Inputs:
         # Assign variables
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, cls.mold_odor_id, *cls.other_arguments = row
         cls_dir = dir(cls)
-        for k,v in kwargs:
+        for k,v in kwargs.items():
             if k in cls_dir:
                 setattr(cls, k, v)
         # Create object parsers of other_arguments
@@ -529,18 +529,22 @@ class Selenium:
         xpath_dropdown_option = Xpath.get_xpath_format_to_input_type(mappings=mappings, key=option_key)
         return xpath_dropdown_option
 
-    def answer_text_element(self, question_key:'int|str', input_answer:str):
+    def answer_text_element(self, question_key:'int|str', input_answer:str, clear:bool=True):
         """Answer a text input question."""
         xpath_question = self.get_question_xpath(question_key)
         xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT)
         element_input = self.find_element(xpath_input)
+        if clear:
+            element_input.clear()
         element_input.send_keys(input_answer)
 
-    def answer_textarea_element(self, question_key:'int|str', input_answer:str):
+    def answer_textarea_element(self, question_key:'int|str', input_answer:str, clear:bool=True):
         """Answer a textarea question."""
         xpath_question = self.get_question_xpath(question_key)
         xpath_input = Xpath.descendant(xpath_question, XPATH_TEXTAREA)
         element_input = self.find_element(xpath_input)
+        if clear:
+            element_input.clear()
         element_input.send_keys(input_answer)
 
     def answer_dropdown_element(self, question_key:'int|str', option_answer:'int|str'):
@@ -566,6 +570,7 @@ class Selenium:
         xpath_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_HEADER)
         xpath_header_span = Xpath.descendant(xpath_header, XPATH_SPAN)
         header_spans = self.find_elements(xpath_header_span)
+        assert len(header_spans) > 0, xpath_header_span
         header_strs = [ele.text for ele in header_spans]
         # Get Side-Header string values
         xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
@@ -601,6 +606,7 @@ class Selenium:
                     # Choose header's answer's index by string matching
                     answersQ = [header_str for header_str in header_strs if option_response in header_str]
                     answersQ.sort()
+                    assert len(answersQ) > 0, (header_strs, option_response)
                     answer = answersQ[0]
                     header_answer_index = header_strs.index(answer)
                 # Select the correct radiobutton of the radiogroup
@@ -687,32 +693,64 @@ class Selenium:
         xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
         xpath_radio_input = Xpath.descendant(xpath_radiogroup, XPATH_INPUT)
         input_radiobutton_elements = self.find_elements(xpath_radio_input)
+        assert len(input_radiobutton_elements) > 0, xpath_radio_input
         radiobutton_label_strs = [ele.get_attribute("value") for ele in input_radiobutton_elements]
         # Now, match strings and choose best match as radiobutton
-        best_matches = [l_str for l_str in radiobutton_label_strs if answer.lower() in l_str.lower()]
-        best_matches.sort()
+        best_matches = [lbl_str for lbl_str in radiobutton_label_strs if answer.lower() in lbl_str.lower()]
+        best_matches.sort() # Choose the smallest that matched
+        assert len(best_matches) > 0, (answer, radiobutton_label_strs)
         best_match = best_matches[0]
         best_match_index = radiobutton_label_strs.index(best_match)
         radiobutton = input_radiobutton_elements[best_match_index]
         radiobutton.click()
 
-    def answer_checkboxgroup_other_element(self, question_key:'int|str', answers:dict):
+    def answer_checkboxgroup_other_element(self, question_key:'int|str', answers:Sequence, clear:bool=True):
         """Answer a group of checkboxes with an optional 'other'.
-        Select checkboxes and fill-out 'other' based on 'dict' answer.
+        Select checkboxes and fill-out 'other' based on type and content of answer of 'answers'.
         """
+        # Setup variables
+        others = []
+        answers_indices = list()
         # Get basic xpath strings
         xpath_question = self.get_question_xpath(question_key)
+        xpath_checkbox_input = Xpath.descendant(xpath_question, XPATH_CHECKBOX)
         xpath_other_input = Xpath.descendant(xpath_question, XPATH_INPUT_PLACEHOLDER_INPUT.format("Other"))
-        # Get Others
-        other = answers.pop('other')
-        # Deal with checkboxes xpaths selection
-        discrete_answers = answers.copy()
-        if other:
-            discrete_answers.update({"Other":True})
-        self.answer_checkboxgroup_element(question_key, discrete_answers)
-        # Now, fill-out others
+        checkbox_elements = self.find_elements(xpath_checkbox_input)
+        label_strs = [ele.get_attribute('value') for ele in checkbox_elements]
+        for ans in answers:
+            if isinstance(ans, int):
+                # Select checkbox of appropriate index
+                pass
+            elif isinstance(ans, str):
+                # Select checkbox if 'ans' matches label, else put it for others
+                best_matches = [lbl_str for lbl_str in label_strs if ans.lower() in lbl_str.lower()]
+                n_best_matches = len(best_matches)
+                if n_best_matches > 0:
+                    # Set the checkbox as active
+                    best_matches.sort() # Choose the smallest that matched
+                    best_match = best_matches[0]
+                    best_match_index = label_strs.index(best_match)
+                    answers_indices.append(best_match_index)
+                    # If checkbox already selected, add answer to 'other' list
+                    checkbox = checkbox_elements[best_match_index]
+                    if checkbox.is_selected():
+                        others.append(ans)
+                else:
+                    # Just add to others
+                    others.append(ans)
+        # Now, Activate checkbox that have answers
+        for index in answers_indices:
+            checkbox = checkbox_elements[index]
+            if checkbox.is_selected():
+                pass
+            else:
+                checkbox.click()
+        # Now, Input string to 'other' element textinput
         other_element = self.find_element(xpath_other_input)
-        other_element.send_keys(other)
+        other_str = ','.join(others)
+        if clear:
+            other_element.clear()
+        other_element.send_keys(other_str)
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
@@ -865,7 +903,7 @@ class Selenium:
             self.answer_text_element(6, Inputs.room_name)
             # Enter Room/Area Type
             self.answer_dropdown_element(7, Inputs.room_type_id)
-            # Mold Odor, default to None for now
+            # Mold Odor, set as 'None' for now in order to progress to the next question
             self.answer_dropdown_element(8, 'None')
             # Select Damage or Stains (DS)
             self.answer_radiogroups_element(9, Inputs.damage_or_stains)
@@ -879,15 +917,17 @@ class Selenium:
             self.answer_radiogroups_element(13, Inputs.wet_or_damp)
             # Select WD within range of external walls
             self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior)
-            # NOW, ANSWER Mold Odor Option
-            self.answer_dropdown_element(8, Inputs.mold_odor_id)
-            if Inputs.mold_odor_id != 0:    # 'None' option
-                # Input any text for mold odor description if any mold smell
+            # NOW, answer Mold Odor Option
+            mold_odor = MOLD_ODOR[Inputs.mold_odor_id]
+            self.answer_dropdown_element(8, mold_odor)
+            # If any answer other than 'None' a new question with textarea pops-up right after
+            if Inputs.mold_odor_id != 0:
                 self.answer_textarea_element(9, Inputs.mold_odor_desc)
+            # Click 'Next' Button
+            next_button = self.find_element(XPATH_NEXT_BUTTON)
             if yield_:
                 yield PAUSE.BEFORE_NEXT_PAGE
-            # Click 'Next' Button
-            self.find_element(XPATH_NEXT_BUTTON).click()
+            next_button.click()
             # NEXT PAGE
             if yield_:
                 yield PAUSE.NEXT_PAGE
@@ -905,12 +945,22 @@ class Selenium:
             # HVAC System affected
             self.ans_radiogroup_element(6, Inputs.hvac_materials)
             # Supplies and Materials affected
-            self.ans_radiogroup_element(7, Inputs.supplies_and_materials)
+            self.answer_checkboxgroup_element(7, Inputs.supplies_and_materials)
             # Supplies and Materials Description (Checkbox options with other)
             self.answer_checkboxgroup_other_element(8, Inputs.supplies_and_materials_desc)
             # Additional comments
             self.answer_textarea_element(9, Inputs.additional_comments)
-            print(1)
+            submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
+            if yield_:
+                yield PAUSE.BEFORE_NEXT_PAGE
+            return
+            submit_button.click()
+            # NEXT PAGE
+            if yield_:
+                yield PAUSE.NEXT_PAGE
+                yield PAUSE.PAGE_THREE
+                # Do another form
+                yield PAUSE.BEFORE_NEXT_PAGE
 
 
 @dataclasses.dataclass

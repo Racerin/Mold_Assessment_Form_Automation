@@ -209,12 +209,22 @@ class Inputs:
     mold_odor_id = None
     mold_odor_desc : str = ""
 
-    damage_or_stains = [4] * 8
-    damage_or_stains_exterior = {-1:True, }
-    visible_mold = [4] * 8
-    visible_mold_exterior = {-1:True, }
-    wet_or_damp = [4] * 8
-    wet_or_damp_exterior = {-1: True, }
+    damage_or_stains = ANS_RADIOGROUPS_DEFAULT
+    damage_or_stains_exterior = ANS_CHECKBOXES_DEFAULT
+    visible_mold = ANS_RADIOGROUPS_DEFAULT
+    visible_mold_exterior = ANS_CHECKBOXES_DEFAULT
+    wet_or_damp = ANS_RADIOGROUPS_DEFAULT
+    wet_or_damp_exterior = ANS_CHECKBOXES_DEFAULT
+
+    ceiling_materials = ANS_RADIOGROUP_DEFAULT
+    wall_materials = ANS_RADIOGROUP_DEFAULT
+    floor_materials = ANS_RADIOGROUP_DEFAULT
+    windows_materials = ANS_RADIOGROUP_DEFAULT
+    furnishing_materials = ANS_RADIOGROUP_DEFAULT
+    hvac_materials = ANS_RADIOGROUP_DEFAULT
+    supplies_and_materials = ANS_RADIOGROUP_DEFAULT
+    supplies_and_materials_desc : list = list()
+    additional_comments : str = ""
 
     @classmethod
     def user_input_prompt(cls):
@@ -607,7 +617,7 @@ class Selenium:
         """
         # Get basic xpath strings
         xpath_question = self.get_question_xpath(question_key)
-        # Get Checkbox values
+        # Get checkbox labels
         xpath_checkbox_input = Xpath.descendant(xpath_question, XPATH_CHECKBOX)
         checkboxes = self.find_elements(xpath_checkbox_input)
         checkbox_label_strs = [checkbox.get_attribute('value') for checkbox in checkboxes]
@@ -665,6 +675,26 @@ class Selenium:
                 elif not checkbox.is_selected() and not bool_answer:
                     # Leave as is, checkbox is already deactivated
                     pass
+
+    def ans_radiogroup_element(self, question_key:'int|str', answer:str):
+        """Answer a group of radiobuttons.
+        NOT to be confused with 'answer_radiogroups_element' (shorten and w/o an 's').
+        Reminiscent of 'answer_checkboxgroup_element'.
+        """
+        # Get basic xpath strings
+        xpath_question = self.get_question_xpath(question_key)
+        # Get radiobutton labels
+        xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
+        xpath_radio_input = Xpath.descendant(xpath_radiogroup, XPATH_INPUT)
+        input_radiobutton_elements = self.find_elements(xpath_radio_input)
+        radiobutton_label_strs = [ele.get_attribute("value") for ele in input_radiobutton_elements]
+        # Now, match strings and choose best match as radiobutton
+        best_matches = [l_str for l_str in radiobutton_label_strs if answer.lower() in l_str.lower()]
+        best_matches.sort()
+        best_match = best_matches[0]
+        best_match_index = radiobutton_label_strs.index(best_match)
+        radiobutton = input_radiobutton_elements[best_match_index]
+        radiobutton.click()
 
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
@@ -799,6 +829,7 @@ class Selenium:
             self.driver.get(website_url)
             if yield_:
                 yield PAUSE.START
+                yield PAUSE.PAGE_ONE
                 time.sleep(1)
             # Enter Date
             self.answer_text_element(1, Inputs.date)
@@ -819,28 +850,49 @@ class Selenium:
             # Mold Odor, default to None for now
             self.answer_dropdown_element(8, 'None')
             # Select Damage or Stains (DS)
-            self.answer_radiogroups_element(9, ANS_RADIOGROUPS_DEFAULT)
+            self.answer_radiogroups_element(9, Inputs.damage_or_stains)
             # Select DS within range of external walls
-            self.answer_checkboxgroup_element(10, ANS_CHECKBOXES_DEFAULT)
+            self.answer_checkboxgroup_element(10, Inputs.damage_or_stains_exterior)
             # Select Visible Mold (VM)
-            self.answer_radiogroups_element(11, ANS_RADIOGROUPS_DEFAULT)
+            self.answer_radiogroups_element(11, Inputs.visible_mold)
             # Select VM within range of external walls
-            self.answer_checkboxgroup_element(12, ANS_CHECKBOXES_DEFAULT)
+            self.answer_checkboxgroup_element(12, Inputs.visible_mold_exterior)
             # Select Wet or Damp(WD)
-            self.answer_radiogroups_element(13, ANS_RADIOGROUPS_DEFAULT)
+            self.answer_radiogroups_element(13, Inputs.wet_or_damp)
             # Select WD within range of external walls
-            self.answer_checkboxgroup_element(14, ANS_CHECKBOXES_DEFAULT)
+            self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior)
             # NOW, ANSWER Mold Odor Option
             self.answer_dropdown_element(8, Inputs.mold_odor_id)
             if Inputs.mold_odor_id != 0:    # 'None' option
                 # Input any text for mold odor description if any mold smell
                 self.answer_textarea_element(9, Inputs.mold_odor_desc)
-            # Go to next page
+            if yield_:
+                yield PAUSE.BEFORE_NEXT_PAGE
+            # Click 'Next' Button
             self.find_element(XPATH_NEXT_BUTTON).click()
             # NEXT PAGE
+            if yield_:
+                yield PAUSE.NEXT_PAGE
+                yield PAUSE.PAGE_TWO
+            # Ceiling materials affected
+            self.ans_radiogroup_element(1, Inputs.ceiling_materials)
+            # Wall materials affected
+            self.ans_radiogroup_element(2, Inputs.wall_materials)
+            # Floor materials affected
+            self.ans_radiogroup_element(3, Inputs.floor_materials)
+            # Windows type affected
+            self.ans_radiogroup_element(4, Inputs.windows_materials)
+            # Furnishings affected
+            self.ans_radiogroup_element(5, Inputs.furnishing_materials)
+            # HVAC System affected
+            self.ans_radiogroup_element(6, Inputs.hvac_materials)
+            # Supplies and Materials affected
+            self.ans_radiogroup_element(7, Inputs.supplies_and_materials)
+            # Supplies and Materials Description (Checkbox options with other)
+            self.answer_checkboxgroup_other_element(8, Inputs.supplies_and_materials_desc)
+            # Additional comments
+            self.answer_textarea_element(9, Inputs.additional_comments)
             print(1)
-
-
 
 
 @dataclasses.dataclass

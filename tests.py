@@ -69,8 +69,8 @@ class TestSelenium(unittest.TestCase):
         obj = Selenium()
         TestInputs.set_test_values()
         runner = Runner(
-            sleep_time=20,
-            sleep_pauses=[PAUSE.BEFORE_NEXT_PAGE,]
+            sleep_time=1,
+            sleep_pauses={PAUSE.BEFORE_NEXT_PAGE:None, },
         )
         runner.run(obj)
 

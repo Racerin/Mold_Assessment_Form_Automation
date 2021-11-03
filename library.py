@@ -1,4 +1,5 @@
 import datetime
+import logging
 from os import remove
 import time
 import dataclasses
@@ -953,7 +954,8 @@ class Selenium:
             submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
             if yield_:
                 yield PAUSE.BEFORE_NEXT_PAGE
-            return
+                yield PAUSE.SUBMIT
+                print("Not suppose to reach here.")
             submit_button.click()
             # NEXT PAGE
             if yield_:
@@ -971,6 +973,8 @@ class Runner:
     submit : bool = False
     
     continue_it_pauses : list = dataclasses.field(default_factory=list)
+    # return_pauses : list = dataclasses.field(default_factory=[PAUSE.SUBMIT])
+    return_pauses = [PAUSE.SUBMIT]
     sleep_pauses : dict = dataclasses.field(default_factory=dict)
     keyboard_pauses : dict = dataclasses.field(default_factory=dict)
 
@@ -981,14 +985,18 @@ class Runner:
         if pause_type in self.continue_it_pauses:
             return
         elif pause_type in self.sleep_pauses:
-            duration = self.sleep_pauses[pause_type]
+            duration = self.sleep_pauses.get(pause_type, self.sleep_time)
             if isinstance(duration, (int,float)):
                 time.sleep(duration)
             else:
                 time.sleep(self.sleep_time)
+        elif pause_type in self.return_pauses:
+            """Quit generator
+            Check 'run' method for better understanding
+            """
+            # pass
         elif pause_type in self.keyboard_pauses:
             key = self.keyboard_pauses[pause_type]
-            # TO BE CONTINUED
 
     def main_instruction_args(self) -> dict:
         """Returns args to apss into 'main_instruction' of 'Selenium'."""
@@ -997,5 +1005,7 @@ class Runner:
     
     def run(self, selenium:Selenium):
         """Run 'Selenium' object according to config."""
-        for yielded in selenium.main_instructions(*self.main_instruction_args()):
+        for yielded in selenium.main_instructions(**self.main_instruction_args()):
             self.pause_handle(yielded)
+            # Return pause
+            if yielded in self.return_pauses: break

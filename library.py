@@ -55,6 +55,40 @@ def best_of_dict(dict1:dict, key:typing.Any):
             # Levenshtein Distance
             # TO BE DONE
 
+def load_tsv_file(filename, ignore_header_regex:str=None):
+    """Extract row information from a tsv file.
+    ignore_header_regex : A regular expression string to ignore the 1st header
+    string if it matches.
+    """
+    ans_list = list()
+    with open(filename, mode="r") as fd:
+        rd = csv.reader(fd, delimiter='\t')
+        for i, row in enumerate(rd):
+            if i==0 and ignore_header_regex is not None:
+                # Ignore the first row if its 1st element matches regular expression
+                first_header = row[0]
+                if re.search(ignore_header_regex, first_header):
+                    continue
+            ans_list.append(row)
+    return ans_list
+
+def save_tsv_file(filename, rows:Sequence):
+    """Save rows of a sequence as rows in a tsv file.
+    ans_row_strs : Sequence of strings that need be be joined to create last str.
+    ans_str : string to save into tsv file.
+    """
+    with open(filename, mode='w+') as fd:
+        ans_row_strs = list()
+        for row in rows:
+            # Convert each row to a str.
+            if isinstance(row, Sequence):
+                # Row data is separated by tabs.
+                row_str = '\t'.join(row)
+            else:
+                row_str = str(row)
+            ans_row_strs.append(row_str)
+        ans_str = '\n'.join(ans_row_strs)
+        fd.write(ans_str)
 
 
 #Configure
@@ -227,6 +261,9 @@ class Inputs:
     supplies_and_materials_desc = ANS_CHECKBOX_OTHER_DEFAULT
     additional_comments : str = ""
 
+    user_row_inputs = list()
+    completed_row_inputs = list()
+
     @classmethod
     def user_input_prompt(cls):
         """Prompt user for input data."""
@@ -244,33 +281,31 @@ class Inputs:
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
 
     @classmethod
-    def save_tsv(cls, container:'list|tuple', filename=tsv_save_file, add_header=False):
-        """Save container to tsv file."""
-        with open(filename, mode="w") as fd:
-            rd = csv.writer(fd, delimiter='\t')
-            if add_header:
-                # Adds header to top of document
-                rd.writerow(TSV_HEADER)
-            # Each element of container on a new line
-            for ele in container:
-                rd.writerow(ele)
+    def load_user_inputs(cls, extend=False) -> list:
+        """Load user input data into memory.
+        Have the option to extend value to previous values.
+        """
+        ans_list = load_tsv_file(tsv_load_file, ignore_header_regex='Room ')
+        if extend:
+            cls.user_row_inputs.extend(ans_list)
+        else:
+            cls.user_row_inputs = ans_list
 
     @classmethod
-    def load_tsv(cls, filename=tsv_load_file, ignore_header=True) -> list:
-        """Load tsv file"""
-        ans_list = list()
-        with open(filename) as fd:
-            rd = csv.reader(fd, delimiter="\t")
-            for i, row in enumerate(rd):
-                if ignore_header and i==0 and row[0].startswith("Room "): continue
-                ans_list.append(row)
-        return ans_list
+    def save_completed(cls):
+        """Saves completed rows into a file"""
+        save_tsv_file(tsv_save_file, cls.completed_row_inputs)
 
     @classmethod
-    def get_user_inputs(cls) -> 'list[tuple[4]]':
+    def load_completed(cls):
+        """Loads row files into memory"""
+        cls.completed_row_inputs = load_tsv_file(tsv_save_file)
+
+    @classmethod
+    def X_get_user_inputs(cls) -> 'list[tuple[4]]':
         """Use tsv file to load in user inputs."""
         ans_list = list()
-        for row in cls.load_tsv():
+        for row in cls.load_user_inputs():
             row_with_type = [int(str1) if str1.isdigit() else str1 for str1 in row ]
             ans_list.append(row_with_type)
         return ans_list
@@ -289,7 +324,7 @@ class Inputs:
 
     @classmethod
     def parse_other_arguments(cls):
-        """Use factory to parse arguments."""
+        """Use factory method to parse arguments."""
         cls.other_actions = list()
         for arg_str in cls.other_arguments:
             action = Action(arg_str)
@@ -884,6 +919,8 @@ class Selenium:
         elif option == 2:
             # Load webpage form
             self.driver.get(website_url)
+            # Set the zoom of the webpage
+            # self.driver.execute_script("document.body.style.zoom='80%'")
             if yield_:
                 yield PAUSE.START
                 yield PAUSE.PAGE_ONE

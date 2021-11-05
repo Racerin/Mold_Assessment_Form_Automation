@@ -42,7 +42,7 @@ class TestInputs(unittest.TestCase):
         # Save file
         Inputs.save_tsv(container, filename=filename)
         # Load file
-        loaded_container = Inputs.load_tsv(filename=filename)
+        loaded_container = Inputs.load_user_inputs(filename=filename)
         # Checks
         assert container[1] in loaded_container
         assert [str(ele) for ele in container[0]] in loaded_container

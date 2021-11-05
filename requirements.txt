@@ -2,6 +2,7 @@ async-generator==1.10
 attrs==21.2.0
 certifi==2021.10.8
 cffi==1.15.0
+click==8.0.3
 cryptography==35.0.0
 evdev==1.4.0
 h11==0.12.0

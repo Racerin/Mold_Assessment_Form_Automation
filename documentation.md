@@ -16,6 +16,7 @@ Follow the instructions below to complete the task.
 
 # Start
 
+## User
 1. Open the file 'template.xltx' in Microsoft Excel. If not found, open a new spreadsheet.
 2. In this spreadsheet, enter the information for each 'Mold Assessment' Form. Follow the following instructions to complete the task.
     * Each row represents a single form submission.
@@ -34,7 +35,21 @@ Follow the instructions below to complete the task.
             * Describe Supplies & Materials (DSM)
             * Additional Comments (EX)
         * The **content** for a given **section** can be filled out using codes shown in 'Appendix 2'.  Look at **Examples** to better understand the syntax for filling out the spreadsheet.
-3. Save the file as 'file.tsv'. If any issues, refer to the [README](https://github.com/Racerin/Mold_Assessment_Form_Automation/blob/master/README.md).
+3. Save the file as 'file.tsv'.
+4. Pass the file to admin to fill-out form.
+
+## Admin
+Follow the instructions ahead to fill-out the Microsoft Forms based on the inofrmation entered in the 'file.tsv' file.
+1. Copy the git repository [here](https://github.com/Racerin/Mold_Assessment_Form_Automation).
+2. Install Python version 3.8.10 or older.
+3. Open the command terminal and change the working directory to the copied repository is step 1.
+4. Activate the virtual environment using the following command depending on your Operating ystem:
+    * Microsoft: *Scripts/venv/bin/activate*
+    * Linux: *source venv/bin/activate*
+5. Install the python dependencies using the command terminal:  
+*'python3 -m pip install -r requirements.txt'*
+6. Change the values in the file 'config.json' to their appropriate values.
+7. Run the script: *'python3 app.py'*
 
 
 # Examples:
@@ -49,7 +64,6 @@ Follow the instructions below to complete the task.
 4. Input that the ceiling was damaged (Damage or Stain): (Under 'Others' **or** under > right of 'Others')  
 *DS:Ceiling*
 5. 
-
 
 
 # Appendix
@@ -169,4 +183,4 @@ e.g. EX(This is my additional message.)
 * '+' - Add the tag '+' to the end of the option in DS, VM, WD to state that it is within 3 feet of external wall.
 
 # Limitations
-* Under Header *Others*; VM/DS/WD, be selected once/    An option can only be selected once with respect to its component.
+* Under Header *Others* > VM/DS/WD > Only one option can be selected with respect to its component.

@@ -145,6 +145,9 @@ ROOM_TYPES = {
     5:"Store Room",
     6:"Washroom",
     7:"Conference room",
+    8:"Meeting Room",
+    9:"Changing/Locker Room",
+    10:"Electrical Room",
 }
 
 EFFECT_ZONES = {

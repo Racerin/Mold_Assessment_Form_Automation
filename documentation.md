@@ -1,47 +1,172 @@
-## Welcome
+<style type="text/css">
+    /* ol { list-style-type: upper-alpha; } */
+</style>
+# Welcome
 
 This is documentation for the 'filling-out' of the Mold assessment form.
 Follow the instructions below to complete the task.
 
 
 
-## Disclaimer
+# Disclaimer
 
 * Be very careful what information is placed in the spreadsheet. Once a form is submitted, it cannot be unsubmitted and the submission cannot be changed.
 
 
 
-## Start
+# Start
 
-1. Open a spreadsheet. It could be in excel. **Note**: This spreadsheet needs to be save as a '.tsv' file to work with the program (more about that later).
-2. Fill-out the spreadsheet according to the headers and the codes given below. Each row of the spreadsheet correponds with a form submission.
-    * Room name - Just enter a room name. A good format for readability is 'Block number, Room number, Room name'
-    * Floor ID - Put in the number corresponding to the floor selected. It is nonintuitive but please work with it:
-        * 0 : Basement
-        * 1 : Ground
-        * 2 : Floor 1
-        * 3 : Floor 2
-        * 4 : Floor 3
-        * 5 : Floor 4
-        * 6 : Floor 5
-    * Room Type ID -As with 'Floor ID', put in the number corresponding with the option.
-        * 0 : Office
-        * 1 : Classroom
-        * 2 : Kitchen
-        * 3 : Workshop
-        * 4 : Lab
-        * 5 : Store Room
-        * 6 : Washroom
-        * 7 : Conference Room
-        * 8 : Meeting Room
-        * 9 : Changing/Locker Room
-        * 10 : Electrical Room
-    * Building ID - As before, insert the number corresponding with the region.
-        * 0 : Geomatics Engineering and Land Management
-        * 1 : George Moonsammy Building (Block 9)
-        * 2 : Systems Lab (Block 11)
-        * 3 : Block 13 (Max Richards Building)
-        * 4 : Kenneth S. Julien Building (Block 1)
-        * 5 : Block 2 Civil Building
-        * 6 : Civil/Chemical/Mechanical Labs
+1. Open the file 'template.xltx' in Microsoft Excel. If not found, open a new spreadsheet.
+2. In this spreadsheet, enter the information for each 'Mold Assessment' Form. Follow the following instructions to complete the task.
+    * Each row represents a single form submission.
+    * Look at the Heading on top/row 1 (Room Name, Floor Name/ID, Room Type(Name/ID), Building, Name/ID, Others). These are your **headings**. Each heading is assigned its own column except for **'Others'**
+    * Each column containing a header that has an 'ID' tag can be filled-out with IDs (Look at appendix for more information).
+    * **Others**:
+        * The heading **'Others'** is unique. It is used to assign additional details to the form. No entries under 'Others' equates to default values and no additional information entered. The 'Others' column allows for entries **below** and **below right** of its header i.e. the Others header covers multiple columns and the remainder of the spreadsheet going to the right.
+        * Each **section** requires its own **column**: 
+        * A section and its content is formatted in a single cell as follows: **[section]:[content]**
+        * There are 12 sections under Others:
+            * Damage or Stain (DS)
+            * Visible Mold (VM)
+            * Wet or Damp (WD)
+            * Materials for; Ceiling (CM), Walls (WaM), Floor (FlM), Windows (WiM), Furnishings (FsM), HVAC System (HM/HVAC)
+            * Supplies & Materials (SM)
+            * Describe Supplies & Materials (DSM)
+            * Additional Comments (EX)
+        * The **content** for a given **section** can be filled out using codes shown in 'Appendix 2'.  Look at **Examples** to better understand the syntax for filling out the spreadsheet.
 3. Save the file as 'file.tsv'. If any issues, refer to the [README](https://github.com/Racerin/Mold_Assessment_Form_Automation/blob/master/README.md).
+
+
+# Examples:
+
+1. Fill out Observer's Name: (Under column 'A', under 'Room Name')  
+*John Doe*
+2. Select 'Room Type (Name/ID)' 'Workshop': (Under 'C', under 'Building Name/ID')  
+*3*  
+('3' corresponds to 'Workshop'. View Appendix)
+3. Enter room named 'Main classroom' with room code '101' in Block 1: (Under column ')  
+*Block 1, Room 101, Main Classroom*
+4. Input that the ceiling was damaged (Damage or Stain): (Under 'Others' **or** under > right of 'Others')  
+*DS:Ceiling*
+5. 
+
+
+
+# Appendix
+Fill-out the spreadsheet according to the following. **headers**, **pass** and **section/content** given below.
+## 1. Headers:
+1. Room name - Enter a room name. A good format for readability is;  
+'*Block number, Room number, Room name*'
+2. Floor name - Select a floor by entering an ID code or unique subset of characters of floor name (e.g. 'base'). **N.B.** The index starts with '0'.
+    * 0 : Basement
+    * 1 : Ground
+    * 2 : 1
+    * 3 : 2
+    * 4 : 3
+    * 5 : 4
+    * 6 : 5
+3. Room Type - Select the room type by entering an ID code or unique subset of characters of room type (e.g. 'work' for 'Workshop').
+    * 0 : Office
+    * 1 : Classroom
+    * 2 : Kitchen
+    * 3 : Workshop
+    * 4 : Lab
+    * 5 : Store Room
+    * 6 : Washroom
+    * 7 : Conference Room
+    * 8 : Meeting Room
+    * 9 : Changing/Locker Room
+    * 10 : Electrical Room
+4. Building Name - Select the Building Name/Block of the contained room by entering an ID or unique subset of characters of the building/block's name (e.g. 'System' or 'block 9').
+    * 0 : Geomatics Engineering and Land Management
+    * 1 : George Moonsammy Building (Block 9)
+    * 2 : Systems Lab (Block 11)
+    * 3 : Block 13 (Max Richards Building)
+    * 4 : Kenneth S. Julien Building (Block 1)
+    * 5 : Block 2 Civil Building
+    * 6 : Civil/Chemical/Mechanical Labs
+## 2. *'Others'* > Sections/Content:  
+The ID of the *'section'* is in parenthesis. The ID of the *'content'* is the 1st character of each  bulletin for the respective 
+* Mold Odor ID (MO) - Put in the number/letter corresponding to the Mold Odor smelled. **N.B.** The index starts with '0'.
+    * 0 : None
+    * 1 : Mild
+    * 2 : Moderate
+    * 3 : Strong
+* Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD) - These 3 *sections* corresponds to the same *content/options* below.  
+Each content can be tagged with a number 0-3 corresponding to the size of area affected.
+Each content can be tagged with the symbol '+' to state that it is close to an external wall (External Zone). (look at appendix 3).  
+Several options can be selected by placing a comma between them.  e.g. Ceiling2, Walls3+, Windows+
+If an option isn't selected, that option (Ceiling, Walls, Floor) does not have its respective component (Wet or Damp, Visible Mold).  
+    * 0 : Ceiling
+    * 1 : Walls
+    * 2 : Floor
+    * 3 : Windows
+    * 4 : Furnishings
+    * 5 : HVAC systems
+    * 6 : Supplies & Materials
+    * 7 : Pipes
+    * 8 : All components are more than 3 feet away from Exterior Wall
+    * 9 : No Exterior Walls
+    * 10:"No Effect/Zone",
+* Ceiling Material ID (CM) - Put in the number/letter corresponding to the ceiling material affected. (One option)
+    * 0 : Ceiling Tile
+    * 1 : Plaster
+    * 2 : Concrete
+    * 3 : Sheet rock
+    * 4 : Metal
+    * 5 : Wood
+    * 6 : N/A
+* Wall Materials ID (WaM) - Put in the number/letter corresponding to the wall materials affected. (One option)
+    * 0 : Sheet rock
+    * 1 : Plaster
+    * 2 : Concrete
+    * 3 : Block
+    * 4 : Tile
+    * 5 : Wood
+    * 6 : N/A
+* Floor Material ID (FlM)- Put in the number/letter corresponding to the floor material affected. (One option)
+    * 0 : Wood
+    * 1 : Carpet
+    * 2 : Vinyl
+    * 3 : Ceramic
+    * 4 : Concrete
+    * 5 : N/A
+* Windows Material (WiM) ID - Put in the number/letter corresponding to the window type affected. (One option)
+    * 0 : Exterior
+    * 1 : Interior
+    * 2 : skylight
+    * 3 : N/A
+* Furnishing (FsM) ID - Put in the number/letter corresponding to the furnishing affected. (One option)
+    * 0 : Furniture
+    * 1 : Mechanical
+    * 2 : Sink
+    * 3 : Toilet
+    * 4 : Copier
+    * 5 : N/A
+* HVAC Material (HM/HVAC) ID - Put in the number/letter corresponding to the main type of HVAC affected. (One option)
+    * 0 : Forced Air
+    * 1 : Fan
+    * 2 : Unit Ventilator
+    * 3 : Window Unit
+    * 4 : N/A
+* Supplies and Materials [in room] (SM) ID - Put in the number/letter corresponding to the supplies and materials affected.
+    * 0 : Books
+    * 1 : Boxes
+    * 2 : Equipment
+    * 3 : N/A
+* Describe Supplies and Materials [in room] (DSM) ID - Put in the number/letter corresponding to the floor affected.
+    * 0 : Wrinkled pages
+    * 1 : Crumpled boxes
+    * 2 : Other
+* Additional Comment (EX) - Enter a string of comments in parenthesis.  
+e.g. EX(This is my additional message.)
+## 3. *'Others'* Advance:
+* DS, VM, WD Intensity - The numbers below represents the area size of the component.
+    * 0 : None
+    * 1 : The size of a sheet of paper
+    * 2 : More than a sheet of paper to the size of a standard door
+    * 3 : More than the size of a standard door
+* '+' - Add the tag '+' to the end of the option in DS, VM, WD to state that it is within 3 feet of external wall.
+
+# Limitations
+* Under Header *Others*; VM/DS/WD, be selected once/    An option can only be selected once with respect to its component.

@@ -77,3 +77,35 @@ class TestSelenium(unittest.TestCase):
 
 class TestKeyboardManager(unittest.TestCase):
     pass
+
+
+class TestRegularExpression(unittest.TestCase):
+    def test_section_content(self):
+        """Test regular expression match groupdicts."""
+        # Test Section:Content regular expression
+        inputs = [
+            'MO:Something in here.',
+            'Mold Odor:Moderate',
+            'SP: Space before and after. ',
+            ' OS :Other space before and after.',
+        ]
+        outputs = [
+            ('MO', 'Something in here.'),
+            ('Mold Odor', 'Moderate'),
+            ('SP', 'Space before and after. '),
+            ('OS','Other space before and after.'),
+        ]
+        for i, tup in enumerate(zip(inputs, outputs)):
+            text, output = tup
+            section, content = output
+            match = re.match(RE_SECTION_CONTENT_GROUPDICT, text)
+            assert isinstance(match, re.Match), (type(match), 'index:', i)
+            dict1 = match.groupdict()
+            assert 'section' in dict1
+            assert 'content' in dict1
+            assert dict1['section'] == section, (dict1['section'], )
+            assert dict1['content'] == content, (dict1['content'], )
+
+    def test_groupdict(self):
+        """Test groupdict of regular expression match."""
+        pass

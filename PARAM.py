@@ -70,6 +70,8 @@ class PAUSE(enum.Enum):
 
 
 class OTHERS_SECTION(enum.Enum):
+    O = enum.auto()
+    D = enum.auto()
     MO = enum.auto()
     DS = enum.auto()
     VM = enum.auto()
@@ -258,6 +260,8 @@ SUPPLIES_AND_MATERIALS_DESC = {
 
 
 OTHERS_SECTION_MAPPING = {
+    OTHERS_SECTION.O : str,
+    OTHERS_SECTION.D : str,
     OTHERS_SECTION.MO : MOLD_ODOR,
     OTHERS_SECTION.DS : EFFECT_ZONES,
     OTHERS_SECTION.VM : EFFECT_ZONES,

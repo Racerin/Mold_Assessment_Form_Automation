@@ -70,26 +70,29 @@ class PAUSE(enum.Enum):
 
 
 class OTHERS_SECTION(enum.Enum):
-    O = enum.auto()
-    D = enum.auto()
-    MO = enum.auto()
-    DS = enum.auto()
-    VM = enum.auto()
-    WD = enum.auto()
-    CM = enum.auto()
-    WaM = enum.auto()
-    FlM = enum.auto()
-    WiM = enum.auto()
-    FsM = enum.auto()
-    HVAC = enum.auto()
-    HM = enum.auto()
-    SM = enum.auto()
-    DSM = enum.auto()
-    EX = enum.auto()
+    O = ['O', 'Observer']
+    D = ['D', 'Date']
+    MO = ['MO', 'Mold Odor']
+    DS = ['DS', 'Damage or Stains']
+    VM = ['VM', 'Visible Mold']
+    WD = ['WD', 'Wet or Damp']
+    CM = ['CM', 'Ceiling Material']
+    WaM = ['WaM', 'Walls Material']
+    FlM = ['FlM', 'Floor Material']
+    WiM = ['WiM', 'Window Material']
+    FsM = ['FsM', 'Furnishing Material']
+    HVAC = ['HM', 'HVAC Material']
+    SM = ['SM', 'Supplies and Materials']
+    DSM = ['DSM', 'Description Supplies and Materials', 'Supplies and Materials Description', 'SMD']
+    EX = ['EX', 'Additional Comments']
+    All = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX)
 
 
 # Regular Expressions
 RE_TRAILING_DASH = r'^/+'
+
+RE_SECTION_CONTENT_GROUPDICT = r'\s*(?P<section>\w+(\s+\w+)?)\s*:\s*(?P<content>.+)'
+RE_MO = r''
 
 
 # Selenium Answers
@@ -272,7 +275,6 @@ OTHERS_SECTION_MAPPING = {
     OTHERS_SECTION.WiM : WINDOWS_MATERIAL,
     OTHERS_SECTION.FsM : FURNISHING,
     OTHERS_SECTION.HVAC : HVAC_MATERIAL,
-    OTHERS_SECTION.HM : HVAC_MATERIAL,
     OTHERS_SECTION.SM : SUPPLIES_AND_MATERIALS,
     OTHERS_SECTION.DSM : SUPPLIES_AND_MATERIALS_DESC,
     OTHERS_SECTION.EX : str,

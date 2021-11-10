@@ -109,3 +109,19 @@ class TestRegularExpression(unittest.TestCase):
     def test_groupdict(self):
         """Test groupdict of regular expression match."""
         pass
+
+
+class TestStringMatch(unittest.TestCase):
+    def test_ratio(self):
+        """Test 'Levenshtein.ratio' for my own closure."""
+        # Test small strings
+        small = l_ratio('AA', 'AB')
+        assert isinstance(small, float)
+        assert small < 1, small
+        small_to_long = l_ratio('AB', 'ABra Cadabra')
+        assert isinstance(small_to_long, float)
+        assert small < 1, small_to_long
+        # Test commutative match
+        forward = l_ratio('Snake', 'Hibiscus flower')
+        backward = l_ratio('Hibiscus flower', 'Snake')
+        assert forward == backward, (forward, backward)

@@ -26,7 +26,10 @@ Follow the instructions below to complete the task.
         * The heading **'Others'** is unique. It is used to assign additional details to the form. No entries under 'Others' equates to default values and no additional information entered. The 'Others' column allows for entries **below** and **below right** of its header i.e. the Others header covers multiple columns and the remainder of the spreadsheet going to the right.
         * Each **section** requires its own **column**: 
         * A section and its content is formatted in a single cell as follows: **[section]:[content]**
-        * There are 12 sections under Others:
+        * There are 15 sections under Others:
+            * Observer (O)
+            * Date (D)
+            * Mold Odor (MO)
             * Damage or Stain (DS)
             * Visible Mold (VM)
             * Wet or Damp (WD)
@@ -67,18 +70,18 @@ Follow the instructions ahead to fill-out the Microsoft Forms based on the inofr
 
 
 # Appendix
-Fill-out the spreadsheet according to the following. **headers**, **pass** and **section/content** given below.
+Fill-out the spreadsheet according to; **headers** and **section/content** as follows.
 ## 1. Headers:
 1. Room name - Enter a room name. A good format for readability is;  
 '*Block number, Room number, Room name*'
 2. Floor name - Select a floor by entering an ID code or unique subset of characters of floor name (e.g. 'base'). **N.B.** The index starts with '0'.
     * 0 : Basement
     * 1 : Ground
-    * 2 : 1
-    * 3 : 2
-    * 4 : 3
-    * 5 : 4
-    * 6 : 5
+    * 2 : Floor 1
+    * 3 : Floor 2
+    * 4 : Floor 3
+    * 5 : Floor 4
+    * 6 : Floor 5
 3. Room Type - Select the room type by entering an ID code or unique subset of characters of room type (e.g. 'work' for 'Workshop').
     * 0 : Office
     * 1 : Classroom
@@ -100,13 +103,15 @@ Fill-out the spreadsheet according to the following. **headers**, **pass** and *
     * 5 : Block 2 Civil Building
     * 6 : Civil/Chemical/Mechanical Labs
 ## 2. *'Others'* > Sections/Content:  
-The ID of the *'section'* is in parenthesis. The ID of the *'content'* is the 1st character of each  bulletin for the respective 
+The ID of the *'section'* is in parenthesis. Each content contains one or more *options* with their own ID listed below in bulletin.
+* Observer ID (O) - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json'.
+* Date ID (D) - The date when the evaluation was carried out. **N.B.** The default value is found in 'config.json'.
 * Mold Odor ID (MO) - Put in the number/letter corresponding to the Mold Odor smelled. **N.B.** The index starts with '0'.
     * 0 : None
     * 1 : Mild
     * 2 : Moderate
     * 3 : Strong
-* Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD) - These 3 *sections* corresponds to the same *content/options* below.  
+* Damage or Stains ID (DS), Visible Mold ID (VM), Wet or Damp ID (WD) - These 3 *sections* corresponds to the same *content/options* below.  
 Each content can be tagged with a number 0-3 corresponding to the size of area affected.
 Each content can be tagged with the symbol '+' to state that it is close to an external wall (External Zone). (look at appendix 3).  
 Several options can be selected by placing a comma between them.  e.g. Ceiling2, Walls3+, Windows+

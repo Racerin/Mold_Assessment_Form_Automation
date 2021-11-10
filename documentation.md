@@ -41,6 +41,7 @@ Follow the instructions below to complete the task.
 3. Save the file as 'file.tsv'.
 4. Pass the file to admin to fill-out form.
 
+
 ## Admin
 Follow the instructions ahead to fill-out the Microsoft Forms based on the inofrmation entered in the 'file.tsv' file.
 1. Copy the git repository [here](https://github.com/Racerin/Mold_Assessment_Form_Automation).
@@ -55,22 +56,16 @@ Follow the instructions ahead to fill-out the Microsoft Forms based on the inofr
 7. Run the script: *'python3 app.py'*
 
 
-# Examples:
 
-1. Fill out Observer's Name: (Under column 'A', under 'Room Name')  
-*John Doe*
-2. Select 'Room Type (Name/ID)' 'Workshop': (Under 'C', under 'Building Name/ID')  
-*3*  
-('3' corresponds to 'Workshop'. View Appendix)
-3. Enter room named 'Main classroom' with room code '101' in Block 1: (Under column ')  
-*Block 1, Room 101, Main Classroom*
-4. Input that the ceiling was damaged (Damage or Stain): (Under 'Others' **or** under > right of 'Others')  
-*DS:Ceiling*
-5. 
+# Examples:
+Look at 'example template.xltx' for more information.
+
 
 
 # Appendix
 Fill-out the spreadsheet according to; **headers** and **section/content** as follows.
+
+
 ## 1. Headers:
 1. Room name - Enter a room name. A good format for readability is;  
 '*Block number, Room number, Room name*'
@@ -102,16 +97,19 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
     * 4 : Kenneth S. Julien Building (Block 1)
     * 5 : Block 2 Civil Building
     * 6 : Civil/Chemical/Mechanical Labs
+
+
 ## 2. *'Others'* > Sections/Content:  
 The ID of the *'section'* is in parenthesis. Each content contains one or more *options* with their own ID listed below in bulletin.
-* Observer ID (O) - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json'.
-* Date ID (D) - The date when the evaluation was carried out. **N.B.** The default value is found in 'config.json'.
-* Mold Odor ID (MO) - Put in the number/letter corresponding to the Mold Odor smelled. **N.B.** The index starts with '0'.
+
+* **Observer (O)** - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
+* **Date (D)** - The date when the evaluation was carried out. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
+* **Mold Odor (MO)** - Put in the number/letter corresponding to the Mold Odor smelled. **N.B.** The index starts with '0'.
     * 0 : None
     * 1 : Mild
     * 2 : Moderate
     * 3 : Strong
-* Damage or Stains ID (DS), Visible Mold ID (VM), Wet or Damp ID (WD) - These 3 *sections* corresponds to the same *content/options* below.  
+* **Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD)** - These 3 *sections* corresponds to the same *content/options* below.  
 Each content can be tagged with a number 0-3 corresponding to the size of area affected.
 Each content can be tagged with the symbol '+' to state that it is close to an external wall (External Zone). (look at appendix 3).  
 Several options can be selected by placing a comma between them.  e.g. Ceiling2, Walls3+, Windows+
@@ -127,7 +125,7 @@ If an option isn't selected, that option (Ceiling, Walls, Floor) does not have i
     * 8 : All components are more than 3 feet away from Exterior Wall
     * 9 : No Exterior Walls
     * 10:"No Effect/Zone",
-* Ceiling Material ID (CM) - Put in the number/letter corresponding to the ceiling material affected. (One option)
+* **Ceiling Material (CM)** - Put in the number/letter corresponding to the ceiling material affected. (One option)
     * 0 : Ceiling Tile
     * 1 : Plaster
     * 2 : Concrete
@@ -135,7 +133,7 @@ If an option isn't selected, that option (Ceiling, Walls, Floor) does not have i
     * 4 : Metal
     * 5 : Wood
     * 6 : N/A
-* Wall Materials ID (WaM) - Put in the number/letter corresponding to the wall materials affected. (One option)
+* **Wall Materials (WaM)** - Put in the number/letter corresponding to the wall materials affected. (One option)
     * 0 : Sheet rock
     * 1 : Plaster
     * 2 : Concrete
@@ -143,42 +141,44 @@ If an option isn't selected, that option (Ceiling, Walls, Floor) does not have i
     * 4 : Tile
     * 5 : Wood
     * 6 : N/A
-* Floor Material ID (FlM)- Put in the number/letter corresponding to the floor material affected. (One option)
+* **Floor Material (FlM)** - Put in the number/letter corresponding to the floor material affected. (One option)
     * 0 : Wood
     * 1 : Carpet
     * 2 : Vinyl
     * 3 : Ceramic
     * 4 : Concrete
     * 5 : N/A
-* Windows Material (WiM) ID - Put in the number/letter corresponding to the window type affected. (One option)
+* Windows Material (WiM) - Put in the number/letter corresponding to the window type affected. (One option)
     * 0 : Exterior
     * 1 : Interior
     * 2 : skylight
     * 3 : N/A
-* Furnishing (FsM) ID - Put in the number/letter corresponding to the furnishing affected. (One option)
+* Furnishing (FsM) - Put in the number/letter corresponding to the furnishing affected. (One option)
     * 0 : Furniture
     * 1 : Mechanical
     * 2 : Sink
     * 3 : Toilet
     * 4 : Copier
     * 5 : N/A
-* HVAC Material (HM/HVAC) ID - Put in the number/letter corresponding to the main type of HVAC affected. (One option)
+* HVAC Material (HM/HVAC) - Does not actually refer to 'HVAC Materials' but naming convention follows Microsoft Form. Put in the number/letter corresponding to the main type of HVAC affected. (One option)
     * 0 : Forced Air
     * 1 : Fan
     * 2 : Unit Ventilator
     * 3 : Window Unit
     * 4 : N/A
-* Supplies and Materials [in room] (SM) ID - Put in the number/letter corresponding to the supplies and materials affected.
+* Supplies and Materials [in room] (SM) - Put in the number/letter corresponding to the supplies and materials affected.
     * 0 : Books
     * 1 : Boxes
     * 2 : Equipment
     * 3 : N/A
-* Describe Supplies and Materials [in room] (DSM) ID - Put in the number/letter corresponding to the floor affected.
+* Describe Supplies and Materials [in room] (DSM) - Put in the number/letter corresponding to the floor affected.
     * 0 : Wrinkled pages
     * 1 : Crumpled boxes
     * 2 : Other
 * Additional Comment (EX) - Enter a string of comments in parenthesis.  
 e.g. EX(This is my additional message.)
+
+
 ## 3. *'Others'* Advance:
 * DS, VM, WD Intensity - The numbers below represents the area size of the component.
     * 0 : None
@@ -186,6 +186,8 @@ e.g. EX(This is my additional message.)
     * 2 : More than a sheet of paper to the size of a standard door
     * 3 : More than the size of a standard door
 * '+' - Add the tag '+' to the end of the option in DS, VM, WD to state that it is within 3 feet of external wall.
+
+
 
 # Limitations
 * Under Header *Others* > VM/DS/WD > Only one option can be selected with respect to its component.

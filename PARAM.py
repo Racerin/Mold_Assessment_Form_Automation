@@ -40,6 +40,7 @@ INTERLUDE_LISTENER_OPTIONS = """q:quit, space:next,
 
 
 class ELEMENT_TYPE(enum.Enum):
+    """Enum for 'Selenium' Web Element"""
     NONE = enum.auto()
     TEXT = enum.auto()
     DROPDOWN = enum.auto()
@@ -51,6 +52,7 @@ class ELEMENT_TYPE(enum.Enum):
 
 
 class PAUSE(enum.Enum):
+    """Different options for 'Runner' pause interlude."""
     NONE = enum.auto()
     START = enum.auto()
     FIRST_PAGE_UPDATE = enum.auto()
@@ -65,6 +67,23 @@ class PAUSE(enum.Enum):
 
     SUBMIT = enum.auto()
     NEXT_FORM = enum.auto()
+
+
+class OTHERS_SECTION(enum.Enum):
+    MO = enum.auto()
+    DS = enum.auto()
+    VM = enum.auto()
+    WD = enum.auto()
+    CM = enum.auto()
+    WaM = enum.auto()
+    FlM = enum.auto()
+    WiM = enum.auto()
+    FsM = enum.auto()
+    HVAC = enum.auto()
+    HM = enum.auto()
+    SM = enum.auto()
+    DSM = enum.auto()
+    EX = enum.auto()
 
 
 # Regular Expressions
@@ -150,6 +169,13 @@ ROOM_TYPES = {
     10:"Electrical Room",
 }
 
+MOLD_ODOR = {
+    0:"None",
+    1:"Mild",
+    2:"Moderate",
+    3:"Strong",
+}
+
 EFFECT_ZONES = {
     0:"Ceiling",
     1:"Walls",
@@ -230,9 +256,20 @@ SUPPLIES_AND_MATERIALS_DESC = {
     2:"Other",
 }
 
-MOLD_ODOR = {
-    0:"None",
-    1:"Mild",
-    2:"Moderate",
-    3:"Strong",
+
+OTHERS_SECTION_MAPPING = {
+    OTHERS_SECTION.MO : MOLD_ODOR,
+    OTHERS_SECTION.DS : EFFECT_ZONES,
+    OTHERS_SECTION.VM : EFFECT_ZONES,
+    OTHERS_SECTION.WD : EFFECT_ZONES,
+    OTHERS_SECTION.CM : CEILING_MATERIAL,
+    OTHERS_SECTION.WaM : WALL_MATERIALS,
+    OTHERS_SECTION.FlM : FLOOR_MATERIAL,
+    OTHERS_SECTION.WiM : WINDOWS_MATERIAL,
+    OTHERS_SECTION.FsM : FURNISHING,
+    OTHERS_SECTION.HVAC : HVAC_MATERIAL,
+    OTHERS_SECTION.HM : HVAC_MATERIAL,
+    OTHERS_SECTION.SM : SUPPLIES_AND_MATERIALS,
+    OTHERS_SECTION.DSM : SUPPLIES_AND_MATERIALS_DESC,
+    OTHERS_SECTION.EX : str,
 }

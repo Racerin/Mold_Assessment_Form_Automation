@@ -189,6 +189,17 @@ MOLD_ODOR = {
     3:"Strong",
 }
 
+DSVMWD = {
+    0:"Ceiling",
+    1:"Walls",
+    2:"Floor",
+    3:"Windows",
+    4:"Furnishings",
+    5:"HVAC systems",
+    6:"Supplies & Materials",
+    7:"Pipes",
+}
+
 EFFECT_ZONES = {
     0:"Ceiling",
     1:"Walls",

@@ -1,10 +1,56 @@
 <style type="text/css">
     /* ol { list-style-type: upper-alpha; } */
+    .temp {
+        text-indent: 100px;
+    }
 </style>
 # Welcome
 
 This is documentation for the 'filling-out' of the Mold assessment form.
 Follow the instructions below to complete the task.
+
+
+
+# Road Map
+Tree diagram of spreadsheet inputs.
+1. Headers:  
+    ***Text Inputs***
+    * Room Name
+    * Floor Name (ID)
+    * Room Type (ID)
+    * Building Name (ID)
+    * Others:  
+        <ins>*Sections*</ins>  
+        <!-- <div class="temp">***Text Inputs***</div> -->
+        ***Text Inputs***
+        * Observer's Name
+        * Date  
+        ***Multiple options***
+        * Damage or Stains  
+            <ins>*Content*</ins>
+            * Ceiling
+            * ...
+            * Pipes  
+            *Modifiers*
+                * Close to external wall (+)
+        * Visible Mold  
+            * Ceiling
+            * ...
+        * Wet or Damp  
+        ***Single options***
+        * Ceiling Material  
+            <ins>*Content*</ins>
+            * Ceiling Tile
+            * Plaster
+            * ...
+        * Wall Material
+        * ...  
+        * HVAC Material  
+        ***Multiple options***
+        * Supplies and Materials  
+        ***Text Inputs***
+        * Describe Supplies and Materials
+        * Additional Comments
 
 
 
@@ -103,7 +149,7 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
 The ID of the *'section'* is in parenthesis. Each content contains one or more *options* with their own ID listed below in bulletin.
 
 * **Observer (O)** - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
-* **Date (D)** - The date when the evaluation was carried out. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
+* **Date (D)** - The date when the evaluation was carried out. It **must** follow the format: *mm/dd/yyy*. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
 * **Mold Odor (MO)** - Put in the number/letter corresponding to the Mold Odor smelled. **N.B.** The index starts with '0'.
     * 0 : None
     * 1 : Mild

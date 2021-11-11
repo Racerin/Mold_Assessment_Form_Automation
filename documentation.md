@@ -14,7 +14,7 @@ Follow the instructions below to complete the task.
 # Road Map
 Tree diagram of spreadsheet inputs.
 1. Headers:  
-    ***Text Inputs***
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***Text Inputs***
     * Room Name
     * Floor Name (ID)
     * Room Type (ID)
@@ -22,7 +22,7 @@ Tree diagram of spreadsheet inputs.
     * Others:  
         <ins>*Sections*</ins>  
         <!-- <div class="temp">***Text Inputs***</div> -->
-        ***Text Inputs***
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***Text Inputs***
         * Observer's Name
         * Date  
         ***Multiple options***

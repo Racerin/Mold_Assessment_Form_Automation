@@ -85,13 +85,21 @@ class OTHERS_SECTION(enum.Enum):
     SM = ['SM', 'Supplies and Materials']
     DSM = ['DSM', 'Description Supplies and Materials', 'Supplies and Materials Description', 'SMD']
     EX = ['EX', 'Additional Comments']
-    All = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX)
+
+    TEXTINPUTS = (O, D, DSM, EX,)
+    DROPDOWNS = (MO,)
+    EXTERIOR_WALL = (DS, VM, WD,)
+    RADIO_BUTTON_OPTIONS = (CM, WaM, FlM, WiM, FsM, HVAC,)
+    CHECKBOX_WITH_OTHER = (DSM,)
+    MULTIPLE_OPTIONS = (DS, VM, WD, SM,)
+    All = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX,)
 
 
 # Regular Expressions
 RE_TRAILING_DASH = r'^/+'
 
 RE_SECTION_CONTENT_GROUPDICT = r'\s*(?P<section>\w+(\s+\w+)?)\s*:\s*(?P<content>.+)'
+RE_SPLIT_COMMAS = r' *, *'
 RE_MO = r''
 
 
@@ -278,4 +286,24 @@ OTHERS_SECTION_MAPPING = {
     OTHERS_SECTION.SM : SUPPLIES_AND_MATERIALS,
     OTHERS_SECTION.DSM : SUPPLIES_AND_MATERIALS_DESC,
     OTHERS_SECTION.EX : str,
+}
+
+
+OTHERS_SECTION_INPUTS_MAPPING = {
+    OTHERS_SECTION.O : 'observer_name',
+    OTHERS_SECTION.D : 'date',
+    OTHERS_SECTION.MO : 'mold_odor_id',
+    OTHERS_SECTION.DS : 'damage_or_stains',
+    OTHERS_SECTION.VM : 'visible_mold',
+    OTHERS_SECTION.WD : 'wet_or_damp',
+    # Don't forget to take into account '_exterior' for DS, VM, WD
+    OTHERS_SECTION.CM : 'ceiling_materials',
+    OTHERS_SECTION.WaM : 'wall_materials',
+    OTHERS_SECTION.FlM : 'floor_materials',
+    OTHERS_SECTION.WiM : 'windows_materials',
+    OTHERS_SECTION.FsM : 'furnishing_materials',
+    OTHERS_SECTION.HVAC : 'hvac_materials',
+    OTHERS_SECTION.SM : 'supplies_and_materials',
+    OTHERS_SECTION.DSM : 'supplies_and_materials_desc',
+    OTHERS_SECTION.EX : 'additional_comments',
 }

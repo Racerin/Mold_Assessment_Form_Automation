@@ -95,6 +95,10 @@ class OTHERS_SECTION(enum.Enum):
     All = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX,)
 
 
+#Strings to format
+STR_INPUTS_EXTERIOR = "{}_exterior"
+
+
 # Regular Expressions
 RE_TRAILING_DASH = r'^/+'
 
@@ -188,6 +192,9 @@ MOLD_ODOR = {
     2:"Moderate",
     3:"Strong",
 }
+
+AFFECTED_AREA_SIZE = list(range(4))
+AFFECTED_AREA_SIZE_STR = [str(sz) for sz in AFFECTED_AREA_SIZE]
 
 DSVMWD = {
     0:"Ceiling",

@@ -242,6 +242,16 @@ e.g. EX(This is my additional message.)
 * '+' - Add the tag '+' to the end of the option in DS, VM, WD to state that it is within 3 feet of external wall.
 
 
+## 4. <a name="config">Config:</a>
+View/Edit the 'config.json' config file to change some default values.  
+**N.B.** Changing these values especially file names can lead to irregular behavior.  
+Also, maintain 'JSON' syntax within file to prevent errors.
+* Observer name : Name of person who carried-out the assessments. This value is overridden individually per spreadsheet entry when user inputs 'Obeserver name' under 'Others'.
+* tsv_load_file : The file containing user input spreadsheet information.
+* tsv_save_file : The file containing completed spreadsheet information.
+* website_url : The default url for the Microsoft Form online assessment form.
+
+
 
 # Limitations
 * Under Header *Others* > VM/DS/WD > Only one option can be selected with respect to its component.

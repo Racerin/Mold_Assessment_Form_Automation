@@ -71,7 +71,7 @@ Follow the instructions below to complete the task.
 2. In this spreadsheet, enter the information for each 'Mold Assessment' Form. Follow the following instructions to complete the task.
     * Each row represents a single form submission.
     * Look at the Heading on top/row 1 (Room Name, Floor Name/ID, Room Type(Name/ID), Building, Name/ID, Others). These are your **headings**. Each heading is assigned its own column except for **'Others'**
-    * Each column containing a header that has an 'ID' tag can be filled-out with IDs (Look at appendix for more information).
+    * Each column containing a header that has an 'ID' tag can be filled-out with IDs (Look at [appendix 2](#section_content) for more information).
     * **Others**:
         * The heading **'Others'** is unique. It is used to assign additional details to the form. No entries under 'Others' equates to default values and no additional information entered. The 'Others' column allows for entries **below** and **below right** of its header i.e. the Others header covers multiple columns and the remainder of the spreadsheet going to the right.
         * Each **section** requires its own **column**: 
@@ -149,7 +149,7 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
     * 6 : Civil/Chemical/Mechanical Labs
 
 
-## 2. *'Others'* > Sections/Content:  
+## 2. <a name="section_content">*'Others'* > Sections/Content:</a>  
 The ID of the *'section'* is in parenthesis. Each content contains one or more *options* with their own ID listed below in bulletin.
 
 * **Observer (O)** - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.

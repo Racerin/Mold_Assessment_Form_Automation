@@ -117,9 +117,9 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
 
 
 ## 1. Headers:
-1. Room name - Enter a room name. A good format for readability is;  
+1. **Room name** - Enter a room name. A good format for readability is;  
 '*Block number, Room number, Room name*'
-2. Floor name - Select a floor by entering an ID code or unique subset of characters of floor name (e.g. 'base'). **N.B.** The index starts with '0'.
+2. **Floor name** - Select a floor by entering an ID code or unique subset of characters of floor name (e.g. 'base'). **N.B.** The index starts with '0'.
     * 0 : Basement
     * 1 : Ground
     * 2 : Floor 1
@@ -127,7 +127,7 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
     * 4 : Floor 3
     * 5 : Floor 4
     * 6 : Floor 5
-3. Room Type - Select the room type by entering an ID code or unique subset of characters of room type (e.g. 'work' for 'Workshop').
+3. **Room Type** - Select the room type by entering an ID code or unique subset of characters of room type (e.g. 'work' for 'Workshop').
     * 0 : Office
     * 1 : Classroom
     * 2 : Kitchen
@@ -139,7 +139,7 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
     * 8 : Meeting Room
     * 9 : Changing/Locker Room
     * 10 : Electrical Room
-4. Building Name - Select the Building Name/Block of the contained room by entering an ID or unique subset of characters of the building/block's name (e.g. 'System' or 'block 9').
+4. **Building Name** - Select the Building Name/Block of the contained room by entering an ID or unique subset of characters of the building/block's name (e.g. 'System' or 'block 9').
     * 0 : Geomatics Engineering and Land Management
     * 1 : George Moonsammy Building (Block 9)
     * 2 : Systems Lab (Block 11)
@@ -198,34 +198,34 @@ Several options can be selected by placing a comma between them.  e.g. Ceiling2,
     * 3 : Ceramic
     * 4 : Concrete
     * 5 : N/A
-* Windows Material (WiM) - Put in the number/letter corresponding to the window type affected. (One option)
+* **Windows Material (WiM)** - Put in the number/letter corresponding to the window type affected. (One option)
     * 0 : Exterior
     * 1 : Interior
     * 2 : skylight
     * 3 : N/A
-* Furnishing (FsM) - Put in the number/letter corresponding to the furnishing affected. (One option)
+* **Furnishing (FsM**) - Put in the number/letter corresponding to the furnishing affected. (One option)
     * 0 : Furniture
     * 1 : Mechanical
     * 2 : Sink
     * 3 : Toilet
     * 4 : Copier
     * 5 : N/A
-* HVAC Material (HM/HVAC) - Does not actually refer to 'HVAC Materials' but naming convention follows Microsoft Form. Put in the number/letter corresponding to the main type of HVAC affected. (One option)
+* **HVAC Material (HM/HVAC**) - Does not actually refer to 'HVAC Materials' but naming convention follows Microsoft Form. Put in the number/letter corresponding to the main type of HVAC affected. (One option)
     * 0 : Forced Air
     * 1 : Fan
     * 2 : Unit Ventilator
     * 3 : Window Unit
     * 4 : N/A
-* Supplies and Materials [in room] (SM) - Put in the number/letter corresponding to the supplies and materials affected.
+* **Supplies and Materials [in room] (SM**) - Put in the number/letter corresponding to the supplies and materials affected.
     * 0 : Books
     * 1 : Boxes
     * 2 : Equipment
     * 3 : N/A
-* Describe Supplies and Materials [in room] (DSM) - Put in the number/letter corresponding to the floor affected.
+* **Describe Supplies and Materials [in room] (DSM**) - Put in the number/letter corresponding to the floor affected.
     * 0 : Wrinkled pages
     * 1 : Crumpled boxes
     * 2 : Other
-* Additional Comment (EX) - Enter a string of comments in parenthesis.  
+* **Additional Comment (EX**) - Enter a string of comments in parenthesis.  
 e.g. EX(This is my additional message.)
 
 

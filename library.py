@@ -5,15 +5,19 @@ import time
 import dataclasses
 import enum
 import csv
+import string
 import json
 import re
 import pydoc
 import typing
 from collections.abc import Sequence, Mapping, Container
+from numbers import Number
 from functools import partial
 
 from pynput import keyboard
 from pynput.keyboard import Key
+from Levenshtein import jaro
+from Levenshtein import ratio as l_ratio
 
 import selenium
 import selenium.webdriver
@@ -89,6 +93,44 @@ def save_tsv_file(filename, rows:Sequence):
             ans_row_strs.append(row_str)
         ans_str = '\n'.join(ans_row_strs)
         fd.write(ans_str)
+
+def match_strings(str1:str, str2:str) -> float:
+    """Return the match ratio between strings based on string length.
+    """
+    ans = l_ratio(str1, str2)
+    return ans
+
+def str_to_key(str1:str) -> str:
+    """Convert a string to a string usable as a key"""
+    ans = [t if t in string.string.ascii_letters else '_' for t in str1]
+    return ans
+
+def get_keys_and_values_strs_dict(dict1:dict) -> dict:
+    """Creates dictionary of dictionary 
+    where the values and keys are string keys to its respective value.
+    """
+    ans = dict()
+    # Add keys and values
+    for k,v in dict1.items():
+        ans.update(
+                {
+                str_to_key(str(k)) : v,
+                str_to_key(str(v)) : v,
+                }
+            )
+    return ans
+
+def best_key_match_string(dict1:Mapping, to_match:str) -> typing.Any:
+    """Returns the value of dict whose key best matches 'to_match'."""
+    best_key = None
+    best_score = 0
+    for k in dict1:
+        score = match_strings(k, to_match)
+        if score > best_score:
+            best_key = k
+            best_score = score
+    best_value = dict1[best_key] 
+    return best_value
 
 
 #Configure
@@ -232,13 +274,122 @@ class Action:
 #Inputs
 @dataclasses.dataclass
 class Inputs:
+
+    class Parser:
+        inputs = dict()
+
+        def __get_best_section(section_input : str) -> OTHERS_SECTION:
+            """Ge the best section from the user's input string."""
+            for section_keys in OTHERS_SECTION.ALL:
+                section_matches = [(match_strings(section_keys, section_input), key) for key in section_keys]
+                section_matches.sort()
+                # Select the section with the highest correlation (Last one)
+                __score, section = section_matches[-1]
+            return section
+
+        def __get_intensity_for_DSVMWD_option(option_input) -> int|None:
+            """Returns the number corresponding to the 
+            size of the affected area (page 1).
+            """
+            # Return index for area size if it is in the user's option-input
+            for sz_index in AFFECTED_AREA_SIZE_STR:
+                if sz_index in option_input:
+                    return int(sz_index)
+            else:
+                # Return default
+                return 0
+
+        def __get_inputs_value(self, section:OTHERS_SECTION, content_str:str, inputs_attribute:str) -> typing.Any:
+            """Create values that are passable to Selenium to answer questions."""
+            # Split-up content-input-string to get input-option-strings
+            options_input = [option.strip() for option in content_str.split(',')]
+            # Get respective standard dictionary
+            params = OTHERS_SECTION_MAPPING[section]
+            # Match each option in content
+            if section in OTHERS_SECTION.CHECKBOX_WITH_OTHER:
+                inputs_value = options_input
+                # TODO
+            elif section in OTHERS_SECTION.EXTERIOR_WALL:
+                # Local instantiations
+                options_input = [option.strip() for option in content_str.split(',')]
+                k_v_string_dict = get_keys_and_values_strs_dict(params)
+                # Values for 'Inputs'
+                DSVMWD_values = dict()
+                exteriors_values = list()
+                for option_input in options_input:
+                    # Check with keys and values
+                    best_option = best_key_match_string(k_v_string_dict, option_input)
+                    area_size_index = self.__get_intensity_for_DSVMWD_option(option_input)
+                    # Add values for 'Inputs'
+                    DSVMWD_values.update({best_option:area_size_index})
+                    # Check for exterior in input_option
+                    if '+' in option_input:
+                        exteriors_values.append(best_option)
+                #Now, Assign values for inputs
+                inputs_value = DSVMWD_values
+                if exteriors_values:
+                    """BAD data flow BUT, soo much easier. 
+                    This will be taken out of inputs_value in 
+                    '__get_inputs_exterior_wall_filter'
+                    """
+                    inputs_value.update({'exterior':exteriors_values})
+            elif section in OTHERS_SECTION.RADIO_BUTTON_OPTIONS:
+                pass
+            elif section in OTHERS_SECTION.TEXTINPUTS:
+                assert isinstance(content_str, str), content_str
+                inputs_value = content_str
+            return inputs_value
+        
+        def __get_inputs_exterior_wall_filter(self, inputs_value:dict, inputs_attribute:str) -> dict:
+            """Check for EXETERIOR sections and if yes, add exterior values."""
+            # if 'exterior' in inputs_value:
+            exteriors = inputs_value.pop('exterior', None)
+            assert isinstance(exteriors, (None, list,))
+            if exteriors:
+                # Add respective inputs exterior for Inputs
+                new_inputs_attribute = STR_INPUTS_EXTERIOR.format(inputs_attribute)  #eg. damage_or_stain_exterior
+                inputs_value = exteriors
+                self.inputs.update({new_inputs_attribute:inputs_value})
+            return inputs_value
+
+        def parse_others(self, others_cells:'list[str]'):
+            """Factory method for parsing 'Others' variables.
+            """
+            # Process the string of each cell under 'Others'.
+            for cell_section_str in others_cells:
+                # Get the section:content of the input string
+                m = re.match(RE_SECTION_CONTENT_GROUPDICT, cell_section_str)
+                dict_section_content = m.groupdict()
+                section_str_input, content_str_input = dict_section_content['section'], dict_section_content['content']
+                # Determine 'section' selected in cell
+                section = self.__get_best_section(section_str_input)
+                # Get in str form 'inputs_attribute' for attribute in 'Inputs'.
+                inputs_attribute = OTHERS_SECTION_INPUTS_MAPPING[section]
+                # Get value for 'inputs_attribute'
+                inputs_value = self.__get_inputs_value(section, content_str_input, inputs_attribute)
+                # Get values for close to exterior walls (if it is that section)
+                inputs_value = self.__get_inputs_exterior_wall_filter(inputs_value, inputs_attribute)
+                # Add new key:values, attribute:values for defined inputs
+                self.inputs.update({inputs_attribute:inputs_value})
+
+        def assign_to_input_cls(self, input_cls):
+            """Assign to 'Input' class based on stored inputs."""
+            for input_name, input_value in self.inputs.items():
+                # Assign 'input_value' to 'Input' class
+                if input_name in input_cls:
+                    setattr(input_cls, input_name, input_value)
+                # Assign 'input_value' to global variables
+                else:
+                    setattr(globals(), input_name, input_value)
+
     room_name : str = ""
     floor_id : int = None
     room_type_id : int = None
     building_id : int = None
     date : str = today_date()
 
-    other_arguments = list()
+    others_arguments = list()
+    parser_for_other_arguments = list()
     other_actions = list()
 
     mold_odor_id = None
@@ -261,7 +412,8 @@ class Inputs:
     supplies_and_materials_desc = ANS_CHECKBOX_OTHER_DEFAULT
     additional_comments : str = ""
 
-    user_row_inputs = list()
+    user_rows_inputs = list()
+    current_row_inputs = list()
     completed_row_inputs = list()
 
     @classmethod
@@ -283,13 +435,13 @@ class Inputs:
     @classmethod
     def load_user_inputs(cls, extend=False) -> list:
         """Load user input data into memory.
-        Have the option to extend value to previous values.
+        Have the option to extend previous values with new values.
         """
         ans_list = load_tsv_file(tsv_load_file, ignore_header_regex='Room ')
         if extend:
-            cls.user_row_inputs.extend(ans_list)
+            cls.user_rows_inputs.extend(ans_list)
         else:
-            cls.user_row_inputs = ans_list
+            cls.user_rows_inputs = ans_list
 
     @classmethod
     def save_completed(cls):
@@ -302,16 +454,7 @@ class Inputs:
         cls.completed_row_inputs = load_tsv_file(tsv_save_file)
 
     @classmethod
-    def X_get_user_inputs(cls) -> 'list[tuple[4]]':
-        """Use tsv file to load in user inputs."""
-        ans_list = list()
-        for row in cls.load_user_inputs():
-            row_with_type = [int(str1) if str1.isdigit() else str1 for str1 in row ]
-            ans_list.append(row_with_type)
-        return ans_list
-
-    @classmethod
-    def set_user_input(cls, row:list, **kwargs):
+    def set_user_input(cls, row:list=current_row_inputs, **kwargs):
         """Assign arguments to/in Inputs"""
         # Assign variables
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, cls.mold_odor_id, *cls.other_arguments = row
@@ -324,11 +467,27 @@ class Inputs:
 
     @classmethod
     def parse_other_arguments(cls):
-        """Use factory method to parse arguments."""
-        cls.other_actions = list()
-        for arg_str in cls.other_arguments:
-            action = Action(arg_str)
-            cls.other_actions.append(action)
+        """Use factory method to parse arguments. Assign values to class immediately.
+        Use the 'Inputs.Parser' class to parse through the other arguments.
+        """
+        for arg_str in cls.others_arguments:
+            parser = cls.Parser.parse_others(arg_str)
+            parser.assign_to_input_cls(cls)
+
+    @classmethod
+    def load_user_input(cls, index=0, task_completed:bool=True):
+        """Loads one row of user inputs into memory.
+        Keeps account of inputs for forms filled-out.
+        task_completed: States whether the current_row_inputs were used to complete a form.
+        """
+        # Move current user inputs over to completed
+        if cls.current_row_inputs and task_completed:
+            cls.completed_row_inputs.append(cls.current_row_inputs)
+        # Get next current_row_inputs
+        cls.current_row_inputs = cls.user_rows_inputs.pop(index)
+        # Set and parse user inputs if not in 'completeed_row_inputs'
+        if cls.current_row_inputs not in cls.completed_row_inputs:
+            cls.set_user_input()
 
 
 class Xpath:

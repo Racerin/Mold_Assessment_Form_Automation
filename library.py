@@ -307,11 +307,10 @@ class Inputs:
             params = OTHERS_SECTION_MAPPING[section]
             # Match each option in content
             if section in OTHERS_SECTION.CHECKBOX_WITH_OTHER:
+                # values is just a sequence of each checkbox option string
                 inputs_value = options_input
-                # TODO
             elif section in OTHERS_SECTION.EXTERIOR_WALL:
                 # Local instantiations
-                options_input = [option.strip() for option in content_str.split(',')]
                 k_v_string_dict = get_keys_and_values_strs_dict(params)
                 # Values for 'Inputs'
                 DSVMWD_values = dict()
@@ -334,7 +333,12 @@ class Inputs:
                     """
                     inputs_value.update({'exterior':exteriors_values})
             elif section in OTHERS_SECTION.RADIO_BUTTON_OPTIONS:
-                pass
+                # Get all options as keys to match with value
+                k_v_string_dict = get_keys_and_values_strs_dict(params)
+                # Get best matching value of param
+                best_option = best_key_match_string(k_v_string_dict, content_str)
+                # inputs_value
+                inputs_value = best_option
             elif section in OTHERS_SECTION.TEXTINPUTS:
                 assert isinstance(content_str, str), content_str
                 inputs_value = content_str

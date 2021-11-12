@@ -52,9 +52,13 @@ Follow the instructions below to complete the task.
         * Describe Supplies and Materials
         * Additional Comments
 
-2. Things to look for when assessing the road:
+2. Things to look for when assessing the rooms:
     * Is there any water damage (**Damage or Stains**), **Visible Mold**, or is an area **Wet or Damp**.
-    <!-- TODO -->
+        * What items/surfaces were affected.
+        * How big is the effect on each item.
+        * Of the items/surfaces affected, is it within 3 feet of an external wall?
+    * For each of these items; Ceiling, Walls, Floor, Windows, Furniture, HVAC;
+        * Was it affected?
 
 
 

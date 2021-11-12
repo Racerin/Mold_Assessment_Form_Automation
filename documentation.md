@@ -159,22 +159,22 @@ The ID of the *'section'* is in parenthesis. Each content contains one or more *
     * 1 : Mild
     * 2 : Moderate
     * 3 : Strong
-* **Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD)** - These 3 *sections* corresponds to the same *content/options* below.  
-Each content can be tagged with a number 0-3 corresponding to the size of area affected.
-Each content can be tagged with the symbol '+' to state that it is close to an external wall (External Zone). (look at appendix 3).  
+* **Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD)** - All these 3 *sections* has the same *content/options* below.  
+Each option can be tagged with a number 0-3 corresponding to the size of area affected. If not tagged, a default of **'0'** will be set.  
+Any option not selected will be given an automatic **'N/A'**.  
+Each option can be tagged with the symbol '+' to state that it is close to an external wall (External Zone). (look at [appendix 3](#advance)).  
 Several options can be selected by placing a comma between them.  e.g. Ceiling2, Walls3+, Windows+
-If an option isn't selected, that option (Ceiling, Walls, Floor) does not have its respective component (Wet or Damp, Visible Mold).  
-    * 0 : Ceiling
-    * 1 : Walls
-    * 2 : Floor
-    * 3 : Windows
-    * 4 : Furnishings
-    * 5 : HVAC systems
-    * 6 : Supplies & Materials
-    * 7 : Pipes
-    * 8 : All components are more than 3 feet away from Exterior Wall
-    * 9 : No Exterior Walls
-    * 10:"No Effect/Zone",
+    * Ceiling
+    * Walls
+    * Floor
+    * Windows
+    * Furnishings
+    * HVAC systems
+    * Supplies & Materials
+    * Pipes
+    * All components are more than 3 feet away from Exterior Wall
+    * No Exterior Walls
+    * No Effect/Zone,
 * **Ceiling Material (CM)** - Put in the number/letter corresponding to the ceiling material affected. (One option)
     * 0 : Ceiling Tile
     * 1 : Plaster
@@ -229,7 +229,7 @@ If an option isn't selected, that option (Ceiling, Walls, Floor) does not have i
 e.g. EX(This is my additional message.)
 
 
-## 3. *'Others'* Advance:
+## 3. <a name="advance">*'Others'* Advance:</a>
 * DS, VM, WD Intensity - The numbers below represents the area size of the component.
     * 0 : None
     * 1 : The size of a sheet of paper

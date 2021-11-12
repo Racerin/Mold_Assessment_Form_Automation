@@ -12,8 +12,8 @@ Follow the instructions below to complete the task.
 
 
 # Road Map
-Tree diagram of spreadsheet inputs.
-1. Headers:  
+1. Tree diagram of spreadsheet inputs.
+* Headers:  
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***Text Inputs***
     * Room Name
     * Floor Name (ID)
@@ -51,6 +51,10 @@ Tree diagram of spreadsheet inputs.
         ***Text Inputs***
         * Describe Supplies and Materials
         * Additional Comments
+
+2. Things to look for when assessing the road:
+    * Is there any water damage (**Damage or Stains**), **Visible Mold**, or is an area **Wet or Damp**.
+    <!-- TODO -->
 
 
 

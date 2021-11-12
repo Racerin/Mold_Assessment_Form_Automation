@@ -1,9 +1,9 @@
-<style type="text/css">
+<!-- <style type="text/css">
     /* ol { list-style-type: upper-alpha; } */
     .temp {
         text-indent: 100px;
     }
-</style>
+</style> -->
 # Welcome
 
 This is documentation for the 'filling-out' of the Mold assessment form.

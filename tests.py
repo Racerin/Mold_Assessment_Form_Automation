@@ -73,6 +73,7 @@ class Tsv_Example_Template:
 
 
 class TestInputs(unittest.TestCase):
+
     @classmethod
     def set_test_values(cls):
         """Set values for input to test with."""
@@ -189,5 +190,7 @@ class TestExampleTemplate(unittest.TestCase):
 
     def test_work(self):
         """Just see if this class runs."""
-        print(self.example_template_file)
+        # print(self.example_template_file)
         pass
+
+    # def test_create_

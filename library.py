@@ -1,6 +1,6 @@
 import datetime
 import logging
-from os import remove
+from os import remove, environ
 import time
 import dataclasses
 import enum
@@ -134,11 +134,14 @@ def best_key_match_string(dict1:Mapping, to_match:str) -> typing.Any:
 
 
 #Configure
-observer_name : str = "Darnell Baird"
+# observer_name : str = "Darnell Baird"
 date : str = today_date()
-tsv_load_file = 'file.tsv'
-tsv_save_file = "completed.tsv"
-website_url = "https://forms.office.com/pages/responsepage.aspx?id=KupABOviREat2LyPNxBbYeaRdFMG3AdBl5FpMuhBKwdUOTlWWUlCVUxHUFU3TENVUUVaMDlMUkw3USQlQCN0PWcu"
+# tsv_load_file = 'file.tsv'
+# tsv_save_file = "completed.tsv"
+website_url = environ.get('WEBSITE_URL', None)
+if website_url is None:
+    ValueError("You must assign a url for the form as an 'environment variable' [WEBSITE_URL]")
+
 
 class Config():
     data = dict()
@@ -287,7 +290,7 @@ class Inputs:
                 __score, section = section_matches[-1]
             return section
 
-        def __get_intensity_for_DSVMWD_option(option_input) -> int|None:
+        def __get_intensity_for_DSVMWD_option(option_input) -> 'int|None':
             """Returns the number corresponding to the 
             size of the affected area (page 1).
             """
@@ -423,7 +426,7 @@ class Inputs:
     @classmethod
     def user_input_prompt(cls):
         """Prompt user for input data."""
-        # observer_name = input(OBSERVER_NAME_PROMPT)
+        # config.observer_name = input(OBSERVER_NAME_PROMPT)
         cls.room_name = input(ROOM_NAME_PROMPT)
         cls.floor_id = int(input(FLOOR_PROMPT))
         cls.room_type_id = int(input(ROOM_TYPE_PROMPT))
@@ -441,7 +444,7 @@ class Inputs:
         """Load user input data into memory.
         Have the option to extend previous values with new values.
         """
-        ans_list = load_tsv_file(tsv_load_file, ignore_header_regex='Room ')
+        ans_list = load_tsv_file(config.tsv_load_file, ignore_header_regex='Room ')
         if extend:
             cls.user_rows_inputs.extend(ans_list)
         else:
@@ -450,12 +453,12 @@ class Inputs:
     @classmethod
     def save_completed(cls):
         """Saves completed rows into a file"""
-        save_tsv_file(tsv_save_file, cls.completed_row_inputs)
+        save_tsv_file(config.tsv_save_file, cls.completed_row_inputs)
 
     @classmethod
     def load_completed(cls):
         """Loads row files into memory"""
-        cls.completed_row_inputs = load_tsv_file(tsv_save_file)
+        cls.completed_row_inputs = load_tsv_file(config.tsv_save_file)
 
     @classmethod
     def set_user_input(cls, row:list=current_row_inputs, **kwargs):
@@ -983,7 +986,7 @@ class Selenium:
             date_input.send_keys(Inputs.date)
             # Enter Observer name:
             observer_input = self.driver.find_element(By.CSS_SELECTOR, ".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
-            observer_input.send_keys(observer_name)
+            observer_input.send_keys(config.observer_name)
             # Select Faculty/Office/Unit
             self.driver.find_element(By.ID, "SelectId_0_placeholder").click()
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Faculty of Engineering"]').click()
@@ -1091,7 +1094,7 @@ class Selenium:
             # Enter Date
             self.answer_text_element(1, Inputs.date)
             # Enter Observer name
-            self.answer_text_element(2, observer_name)
+            self.answer_text_element(2, config.observer_name)
             # Select Faculty/Office/Unit
             self.answer_dropdown_element(3, 7)
             if yield_:
@@ -1209,3 +1212,6 @@ class Runner:
             self.pause_handle(yielded)
             # Return pause
             if yielded in self.return_pauses: break
+
+
+config = Config()

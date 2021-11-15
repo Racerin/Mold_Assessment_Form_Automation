@@ -5,6 +5,7 @@ file.tsv
 pseudo.txt
 trash
 xpath practice.py
+.env
 
 # Noise
 *__pycache__

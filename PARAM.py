@@ -1,5 +1,7 @@
 import enum
 
+FILE_EXAMPLE_TEMPLATE = 'example template.xltx'
+
 CONFIG_FILE = "config.json"
 
 TSV_HEADER = ["Room Name", "Floor ID", "Room Type ID", "Building ID", "FUTURE"]

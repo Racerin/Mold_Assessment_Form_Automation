@@ -1,22 +1,75 @@
 import unittest
 import os
 import datetime
+import tempfile
 import uuid
 import string
 import random
 from random import randrange
 
+import openpyxl
+
 from library import *
 
 
 def randstr(length=randrange(1,20)):
+    """Create a string containing random characters."""
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 def get_rand_str() -> str:
+    """Create a string containing random characters."""
     str1 = str(uuid.uuid4().hex)
     str1 = datetime.datetime.now().strftime("%y%m%d_%H%M%S%f")
     return str1
+
+
+def extract_xlsx_data(filename:str) -> Container:
+    """Create a list of rows then columns from an xlsx/xltx file.
+    """
+    ## opening the xlsx file
+    xlsx = openpyxl.load_workbook(filename)
+
+    ## opening the active sheet
+    sheet = xlsx.active
+
+    ## getting the data from the sheet
+    data = sheet.rows
+
+    # Return object data
+    return data
+
+
+class Tsv_Example_Template:
+    """Create a 'TemporaryFile' context manager
+    that connects to 'example template.xltx' 
+    as a tsv file.
+    """
+    def __enter__(self):
+        # Obtain xlsx/xltx file data
+        data = extract_xlsx_data(FILE_EXAMPLE_TEMPLATE)
+
+        # Open the tsv temporary file
+        self.tsv_file = tempfile.TemporaryFile(suffix='.tsv')
+        
+        # Write data to tsv file. https://www.studytonight.com/post/converting-xlsx-file-to-csv-file-using-python
+        for row in data:
+            row_list = list(row)
+            n_col = len(row_list)
+            for i in range(n_col):
+                str_col = str(row_list[i].value)
+                if i == n_col - 1:
+                    self.tsv_file.write(str_col)
+                else:
+                    self.tsv_file.write(str_col + '\t')
+            self.tsv_file.write('\n')
+
+        # Return the file object
+        return self.tsv_file
+
+    def __exit__(self, *exc):
+        # Explicitly close temporary file
+        self.tsv_file.close()
 
 
 class TestInputs(unittest.TestCase):
@@ -125,3 +178,16 @@ class TestStringMatch(unittest.TestCase):
         forward = l_ratio('Snake', 'Hibiscus flower')
         backward = l_ratio('Hibiscus flower', 'Snake')
         assert forward == backward, (forward, backward)
+
+
+class TestExampleTemplate(unittest.TestCase):
+    """Test the values of 'example template.xltx' """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.example_template_file = Tsv_Example_Template()
+
+    def test_work(self):
+        """Just see if this class runs."""
+        print(self.example_template_file)
+        pass

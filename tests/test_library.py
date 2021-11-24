@@ -193,4 +193,19 @@ class TestExampleTemplate(unittest.TestCase):
         # print(self.example_template_file)
         pass
 
-    # def test_create_
+    def test_process(self):
+        """ Test the entire process of extract information from 'example template'
+        to before filling-out form.
+        """
+        # Reconfig
+        global excel_load_file
+        # excel_load_file = FILE_EXAMPLE_TEMPLATE
+        globals()['excel_load_file'] = FILE_EXAMPLE_TEMPLATE
+        
+        # Load Inputs
+        Inputs.load_user_inputs()
+        assert isinstance(Inputs.user_rows_inputs, list)
+        assert len(Inputs.user_rows_inputs) == 1
+        
+        # Now, load a user input
+        Inputs.load_user_input()

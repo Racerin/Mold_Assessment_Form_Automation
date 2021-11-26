@@ -71,22 +71,23 @@ class PAUSE(enum.Enum):
     NEXT_FORM = enum.auto()
 
 
-class OTHERS_SECTION(enum.Enum):
-    O = ['O', 'Observer']
-    D = ['D', 'Date']
-    MO = ['MO', 'Mold Odor']
-    DS = ['DS', 'Damage or Stains']
-    VM = ['VM', 'Visible Mold']
-    WD = ['WD', 'Wet or Damp']
-    CM = ['CM', 'Ceiling Material']
-    WaM = ['WaM', 'Walls Material']
-    FlM = ['FlM', 'Floor Material']
-    WiM = ['WiM', 'Window Material']
-    FsM = ['FsM', 'Furnishing Material']
-    HVAC = ['HM', 'HVAC Material']
-    SM = ['SM', 'Supplies and Materials']
-    DSM = ['DSM', 'Description Supplies and Materials', 'Supplies and Materials Description', 'SMD']
-    EX = ['EX', 'Additional Comments']
+class OTHERS_SECTION():
+# class OTHERS_SECTION(enum.Enum):
+    O = ('O', 'Observer')
+    D = ('D', 'Date')
+    MO = ('MO', 'Mold Odor')
+    DS = ('DS', 'Damage or Stains')
+    VM = ('VM', 'Visible Mold')
+    WD = ('WD', 'Wet or Damp')
+    CM = ('CM', 'Ceiling Material')
+    WaM = ('WaM', 'Walls Material')
+    FlM = ('FlM', 'Floor Material')
+    WiM = ('WiM', 'Window Material')
+    FsM = ('FsM', 'Furnishing Material')
+    HVAC = ('HM', 'HVAC Material')
+    SM = ('SM', 'Supplies and Materials')
+    DSM = ('DSM', 'Description Supplies and Materials', 'Supplies and Materials Description', 'SMD')
+    EX = ('EX', 'Additional Comments')
 
     TEXTINPUTS = (O, D, DSM, EX,)
     DROPDOWNS = (MO,)
@@ -94,7 +95,11 @@ class OTHERS_SECTION(enum.Enum):
     RADIO_BUTTON_OPTIONS = (CM, WaM, FlM, WiM, FsM, HVAC,)
     CHECKBOX_WITH_OTHER = (DSM,)
     MULTIPLE_OPTIONS = (DS, VM, WD, SM,)
-    All = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX,)
+    EVERYONE = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX,)
+
+# OTHERS_SECTION_ALL = tuple(OTHERS_SECTION.O, OTHERS_SECTION.D, OTHERS_SECTION.MO, OTHERS_SECTION.DS, OTHERS_SECTION.VM, OTHERS_SECTION.WD, OTHERS_SECTION.CM, OTHERS_SECTION.WaM, OTHERS_SECTION.FlM, OTHERS_SECTION.WiM, OTHERS_SECTION.FsM, OTHERS_SECTION.HVAC, OTHERS_SECTION.SM, OTHERS_SECTION.DSM, OTHERS_SECTION.EX, )
+OTHERS_SECTION_ALL = OTHERS_SECTION.O, OTHERS_SECTION.D, OTHERS_SECTION.MO, OTHERS_SECTION.DS, OTHERS_SECTION.VM, OTHERS_SECTION.WD, OTHERS_SECTION.CM, OTHERS_SECTION.WaM, OTHERS_SECTION.FlM, OTHERS_SECTION.WiM, OTHERS_SECTION.FsM, OTHERS_SECTION.HVAC, OTHERS_SECTION.SM, OTHERS_SECTION.DSM, OTHERS_SECTION.EX
+
 
 
 #Strings to format
@@ -102,11 +107,14 @@ STR_INPUTS_EXTERIOR = "{}_exterior"
 
 
 # Regular Expressions
+# Useful site to check regular expressions: https://regex101.com/
 RE_TRAILING_DASH = r'^/+'
 
-RE_SECTION_CONTENT_GROUPDICT = r'\s*(?P<section>\w+(\s+\w+)?)\s*:\s*(?P<content>.+)'
+# RE_SECTION_CONTENT_GROUPDICT = r'\s*(?P<section>\w+(\s+\w+)?)\s*:\s*(?P<content>.+)'
+RE_SECTION_CONTENT_GROUPDICT = r'(?P<section>.+)\s*:\s*(?P<content>.+)'
 RE_SPLIT_COMMAS = r' *, *'
 RE_MO = r''
+RE_DATE = r"\d\d\/\d\d\/20\d\d"     # --/--/20--
 
 
 # Selenium Answers

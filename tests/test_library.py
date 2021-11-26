@@ -188,24 +188,34 @@ class TestExampleTemplate(unittest.TestCase):
     def setUpClass(cls):
         cls.example_template_file = Tsv_Example_Template()
 
-    def test_work(self):
-        """Just see if this class runs."""
-        # print(self.example_template_file)
-        pass
-
     def test_process(self):
         """ Test the entire process of extract information from 'example template'
         to before filling-out form.
         """
-        # Reconfig
-        global excel_load_file
-        # excel_load_file = FILE_EXAMPLE_TEMPLATE
-        globals()['excel_load_file'] = FILE_EXAMPLE_TEMPLATE
-        
+
         # Load Inputs
-        Inputs.load_user_inputs()
+        Inputs.load_user_inputs(filename=FILE_EXAMPLE_TEMPLATE)
         assert isinstance(Inputs.user_rows_inputs, list)
-        assert len(Inputs.user_rows_inputs) == 1
+        assert len(Inputs.user_rows_inputs) == 1, len(Inputs.user_rows_inputs)
         
         # Now, load a user input
         Inputs.load_user_input()
+        assert len(Inputs.current_row_inputs) > 0, Inputs.current_row_inputs
+        assert "Main Classroom" in Inputs.current_row_inputs[0], Inputs.current_row_inputs[0]
+        assert Inputs.mold_odor_id is None, Inputs.mold_odor_id
+        assert re.match(RE_DATE, Inputs.date), Inputs.date
+        assert Inputs.damage_or_stains[0] == 'N/A', Inputs.damage_or_stains
+        assert Inputs.damage_or_stains[1] == '2', Inputs.damage_or_stains
+
+
+class TestLibrary(unittest.TestCase):
+    """ General """
+
+    def test_str_to_key(self):
+        """ Test 'str_to_key'. """
+        input1 = "Bad Bat."
+        ans1 = str_to_key(input1)
+        assert ans1 == "Bad_Bat_", (input1, ans1)
+        input2 = "10"
+        ans2 = str_to_key(input2)
+        assert ans2 == "_10", (input2, ans2)

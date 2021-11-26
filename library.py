@@ -14,6 +14,7 @@ from collections.abc import Sequence, Mapping, Container
 from numbers import Number
 from functools import partial
 
+import openpyxl
 from pynput import keyboard
 from pynput.keyboard import Key
 from Levenshtein import jaro
@@ -59,7 +60,7 @@ def best_of_dict(dict1:dict, key:typing.Any):
             # Levenshtein Distance
             # TO BE DONE
 
-def load_tsv_file(filename, ignore_header_regex:str=None):
+def load_tsv_file(filename, ignore_header_regex:str=None) -> list:
     """Extract row information from a tsv file.
     ignore_header_regex : A regular expression string to ignore the 1st header
     string if it matches.
@@ -94,6 +95,28 @@ def save_tsv_file(filename, rows:Sequence):
         ans_str = '\n'.join(ans_row_strs)
         fd.write(ans_str)
 
+def load_excel_file(filename, ignore_header_regex:str=None) -> list:
+    """ Reminiscent of 'load_tsv_file'. """
+    # Open the excel file
+    excel = openpyxl.load_workbook(filename)
+    # Open the active/first sheet
+    sheet = excel.active
+    # Get rows
+    rows = sheet.rows
+    # Place each cell of row into a list, and place lists into a bigger list
+    ans = list()
+    for i, row in enumerate(rows):
+        row_list = list()
+        # Skip header row
+        if i==0 and isinstance(ignore_header_regex, str):
+            first_cell = row[0]
+            matched_header = re.search(ignore_header_regex, first_cell.value)
+            if matched_header: continue
+        for cell in row:
+            row_list.append(cell.value)
+        ans.append(row_list)
+    return ans
+
 def match_strings(str1:str, str2:str) -> float:
     """Return the match ratio between strings based on string length.
     """
@@ -102,8 +125,18 @@ def match_strings(str1:str, str2:str) -> float:
 
 def str_to_key(str1:str) -> str:
     """Convert a string to a string usable as a key"""
-    ans = [t if t in string.string.ascii_letters else '_' for t in str1]
+    # Remove any trailing white space
+    str1 = str1.strip()
+
+    # Add underscore if 1st character is a number
+    if str1[0].isdigit():
+        str1 = '_' + str1
+    
+    # Replace any non-letters with '_'
+    _strings = [t if t in string.ascii_letters + string.digits else '_' for t in str1]
+    ans = "".join(_strings)
     return ans
+
 
 def get_keys_and_values_strs_dict(dict1:dict) -> dict:
     """Creates dictionary of dictionary 
@@ -133,23 +166,32 @@ def best_key_match_string(dict1:Mapping, to_match:str) -> typing.Any:
     return best_value
 
 
-#Global Configure
-observer_name : str = "Darnell Baird"
-date : str = today_date()
-tsv_load_file = 'file.tsv'
+## Global Configure
+
+# Files
 tsv_save_file = "completed.tsv"
+excel_load_file = "file.xlsx"
+excel_save_file = "completed.xlsx"
+
+# Website url (NB. By default, a secret to remote repository)
 website_url = environ.get('WEBSITE_URL', None)
 if website_url is None:
     ValueError("You must assign a url for the form as an 'environment variable' [WEBSITE_URL]")
 
 
 class Config():
+    """ This class when instantiated;
+    1. Loads information from 'config.json' file.
+    # 2. Assigns the variables to it's class according to its name
+    # 3. Assigns all other variables globally.
+     """
     data = dict()
 
     def __init__(self):
         """Load config file and assign variables"""
         # Load config file
         self.load_config()
+
         # Assign variables
         self.assign_configs()
 
@@ -161,15 +203,22 @@ class Config():
     def assign_configs(self):
         """Assign config values to classes/variables."""
         classes = [Inputs, ]
-        for clas in classes:
+        for _class in classes:
+
             # Get class dict
-            if clas in self.data:
-                clas_nm = clas.__name__
-                # Pop/remove dict from config 
-                dict1 = self.data.pop(clas_nm)
-                # Assign variables of dict to class
-                for k,v in dict1.items():
-                    setattr(clas, k, v)
+            class_name = _class.__name__
+            if class_name in self.data:
+
+            # Pop dict according to class from config's data
+                dict1 = self.data.pop(class_name)
+
+            # Assign variables of dict to class
+                if isinstance(dict1, Mapping):
+                    for k,v in dict1.items():
+                        setattr(_class, k, v)
+                else:
+                    logging.error("You cannot assign a non-dictionary to the class {}.".format(class_name))
+
         # Assign other variables globally
         for k,v in self.data.items():
             globals()[k] = v
@@ -281,16 +330,23 @@ class Inputs:
     class Parser:
         inputs = dict()
 
-        def __get_best_section(section_input : str) -> OTHERS_SECTION:
+        def __get_best_section(self, section_input : str) -> OTHERS_SECTION:
             """Ge the best section from the user's input string."""
-            for section_keys in OTHERS_SECTION.ALL:
-                section_matches = [(match_strings(section_keys, section_input), key) for key in section_keys]
-                section_matches.sort()
-                # Select the section with the highest correlation (Last one)
-                __score, section = section_matches[-1]
+            section_matches = list()
+
+            # Go through each section key[word] to get a matching score
+            for section_keys_tup in OTHERS_SECTION.EVERYONE:
+                for key in section_keys_tup:
+                    score = match_strings(key, section_input)
+                    tup = (score, section_keys_tup)
+                    section_matches.append(tup)
+
+            # Select the section_keys with the highest correlation (Last one when sorted)
+            section_matches.sort()
+            __score, section = section_matches[-1]
             return section
 
-        def __get_intensity_for_DSVMWD_option(option_input) -> 'int|None':
+        def __get_intensity_for_DSVMWD_option(self, option_input) -> 'int|None':
             """Returns the number corresponding to the 
             size of the affected area (page 1).
             """
@@ -304,20 +360,29 @@ class Inputs:
 
         def __get_inputs_value(self, section:OTHERS_SECTION, content_str:str, inputs_attribute:str) -> typing.Any:
             """Create values that are passable to Selenium to answer questions."""
+
             # Split-up content-input-string to get input-option-strings
             options_input = [option.strip() for option in content_str.split(',')]
+
+            # Remove any empty strings
+            options_input = [x for x in options_input if bool(x)]
+
             # Get respective standard dictionary
             params = OTHERS_SECTION_MAPPING[section]
-            # Match each option in content
+
+            ## Match each option in content
+            # Checkbox string matching
             if section in OTHERS_SECTION.CHECKBOX_WITH_OTHER:
-                # values is just a sequence of each checkbox option string
                 inputs_value = options_input
+
+            # Check for DS, VM, WD
             elif section in OTHERS_SECTION.EXTERIOR_WALL:
-                # Local instantiations
+                # Setup
                 k_v_string_dict = get_keys_and_values_strs_dict(params)
-                # Values for 'Inputs'
                 DSVMWD_values = dict()
                 exteriors_values = list()
+                
+                # Parse through each 
                 for option_input in options_input:
                     # Check with keys and values
                     best_option = best_key_match_string(k_v_string_dict, option_input)
@@ -327,6 +392,7 @@ class Inputs:
                     # Check for exterior in input_option
                     if '+' in option_input:
                         exteriors_values.append(best_option)
+
                 #Now, Assign values for inputs
                 inputs_value = DSVMWD_values
                 if exteriors_values:
@@ -346,49 +412,67 @@ class Inputs:
                 assert isinstance(content_str, str), content_str
                 inputs_value = content_str
             return inputs_value
+
         
         def __get_inputs_exterior_wall_filter(self, inputs_value:dict, inputs_attribute:str) -> dict:
-            """Check for EXETERIOR sections and if yes, add exterior values."""
-            # if 'exterior' in inputs_value:
-            exteriors = inputs_value.pop('exterior', None)
-            assert isinstance(exteriors, (None, list,))
-            if exteriors:
-                # Add respective inputs exterior for Inputs
-                new_inputs_attribute = STR_INPUTS_EXTERIOR.format(inputs_attribute)  #eg. damage_or_stain_exterior
-                inputs_value = exteriors
-                self.inputs.update({new_inputs_attribute:inputs_value})
+            """Check for '+' which symbolises 'close to exterior wall'.
+            This is a filter method.
+            Assign the 'exterior' value if '+' is found.
+            'exteriors' is a list containing all values (wall, window,) that are within 3ft of an external wall.
+            """
+            if isinstance(inputs_value, Mapping):
+                exteriors = inputs_value.pop('exterior', None)
+                assert isinstance(exteriors, Sequence) or exteriors is None
+                if exteriors:
+                    # Add '_exterior' to 'inputs_attribute' to create the exterior 'Inputs' attribute
+                    new_inputs_attribute = STR_INPUTS_EXTERIOR.format(inputs_attribute)  #eg. damage_or_stain_exterior
+                    inputs_value = exteriors
+                    self.inputs.update({new_inputs_attribute:inputs_value})
             return inputs_value
 
-        def parse_others(self, others_cells:'list[str]'):
-            """Factory method for parsing 'Others' variables.
+        def parse_others_cell(self, others_cell:str):
+            """Factory method for parsing a string of 'Others'.
             """
-            # Process the string of each cell under 'Others'.
-            for cell_section_str in others_cells:
-                # Get the section:content of the input string
-                m = re.match(RE_SECTION_CONTENT_GROUPDICT, cell_section_str)
+            # Get the section:content of the input string
+            m = re.match(RE_SECTION_CONTENT_GROUPDICT, others_cell)
+            if m:
                 dict_section_content = m.groupdict()
-                section_str_input, content_str_input = dict_section_content['section'], dict_section_content['content']
+                section_str_input, content_str_input = dict_section_content['section'].strip(), dict_section_content['content'].strip()
+
                 # Determine 'section' selected in cell
                 section = self.__get_best_section(section_str_input)
-                # Get in str form 'inputs_attribute' for attribute in 'Inputs'.
+
+                # Get in str form 'inputs_attribute' for attribute in 'Inputs' to use as a key.
                 inputs_attribute = OTHERS_SECTION_INPUTS_MAPPING[section]
+
                 # Get value for 'inputs_attribute'
                 inputs_value = self.__get_inputs_value(section, content_str_input, inputs_attribute)
+
                 # Get values for close to exterior walls (if it is that section)
                 inputs_value = self.__get_inputs_exterior_wall_filter(inputs_value, inputs_attribute)
+
                 # Add new key:values, attribute:values for defined inputs
                 self.inputs.update({inputs_attribute:inputs_value})
+            else:
+                raise ValueError("The 'others_cell' value is not valid.")
 
-        def assign_to_input_cls(self, input_cls):
-            """Assign to 'Input' class based on stored inputs."""
-            for input_name, input_value in self.inputs.items():
-                # Assign 'input_value' to 'Input' class
-                if input_name in input_cls:
-                    setattr(input_cls, input_name, input_value)
-                # Assign 'input_value' to global variables
+        def assign_to_inputs_cls(self, input_cls, to_global=True):
+            """Assign to 'Inputs' class based on stored inputs."""
+
+            # Assign 'inputs_value's to 'Inputs' class
+            for inputs_attribute, inputs_value in self.inputs.items():
+                # if inputs_attribute in input_cls:
+                if inputs_attribute in OTHERS_SECTION_INPUTS_MAPPING.values():
+                    setattr(input_cls, inputs_attribute, inputs_value)
+
+                # If not in 'Inputs', assign 'inputs_value' to global variables
+                elif to_global:
+                    setattr(globals(), inputs_attribute, inputs_value)
+
                 else:
-                    setattr(globals(), input_name, input_value)
+                    raise AttributeError("Attribute '{}' cannot be found in '{}'.".format(input_name, input_cls))
 
+    observer_name : str = "John Doe"
     room_name : str = ""
     floor_id : int = None
     room_type_id : int = None
@@ -397,7 +481,6 @@ class Inputs:
 
     others_arguments = list()
     parser_for_other_arguments = list()
-    other_actions = list()
 
     mold_odor_id = None
     mold_odor_desc : str = ""
@@ -440,11 +523,11 @@ class Inputs:
         cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id = row
 
     @classmethod
-    def load_user_inputs(cls, extend=False) -> list:
+    def load_user_inputs(cls, extend=False, filename=excel_load_file) -> list:
         """Load user input data into memory.
         Have the option to extend previous values with new values.
         """
-        ans_list = load_tsv_file(tsv_load_file, ignore_header_regex='Room ')
+        ans_list = load_excel_file(filename, ignore_header_regex='Room ')
         if extend:
             cls.user_rows_inputs.extend(ans_list)
         else:
@@ -458,17 +541,20 @@ class Inputs:
     @classmethod
     def load_completed(cls):
         """Loads row files into memory"""
-        cls.completed_row_inputs = load_tsv_file(tsv_save_file)
+        cls.completed_row_inputs = load_excel_file(excel_save_file)
 
     @classmethod
-    def set_user_input(cls, row:list=current_row_inputs, **kwargs):
+    def set_user_input(cls, row=current_row_inputs, **kwargs):
         """Assign arguments to/in Inputs"""
-        # Assign variables
-        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, cls.mold_odor_id, *cls.other_arguments = row
+        # Assign row variables
+        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, *cls.others_arguments = row
+
+        # Assign mapped variables
         cls_dir = dir(cls)
         for k,v in kwargs.items():
             if k in cls_dir:
                 setattr(cls, k, v)
+
         # Create object parsers of other_arguments
         cls.parse_other_arguments()
 
@@ -478,8 +564,9 @@ class Inputs:
         Use the 'Inputs.Parser' class to parse through the other arguments.
         """
         for arg_str in cls.others_arguments:
-            parser = cls.Parser.parse_others(arg_str)
-            parser.assign_to_input_cls(cls)
+            parser = cls.Parser()
+            parser.parse_others_cell(arg_str)
+            parser.assign_to_inputs_cls(cls, to_global=False)
 
     @classmethod
     def load_user_input(cls, index=0, task_completed:bool=True):
@@ -490,17 +577,21 @@ class Inputs:
         # Move current user inputs over to completed
         if cls.current_row_inputs and task_completed:
             cls.completed_row_inputs.append(cls.current_row_inputs)
+
         # Get next current_row_inputs
         cls.current_row_inputs = cls.user_rows_inputs.pop(index)
+        assert len(cls.current_row_inputs) > 4, cls.current_row_inputs
+        
         # Set and parse user inputs if not in 'completeed_row_inputs'
         if cls.current_row_inputs not in cls.completed_row_inputs:
-            cls.set_user_input()
+            cls.set_user_input(row=cls.current_row_inputs)
 
 
 class Xpath:
     @classmethod
     def xpath_index(cls, xpath:str, index:int=None, xpath_index=True, encapsulate=False) -> str:
         """Returns an xpath of index of nodes"""
+
         # Convert 'index' from programming/Python index to xpath index
         if xpath_index: index += 1
         if index is None:
@@ -986,7 +1077,7 @@ class Selenium:
             date_input.send_keys(Inputs.date)
             # Enter Observer name:
             observer_input = self.driver.find_element(By.CSS_SELECTOR, ".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
-            observer_input.send_keys(observer_name)
+            observer_input.send_keys(Inputs.observer_name)
             # Select Faculty/Office/Unit
             self.driver.find_element(By.ID, "SelectId_0_placeholder").click()
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Faculty of Engineering"]').click()
@@ -1085,73 +1176,101 @@ class Selenium:
         elif option == 2:
             # Load webpage form
             self.driver.get(website_url)
+
             # Set the zoom of the webpage
             # self.driver.execute_script("document.body.style.zoom='80%'")
             if yield_:
                 yield PAUSE.START
                 yield PAUSE.PAGE_ONE
                 time.sleep(1)
+
             # Enter Date
             self.answer_text_element(1, Inputs.date)
+
             # Enter Observer name
-            self.answer_text_element(2, observer_name)
+            self.answer_text_element(2, Inputs.observer_name)
+
             # Select Faculty/Office/Unit
             self.answer_dropdown_element(3, 7)
             if yield_:
                 yield PAUSE.FIRST_PAGE_UPDATE
+
             # Select Building
             self.answer_dropdown_element(4, Inputs.building_id)
+
             # Select Floor
             self.answer_dropdown_element(5, Inputs.floor_id)
+
             # Enter Room/Area Identification
             self.answer_text_element(6, Inputs.room_name)
+
             # Enter Room/Area Type
             self.answer_dropdown_element(7, Inputs.room_type_id)
+
             # Mold Odor, set as 'None' for now in order to progress to the next question
             self.answer_dropdown_element(8, 'None')
+
             # Select Damage or Stains (DS)
             self.answer_radiogroups_element(9, Inputs.damage_or_stains)
+
             # Select DS within range of external walls
             self.answer_checkboxgroup_element(10, Inputs.damage_or_stains_exterior)
+
             # Select Visible Mold (VM)
             self.answer_radiogroups_element(11, Inputs.visible_mold)
+
             # Select VM within range of external walls
             self.answer_checkboxgroup_element(12, Inputs.visible_mold_exterior)
+
             # Select Wet or Damp(WD)
             self.answer_radiogroups_element(13, Inputs.wet_or_damp)
+
             # Select WD within range of external walls
             self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior)
+
             # NOW, answer Mold Odor Option
             mold_odor = MOLD_ODOR[Inputs.mold_odor_id]
             self.answer_dropdown_element(8, mold_odor)
+
             # If any answer other than 'None' a new question with textarea pops-up right after
             if Inputs.mold_odor_id != 0:
                 self.answer_textarea_element(9, Inputs.mold_odor_desc)
+
             # Click 'Next' Button
             next_button = self.find_element(XPATH_NEXT_BUTTON)
             if yield_:
                 yield PAUSE.BEFORE_NEXT_PAGE
             next_button.click()
+
             # NEXT PAGE
             if yield_:
                 yield PAUSE.NEXT_PAGE
                 yield PAUSE.PAGE_TWO
+
             # Ceiling materials affected
             self.ans_radiogroup_element(1, Inputs.ceiling_materials)
+
             # Wall materials affected
             self.ans_radiogroup_element(2, Inputs.wall_materials)
+
             # Floor materials affected
             self.ans_radiogroup_element(3, Inputs.floor_materials)
+
             # Windows type affected
             self.ans_radiogroup_element(4, Inputs.windows_materials)
+
             # Furnishings affected
             self.ans_radiogroup_element(5, Inputs.furnishing_materials)
+
             # HVAC System affected
             self.ans_radiogroup_element(6, Inputs.hvac_materials)
+
             # Supplies and Materials affected
             self.answer_checkboxgroup_element(7, Inputs.supplies_and_materials)
+
             # Supplies and Materials Description (Checkbox options with other)
             self.answer_checkboxgroup_other_element(8, Inputs.supplies_and_materials_desc)
+
             # Additional comments
             self.answer_textarea_element(9, Inputs.additional_comments)
             submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
@@ -1160,11 +1279,13 @@ class Selenium:
                 yield PAUSE.SUBMIT
                 print("Not suppose to reach here.")
             submit_button.click()
+
             # NEXT PAGE
             if yield_:
                 yield PAUSE.NEXT_PAGE
                 yield PAUSE.PAGE_THREE
-                # Do another form
+                
+            # Do another form
                 yield PAUSE.BEFORE_NEXT_PAGE
 
 

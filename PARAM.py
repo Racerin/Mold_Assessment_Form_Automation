@@ -79,6 +79,9 @@ class OTHERS_SECTION():
     DS = ('DS', 'Damage or Stains')
     VM = ('VM', 'Visible Mold')
     WD = ('WD', 'Wet or Damp')
+    DSE = ('Damage or Stains exterior')
+    VME = ('Visible Mold exterior')
+    WDE = ('Wet or Damp exterior')
     CM = ('CM', 'Ceiling Material')
     WaM = ('WaM', 'Walls Material')
     FlM = ('FlM', 'Floor Material')
@@ -325,6 +328,10 @@ OTHERS_SECTION_INPUTS_MAPPING = {
     OTHERS_SECTION.VM : 'visible_mold',
     OTHERS_SECTION.WD : 'wet_or_damp',
     # Don't forget to take into account '_exterior' for DS, VM, WD
+    OTHERS_SECTION.DSE : 'damage_or_stains_exterior',
+    OTHERS_SECTION.VME : 'visible_mold_exterior',
+    OTHERS_SECTION.WDE : 'wet_or_damp_exterior',
+    # 
     OTHERS_SECTION.CM : 'ceiling_materials',
     OTHERS_SECTION.WaM : 'wall_materials',
     OTHERS_SECTION.FlM : 'floor_materials',

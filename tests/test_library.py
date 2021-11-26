@@ -204,12 +204,18 @@ class TestExampleTemplate(unittest.TestCase):
         assert "Main Classroom" in Inputs.current_row_inputs[0], Inputs.current_row_inputs[0]
         assert Inputs.mold_odor_id is None, Inputs.mold_odor_id
         assert re.match(RE_DATE, Inputs.date), Inputs.date
-        assert Inputs.damage_or_stains[0] == 'N/A', Inputs.damage_or_stains
-        assert Inputs.damage_or_stains[1] == '2', Inputs.damage_or_stains
+        # Assert 'Ceiling' was not selected
+        assert Inputs.damage_or_stains[0] == 'N/A' or \
+            DSVMWD[0] not in Inputs.damage_or_stains, \
+                Inputs.damage_or_stains
+        # Assert 'Walls' was selected
+        assert Inputs.damage_or_stains[1] == '2' or \
+            DSVMWD[1] in Inputs.damage_or_stains, \
+                Inputs.damage_or_stains
 
 
 class TestLibrary(unittest.TestCase):
-    """ General """
+    """ General static functions to unit test. """
 
     def test_str_to_key(self):
         """ Test 'str_to_key'. """

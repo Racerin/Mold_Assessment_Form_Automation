@@ -1070,7 +1070,7 @@ class Selenium:
             self.driver.get(website_url)
             # assert 'mold' in self.driver.title.lower()
             if yield_:
-                yield PAUSE.START
+                yield YIELD.START
             # Enter Date:
             date_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
             # date_input.send_keys(today_date())
@@ -1082,7 +1082,7 @@ class Selenium:
             self.driver.find_element(By.ID, "SelectId_0_placeholder").click()
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Faculty of Engineering"]').click()
             if yield_:
-                yield PAUSE.FIRST_PAGE_UPDATE
+                yield YIELD.FIRST_PAGE_UPDATE
             # Select Building
             self.driver.find_elements(By.CLASS_NAME, "select-placeholder-text")[-1].click()
             building_text = BUILDINGS[Inputs.building_id]
@@ -1102,7 +1102,7 @@ class Selenium:
             self.driver.find_element(By.ID, "SelectId_4_placeholder").click()
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="None"]').click()
             if yield_:
-                yield PAUSE.FIRST_CHECKBOX
+                yield YIELD.FIRST_CHECKBOX
             # Select all N/A
             # Damage or Stains
             for i in range(2,2+8):
@@ -1121,7 +1121,7 @@ class Selenium:
             # Wet or Damp
             self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
             if yield_:
-                yield PAUSE.MOLD_ODOR
+                yield YIELD.MOLD_ODOR
             if mold_odor:
                 # Select potency of mold odor
                 # Open options
@@ -1130,14 +1130,14 @@ class Selenium:
                 str1 = '[aria-label="{}"]'.format("Strong")
                 self.driver.find_element(By.CSS_SELECTOR, str1).click()
             if yield_:
-                yield PAUSE.BEFORE_NEXT_PAGE
+                yield YIELD.BEFORE_NEXT_PAGE
             # Press next button
             self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
             
             # PAGE 2
             # Now, put in mold odor info
             if yield_:
-                yield PAUSE.NEXT_PAGE
+                yield YIELD.NEXT_PAGE
             # Select all N/A by default, Select last input 'N/A' 7 times
             for _ in range(7):
                 n_a = self.driver.find_elements_by_css_selector("input[value='N/A']")[-1].click()
@@ -1155,15 +1155,15 @@ class Selenium:
             # Additional Comments?
 
             if yield_:
-                yield PAUSE.SUBMIT
-                yield PAUSE.BEFORE_NEXT_PAGE
+                yield YIELD.SUBMIT
+                yield YIELD.BEFORE_NEXT_PAGE
             # Press submit button
             submit_button = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div')
             if submit:
                 submit_button.click()
                 # Next Page
                 if yield_:
-                    yield PAUSE.NEXT_PAGE
+                    yield YIELD.NEXT_PAGE
                 # Submit another form
                 submit_link = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a')
                 if continue_it:
@@ -1180,8 +1180,8 @@ class Selenium:
             # Set the zoom of the webpage
             # self.driver.execute_script("document.body.style.zoom='80%'")
             if yield_:
-                yield PAUSE.START
-                yield PAUSE.PAGE_ONE
+                yield YIELD.START
+                yield YIELD.PAGE_ONE
                 time.sleep(1)
 
             # Enter Date
@@ -1193,7 +1193,7 @@ class Selenium:
             # Select Faculty/Office/Unit
             self.answer_dropdown_element(3, 7)
             if yield_:
-                yield PAUSE.FIRST_PAGE_UPDATE
+                yield YIELD.FIRST_PAGE_UPDATE
 
             # Select Building
             self.answer_dropdown_element(4, Inputs.building_id)
@@ -1239,13 +1239,13 @@ class Selenium:
             # Click 'Next' Button
             next_button = self.find_element(XPATH_NEXT_BUTTON)
             if yield_:
-                yield PAUSE.BEFORE_NEXT_PAGE
+                yield YIELD.BEFORE_NEXT_PAGE
             next_button.click()
 
             # NEXT PAGE
             if yield_:
-                yield PAUSE.NEXT_PAGE
-                yield PAUSE.PAGE_TWO
+                yield YIELD.NEXT_PAGE
+                yield YIELD.PAGE_TWO
 
             # Ceiling materials affected
             self.ans_radiogroup_element(1, Inputs.ceiling_materials)
@@ -1275,52 +1275,78 @@ class Selenium:
             self.answer_textarea_element(9, Inputs.additional_comments)
             submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
             if yield_:
-                yield PAUSE.BEFORE_NEXT_PAGE
-                yield PAUSE.SUBMIT
+                yield YIELD.BEFORE_NEXT_PAGE
+                yield YIELD.SUBMIT
                 print("Not suppose to reach here.")
             submit_button.click()
 
             # NEXT PAGE
             if yield_:
-                yield PAUSE.NEXT_PAGE
-                yield PAUSE.PAGE_THREE
+                yield YIELD.NEXT_PAGE
+                yield YIELD.PAGE_THREE
                 
             # Do another form
-                yield PAUSE.BEFORE_NEXT_PAGE
+                yield YIELD.BEFORE_NEXT_PAGE
 
 
 @dataclasses.dataclass
 class Runner:
     """Responsible for handling running of Selenium's 'main_instruction'
     and handling interludes/pauses.
+    The yields are grouped. If the yield falls within a specific group, respond accordingly.
     """
     submit : bool = False
     
-    continue_it_pauses : list = dataclasses.field(default_factory=list)
-    # return_pauses : list = dataclasses.field(default_factory=[PAUSE.SUBMIT])
-    return_pauses = [PAUSE.SUBMIT]
-    sleep_pauses : dict = dataclasses.field(default_factory=dict)
-    keyboard_pauses : dict = dataclasses.field(default_factory=dict)
+    # Yield Groups
+    continue_it_yields : list = dataclasses.field(default_factory=list)
+    sleep_yields : dict = dataclasses.field(default_factory=dict)
+    return_yields = [YIELD.SUBMIT]
+    keyboard_yields : dict = dataclasses.field(default_factory=dict)
 
     sleep_time : float = 1
 
-    def pause_handle(self, pause_type:PAUSE):
+    def __continue_it_callback(self, yield_type, *args, **kwargs):
+        """ Callback for 'continue_it'. """
+        return None
+
+    def __sleep_callback(self, yield_type, *args, **kwargs):
+        """ Callback for 'sleep'. """
+        duration = self.sleep_yields.get(yield_type, self.sleep_time)
+        if isinstance(duration, (int,float)):
+            time.sleep(duration)
+        else:
+            time.sleep(self.sleep_time)
+
+    def __return_callback(self, yield_type, *args, **kwargs):
+        """ Callback for 'return'. """
+        """Quit generator
+        Check 'run' method for better understanding
+        """
+        return None
+
+    def __keyboard_callback(self, yield_type, *args, **kwargs):
+        """ Callback for 'keyboard'. """
+        key = self.keyboard_yields[yield_type]
+        return None
+
+    def yield_handler(self, yield_type:YIELD):
         """Responsible for actions based on the pause type and configuration."""
-        if pause_type in self.continue_it_pauses:
-            return
-        elif pause_type in self.sleep_pauses:
-            duration = self.sleep_pauses.get(pause_type, self.sleep_time)
-            if isinstance(duration, (int,float)):
-                time.sleep(duration)
-            else:
-                time.sleep(self.sleep_time)
-        elif pause_type in self.return_pauses:
-            """Quit generator
-            Check 'run' method for better understanding
-            """
-            # pass
-        elif pause_type in self.keyboard_pauses:
-            key = self.keyboard_pauses[pause_type]
+        
+        # Yield for continue_it
+        if yield_type in self.continue_it_yields:
+            return self.__continue_it_callback(yield_type)
+            
+        # Yield for sleep
+        if yield_type in self.sleep_yields:
+            return self.__sleep_callback(yield_type)
+            
+        # Yield for return
+        if yield_type in self.return_yields:
+            return self.__return_callback(yield_type)
+            
+        # Yield for keyboard
+        if yield_type in self.keyboard_yields:
+            return self.__keyboard_callback(yield_type)
 
     def main_instruction_args(self) -> dict:
         """Returns args to apss into 'main_instruction' of 'Selenium'."""
@@ -1328,11 +1354,13 @@ class Runner:
         return kwargs
     
     def run(self, selenium:Selenium):
-        """Run 'Selenium' object according to config."""
-        for yielded in selenium.main_instructions(**self.main_instruction_args()):
-            self.pause_handle(yielded)
+        """Run 'Selenium' object according to config.
+        Return control to Runner at each yield point and execute yield according to settings.
+        """
+        for _yield in selenium.main_instructions(**self.main_instruction_args()):
+            self.yield_handler(_yield)
             # Return pause
-            if yielded in self.return_pauses: break
+            if _yield in self.return_yields: break
 
 
 config = Config()

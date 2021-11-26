@@ -53,8 +53,8 @@ class ELEMENT_TYPE(enum.Enum):
     CHECK_BUTTON_GROUP = enum.auto()
 
 
-class PAUSE(enum.Enum):
-    """Different options for 'Runner' pause interlude."""
+class YIELD(enum.Enum):
+    """Different options for 'Runner' yield interlude."""
     NONE = enum.auto()
     START = enum.auto()
     FIRST_PAGE_UPDATE = enum.auto()

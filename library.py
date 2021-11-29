@@ -52,25 +52,6 @@ def switch_date_format(date:str) -> str:
     else:
         raise ValueError("Cannot match date format to 'date' string.")
 
-def best_of_dict(dict1:dict, key:typing.Any):
-    """Returns the best value of dict1 given key."""
-    # Check dict1 for key directly
-    try:
-        dict1[key]
-        # dict1.get(key)
-    except KeyError:
-    # Match key as best as possible
-        # return 'key' if it is in values
-        if key in dict1.values(): return key
-        # text match
-        keys = list(dict1.keys())
-        if isinstance(key, str):
-            # Case insensitive key match
-            best_key = [k for k in keys if key.lower() == k.lower()]
-            if best_key: return best_key[0]
-            # Levenshtein Distance
-            # TO BE DONE
-
 def load_tsv_file(filename, ignore_header_regex:str=None) -> list:
     """Extract row information from a tsv file.
     ignore_header_regex : A regular expression string to ignore the 1st header
@@ -151,7 +132,7 @@ def str_to_key(str1:str) -> str:
 
 def get_keys_and_values_strs_dict(dict1:dict) -> dict:
     """Creates dictionary of dictionary 
-    where the values and keys are string keys to its respective value.
+    where the values and keys are keys of type 'str' to its mapped value.
     """
     ans = dict()
     # Add keys and values
@@ -164,17 +145,25 @@ def get_keys_and_values_strs_dict(dict1:dict) -> dict:
             )
     return ans
 
-def best_key_match_string(dict1:Mapping, to_match:str) -> typing.Any:
-    """Returns the value of dict whose key best matches 'to_match'."""
+def best_key_match(dict1:Mapping, to_match:str) -> typing.Any:
+    """Returns the value of dict whose key best matches 'to_match'.
+    The key with the highest score returns its mapped value.
+    """
     best_key = None
     best_score = 0
-    for k in dict1:
-        score = match_strings(k, to_match)
+    for key in dict1:
+        # Lavenshtein match the keys as a string
+        score = match_strings(str(key), to_match)
         if score > best_score:
-            best_key = k
+            best_key = key
             best_score = score
-    best_value = dict1[best_key] 
-    return best_value
+    try:
+        best_value = dict1[best_key]
+        return best_value
+    except KeyError as err:
+        raise KeyError(
+            "There was no match for '{}' in the dictionary '{}'.".format(to_match, dict1)
+            ) from err
 
 
 ## Global Configure
@@ -280,7 +269,7 @@ class Action:
             except ValueError:
                 _odor, intensity = str1.split(' ', 1)
                 message = ""
-            intensity_option = best_of_dict(MOLD_ODOR, intensity)
+            intensity_option = best_key_match(MOLD_ODOR, intensity)
             # Add actions to object
             self.actions = [
                 # Open 'Mold Odor' dropdown
@@ -396,7 +385,7 @@ class Inputs:
                 # Parse through each 
                 for option_input in options_input:
                     # Check with keys and values
-                    best_option = best_key_match_string(k_v_string_dict, option_input)
+                    best_option = best_key_match(k_v_string_dict, option_input)
                     area_size_index = self.__get_intensity_for_DSVMWD_option(option_input)
                     # Add values for 'Inputs'
                     DSVMWD_values.update({best_option:area_size_index})
@@ -416,7 +405,7 @@ class Inputs:
                 # Get all options as keys to match with value
                 k_v_string_dict = get_keys_and_values_strs_dict(params)
                 # Get best matching value of param
-                best_option = best_key_match_string(k_v_string_dict, content_str)
+                best_option = best_key_match(k_v_string_dict, content_str)
                 # inputs_value
                 inputs_value = best_option
             elif section in OTHERS_SECTION.TEXTINPUTS:
@@ -555,10 +544,27 @@ class Inputs:
         cls.completed_row_inputs = load_excel_file(excel_save_file)
 
     @classmethod
+    def __floor_roomtype_building(cls, floor, roomtype, building):
+        """ Returning the official string for each property. """
+        # Get 'Inputs' attributes
+        # floor_id = best_key_match(FLOORS, floor)
+        # room_type_id = best_key_match(ROOM_TYPES, roomtype)
+        # building_id = best_key_match(BUILDINGS, building)
+
+        floor_id = best_key_match(get_keys_and_values_strs_dict(FLOORS), floor)
+        room_type_id = best_key_match(get_keys_and_values_strs_dict(ROOM_TYPES), roomtype)
+        building_id = best_key_match(get_keys_and_values_strs_dict(BUILDINGS), building)
+
+        # Return structured answer
+        return floor_id, room_type_id, building_id
+
+    @classmethod
     def set_user_input(cls, row=current_row_inputs, **kwargs):
         """Assign arguments to/in Inputs"""
         # Assign row variables
-        cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, *cls.others_arguments = row
+        # cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, *cls.others_arguments = row
+        cls.room_name, floor, room_type, building, *cls.others_arguments = row
+        cls.floor_id, cls.room_type_id, cls.building_id = cls.__floor_roomtype_building(floor, room_type, building)
 
         # Assign mapped variables
         cls_dir = dir(cls)
@@ -1075,15 +1081,13 @@ class Selenium:
 
         # Get placeholder from html element to know which date format to use (M/d/yyyy or dd/MM/yyyy)
         placeholder_text = element_input.get_attribute('placeholder')
-        if re.match(RE_DATE_PLACEHOLDER_USA_SHORT, placeholder_text):
-            # assume date is in USA format
-            pass
-        elif re.match(RE_DATE_PLACEHOLDER_WORLD_SHORT, placeholder_text):
+        if re.match(RE_DATE_PLACEHOLDER_WORLD_SHORT, placeholder_text):
             # Switch the day and month
             input_answer = switch_date_format(input_answer)
-        else:
-            # Go with default
-            pass
+        # Assume date is already in USA format
+        elif re.match(RE_DATE_PLACEHOLDER_USA_SHORT, placeholder_text): pass
+        # Go with default
+        else: pass
 
         # Write to textinput element
         if clear:

@@ -110,14 +110,15 @@ STR_INPUTS_EXTERIOR = "{}_exterior"
 
 
 # Regular Expressions
-# Useful site to check regular expressions: https://regex101.com/
+# https://regex101.com/
 RE_TRAILING_DASH = r'^/+'
-
-# RE_SECTION_CONTENT_GROUPDICT = r'\s*(?P<section>\w+(\s+\w+)?)\s*:\s*(?P<content>.+)'
 RE_SECTION_CONTENT_GROUPDICT = r'(?P<section>.+)\s*:\s*(?P<content>.+)'
 RE_SPLIT_COMMAS = r' *, *'
 RE_MO = r''
 RE_DATE = r"\d\d\/\d\d\/20\d\d"     # --/--/20--
+RE_DATE_PLACEHOLDER_USA_SHORT = r"M\/d"
+RE_DATE_PLACEHOLDER_WORLD_SHORT = r"d\/M"
+RE_DATE_SWITCH = r"(?P<ww>\d\d)\/(?P<xx>\d\d)\/(?P<yyyy>\d{4})"
 
 
 # Selenium Answers

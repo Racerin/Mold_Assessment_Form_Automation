@@ -41,6 +41,17 @@ def today_date(option="world") -> str:
         str1 = now.strftime('%m/%d/%Y')
     return str1
 
+def switch_date_format(date:str) -> str:
+    """ Switch around the day ad month in date. """
+    # Match the regex groups for day and month 
+    match = re.match(RE_DATE_SWITCH, date)
+    if match:
+        # Construct new string with switched around values
+        ans = "{xx}/{ww}/{yyyy}".format(**match.groupdict())
+        return ans
+    else:
+        raise ValueError("Cannot match date format to 'date' string.")
+
 def best_of_dict(dict1:dict, key:typing.Any):
     """Returns the best value of dict1 given key."""
     # Check dict1 for key directly
@@ -823,13 +834,21 @@ class Selenium:
         return xpath_dropdown_option
 
     def answer_text_element(self, question_key:'int|str', input_answer:str, clear:bool=True):
-        """Answer a text input question."""
+        """Answer a text input question.
+        question_key : Matches a question according to XPATH and respective key of question 
+        (non-zero index or string match?.)
+        """
+
+        # Get xpath representation of html element
         xpath_question = self.get_question_xpath(question_key)
         xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT)
         element_input = self.find_element(xpath_input)
+
+        # Write to textinput element
         if clear:
             element_input.clear()
         element_input.send_keys(input_answer)
+
 
     def answer_textarea_element(self, question_key:'int|str', input_answer:str, clear:bool=True):
         """Answer a textarea question."""
@@ -1045,6 +1064,32 @@ class Selenium:
             other_element.clear()
         other_element.send_keys(other_str)
 
+    def answer_date(self, question_key:'int|str', input_answer:str, clear:bool=True):
+        """Answer a text input question for date.
+        Must explicitely state key for question in the arguments.
+        """
+        # Get xpath representation of html element
+        xpath_question = self.get_question_xpath(question_key)
+        xpath_input = Xpath.descendant(xpath_question, XPATH_INPUT)
+        element_input = self.find_element(xpath_input)
+
+        # Get placeholder from html element to know which date format to use (M/d/yyyy or dd/MM/yyyy)
+        placeholder_text = element_input.get_attribute('placeholder')
+        if re.match(RE_DATE_PLACEHOLDER_USA_SHORT, placeholder_text):
+            # assume date is in USA format
+            pass
+        elif re.match(RE_DATE_PLACEHOLDER_WORLD_SHORT, placeholder_text):
+            # Switch the day and month
+            input_answer = switch_date_format(input_answer)
+        else:
+            # Go with default
+            pass
+
+        # Write to textinput element
+        if clear:
+            element_input.clear()
+        element_input.send_keys(input_answer)
+
     def is_open(self) -> bool:
         """Checks whether driver window is open."""
         # https://www.codegrepper.com/code-examples/python/selenium+check+if+driver+is+open+python
@@ -1185,7 +1230,7 @@ class Selenium:
                 time.sleep(1)
 
             # Enter Date
-            self.answer_text_element(1, Inputs.date)
+            self.answer_date(1, Inputs.date)
 
             # Enter Observer name
             self.answer_text_element(2, Inputs.observer_name)
@@ -1359,6 +1404,7 @@ class Runner:
         """
         for _yield in selenium.main_instructions(**self.main_instruction_args()):
             self.yield_handler(_yield)
+            
             # Return pause
             if _yield in self.return_yields: break
 

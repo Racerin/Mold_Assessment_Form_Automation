@@ -43,7 +43,7 @@ def one_form(option=4):
         tests.TestInputs.set_test_values()
         runner = Runner(
             sleep_time=20,
-            sleep_pauses=[PAUSE.BEFORE_NEXT_PAGE,]
+            sleep_yields=[YIELD.BEFORE_NEXT_PAGE,]
         )
         runner.run(obj)
         # obj.main_instructions(submit=False, option=2)

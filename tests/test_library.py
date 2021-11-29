@@ -124,7 +124,7 @@ class TestSelenium(unittest.TestCase):
         TestInputs.set_test_values()
         runner = Runner(
             sleep_time=1,
-            sleep_pauses={PAUSE.BEFORE_NEXT_PAGE:None, },
+            sleep_yields={YIELD.BEFORE_NEXT_PAGE:None, },
         )
         runner.run(obj)
 
@@ -218,10 +218,27 @@ class TestLibrary(unittest.TestCase):
     """ General static functions to unit test. """
 
     def test_str_to_key(self):
-        """ Test 'str_to_key'. """
+        """ Test the function 'str_to_key'. """
         input1 = "Bad Bat."
         ans1 = str_to_key(input1)
         assert ans1 == "Bad_Bat_", (input1, ans1)
         input2 = "10"
         ans2 = str_to_key(input2)
         assert ans2 == "_10", (input2, ans2)
+
+    def test_switch_date_format(self):
+        """ Test the function 'switch_date_format'. """
+        
+        # Normal date
+        input1 = "28/02/2010"
+        ans1 = switch_date_format(input1)
+        assert ans1 == "02/28/2010", (input1, ans1)
+
+        # Check Error strings
+        error_input_strings = [
+            "a",
+            "111/11/1111",
+        ]
+        for error_input in error_input_strings:
+            with self.assertRaises(ValueError):
+                switch_date_format(error_input)

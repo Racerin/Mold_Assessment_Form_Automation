@@ -145,25 +145,36 @@ def get_keys_and_values_strs_dict(dict1:dict) -> dict:
             )
     return ans
 
-def best_key_match(dict1:Mapping, to_match:str) -> typing.Any:
-    """Returns the value of dict whose key best matches 'to_match'.
-    The key with the highest score returns its mapped value.
+def best_match(container:Container, to_match:str) -> typing.Any:
+    """Returns the value of container whose key best matches 'to_match'.
+    Dict: The key with the highest score returns its mapped value.
+        In essence, you could maybe set the default value by key of None
+    List: The value with the highest score is returned.
     """
-    best_key = None
     best_score = 0
-    for key in dict1:
-        # Lavenshtein match the keys as a string
-        score = match_strings(str(key), to_match)
-        if score > best_score:
-            best_key = key
-            best_score = score
-    try:
-        best_value = dict1[best_key]
+    if isinstance(container, Mapping):
+        best_key = None
+        for key in container:
+            # Lavenshtein match the keys as a string
+            score = match_strings(str(key), to_match)
+            if score > best_score:
+                best_key = key
+                best_score = score
+        try:
+            best_value = container[best_key]
+            return best_value
+        except KeyError as err:
+            raise KeyError(
+                "There was no match for '{}' in the dictionary '{}'.".format(to_match, dict1)
+                ) from err
+    elif isinstance(container, Container):
+        best_value = None
+        for value in container:
+            score = match_strings(str(value), to_match)
+            if score > best_score:
+                best_value = value
+                best_score = score
         return best_value
-    except KeyError as err:
-        raise KeyError(
-            "There was no match for '{}' in the dictionary '{}'.".format(to_match, dict1)
-            ) from err
 
 
 ## Global Configure
@@ -269,7 +280,7 @@ class Action:
             except ValueError:
                 _odor, intensity = str1.split(' ', 1)
                 message = ""
-            intensity_option = best_key_match(MOLD_ODOR, intensity)
+            intensity_option = best_match(MOLD_ODOR, intensity)
             # Add actions to object
             self.actions = [
                 # Open 'Mold Odor' dropdown
@@ -359,7 +370,9 @@ class Inputs:
                 return 0
 
         def __get_inputs_value(self, section:OTHERS_SECTION, content_str:str, inputs_attribute:str) -> typing.Any:
-            """Create values that are passable to Selenium to answer questions."""
+            """Create values that are passable to Selenium to answer questions.
+            NB: Contains unpredictable data flow inside
+            """
 
             # Split-up content-input-string to get input-option-strings
             options_input = [option.strip() for option in content_str.split(',')]
@@ -385,7 +398,7 @@ class Inputs:
                 # Parse through each 
                 for option_input in options_input:
                     # Check with keys and values
-                    best_option = best_key_match(k_v_string_dict, option_input)
+                    best_option = best_match(k_v_string_dict, option_input)
                     area_size_index = self.__get_intensity_for_DSVMWD_option(option_input)
                     # Add values for 'Inputs'
                     DSVMWD_values.update({best_option:area_size_index})
@@ -405,7 +418,7 @@ class Inputs:
                 # Get all options as keys to match with value
                 k_v_string_dict = get_keys_and_values_strs_dict(params)
                 # Get best matching value of param
-                best_option = best_key_match(k_v_string_dict, content_str)
+                best_option = best_match(k_v_string_dict, content_str)
                 # inputs_value
                 inputs_value = best_option
             elif section in OTHERS_SECTION.TEXTINPUTS:
@@ -414,21 +427,15 @@ class Inputs:
             return inputs_value
 
         
-        def __get_inputs_exterior_wall_filter(self, inputs_value:dict, inputs_attribute:str) -> dict:
-            """Check for '+' which symbolises 'close to exterior wall'.
-            This is a filter method.
-            Assign the 'exterior' value if '+' is found.
-            'exteriors' is a list containing all values (wall, window,) that are within 3ft of an external wall.
-            """
+        def __assign_inputs_exterior_wall_filter(self, inputs_value:dict, inputs_attribute:str, obj_class) -> dict:
+            """ Extracts exterior value from dict and assigns it to class. """
             if isinstance(inputs_value, Mapping):
                 exteriors = inputs_value.pop('exterior', None)
-                assert isinstance(exteriors, Sequence) or exteriors is None
-                if exteriors:
+                if isinstance(exteriors, Sequence):
                     # Add '_exterior' to 'inputs_attribute' to create the exterior 'Inputs' attribute
                     new_inputs_attribute = STR_INPUTS_EXTERIOR.format(inputs_attribute)  #eg. damage_or_stain_exterior
-                    inputs_value = exteriors
-                    self.inputs.update({new_inputs_attribute:inputs_value})
-            return inputs_value
+                    # Now, Assign the value to class
+                    setattr(obj_class, new_inputs_attribute, exteriors)
 
         def parse_others_cell(self, others_cell:str):
             """Factory method for parsing a string of 'Others'.
@@ -448,21 +455,20 @@ class Inputs:
                 # Get value for 'inputs_attribute'
                 inputs_value = self.__get_inputs_value(section, content_str_input, inputs_attribute)
 
-                # Get values for close to exterior walls (if it is that section)
-                inputs_value = self.__get_inputs_exterior_wall_filter(inputs_value, inputs_attribute)
-
                 # Add new key:values, attribute:values for defined inputs
                 self.inputs.update({inputs_attribute:inputs_value})
             else:
                 raise ValueError("The 'others_cell' value is not valid.")
 
         def assign_to_inputs_cls(self, input_cls, to_global=True):
-            """Assign to 'Inputs' class based on stored inputs."""
-
-            # Assign 'inputs_value's to 'Inputs' class
+            """Assign to 'Inputs' class if already an attribute else globally.
+            Also deals with assigning DS,VM,WD exterior values.
+            """
             for inputs_attribute, inputs_value in self.inputs.items():
-                # if inputs_attribute in input_cls:
                 if inputs_attribute in OTHERS_SECTION_INPUTS_MAPPING.values():
+                    # Filter function for DS,VM,WD exterior walls
+                    self.__assign_inputs_exterior_wall_filter(inputs_value, inputs_attribute, input_cls)
+                    # Just assign
                     setattr(input_cls, inputs_attribute, inputs_value)
 
                 # If not in 'Inputs', assign 'inputs_value' to global variables
@@ -482,7 +488,8 @@ class Inputs:
     others_arguments = list()
     parser_for_other_arguments = list()
 
-    mold_odor_id = None
+    # mold_odor_id = None
+    mold_odor_id = 'None'
     mold_odor_desc : str = ""
 
     damage_or_stains = ANS_RADIOGROUPS_DEFAULT
@@ -551,9 +558,9 @@ class Inputs:
         # room_type_id = best_key_match(ROOM_TYPES, roomtype)
         # building_id = best_key_match(BUILDINGS, building)
 
-        floor_id = best_key_match(get_keys_and_values_strs_dict(FLOORS), floor)
-        room_type_id = best_key_match(get_keys_and_values_strs_dict(ROOM_TYPES), roomtype)
-        building_id = best_key_match(get_keys_and_values_strs_dict(BUILDINGS), building)
+        floor_id = best_match(get_keys_and_values_strs_dict(FLOORS), floor)
+        room_type_id = best_match(get_keys_and_values_strs_dict(ROOM_TYPES), roomtype)
+        building_id = best_match(get_keys_and_values_strs_dict(BUILDINGS), building)
 
         # Return structured answer
         return floor_id, room_type_id, building_id
@@ -606,11 +613,11 @@ class Inputs:
 
 class Xpath:
     @classmethod
-    def xpath_index(cls, xpath:str, index:int=None, xpath_index=True, encapsulate=False) -> str:
+    def xpath_index(cls, xpath:str, index:int=None, xpath_indexQ=True, encapsulate=False) -> str:
         """Returns an xpath of index of nodes"""
 
         # Convert 'index' from programming/Python index to xpath index
-        if xpath_index: index += 1
+        if xpath_indexQ: index += 1
         if index is None:
             if encapsulate:
                 str1 = "({})[]".format(xpath)
@@ -878,74 +885,106 @@ class Selenium:
         dropdown_option_element = self.find_element(xpath_dropdown_option)
         dropdown_option_element.click()
 
-    def answer_radiogroups_element(self, question_key:'int|str', container_of_answers:'Sequence|Mapping'):
+    def answer_radiogroups_element(self, question_key:'int|str', container_of_answers:'Sequence|Mapping', default=None):
         """Answer a group of radiogroups question.
+
+        'pairs_container_answers' : A Sequence containing a pair of side_header and top_header values
         """
-        # Get basic xpath strings
         xpath_question = self.get_question_xpath(question_key)
         xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
-        # Get Header string values
+
+        # Get top header string values
         xpath_header = Xpath.descendant(xpath_question, XPATH_RADIOGROUP_HEADER)
         xpath_header_span = Xpath.descendant(xpath_header, XPATH_SPAN)
         header_spans = self.find_elements(xpath_header_span)
         assert len(header_spans) > 0, xpath_header_span
         header_strs = [ele.text for ele in header_spans]
+
         # Get Side-Header string values
         xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
         xpath_side_header = Xpath.descendant(xpath_radiogroup, XPATH_RADIOGROUP_BY_SIDE_HEADER)
         xpath_side_header_span = Xpath.descendant(xpath_side_header, XPATH_SPAN)
         side_headers_spans = self.find_elements(xpath_side_header_span)
+        assert len(side_headers_spans) > 0, xpath_side_header_span
         side_header_strs = [ele.text for ele in side_headers_spans]
+
+        pairs_container_answers = list()
+
         # Convert 'container_of_answers' to a sequence of answers if it is type 'Mapping'.
         if isinstance(container_of_answers, Mapping):
-            pairs_container_answers = list()
-            for key,val in container_of_answers:
+            used_side_headers = list()
+            for key,val in container_of_answers.items():
                 # Create the pairs of radiogroup's index and its answer
                 if isinstance(key, int):
                     index = key
                 elif isinstance(key, str):
-                    indices = [side_header_str for side_header_str in side_header_strs if key in side_header_str].sort()
-                    index = indices[0]
+                    index = best_match(side_header_strs, key)
                 pairs_container_answers.append((index, val))
-        elif isinstance(container_of_answers, Sequence):
-            pairs_container_answers = enumerate(container_of_answers)
-        # Now, Iterate through the radiogroups and their answers
-        if isinstance(container_of_answers, Sequence):
-            # Each element of 'Sequence' corresponds to a radiogroup in order
-            for radiogroup_index, option_response in pairs_container_answers:
-                """ 'option_response' is either a str or an int.
-                int: an answer corresponding to the header value
-                str: an answer (may be imperfect) that suppose to match radio button value
-                """
-                if isinstance(option_response, int):
-                    # Choose header answer by index
-                    header_answer_index = option_response
-                elif isinstance(option_response, str):
-                    # Choose header's answer's index by string matching
-                    answersQ = [header_str for header_str in header_strs if option_response in header_str]
-                    answersQ.sort()
-                    assert len(answersQ) > 0, (header_strs, option_response)
-                    answer = answersQ[0]
-                    header_answer_index = header_strs.index(answer)
-                # Select the correct radiobutton of the radiogroup
-                xpath_radiogroup_index = Xpath.xpath_index(xpath_radiogroup, radiogroup_index)
-                xpath_radiogroup_index_radiobutton = Xpath.descendant(xpath_radiogroup_index, XPATH_RADIOBUTTON)
-                radiobuttons = self.find_elements(xpath_radiogroup_index_radiobutton)
-                # Select the radio button with the answer according to index
-                answer_radiobutton = radiobuttons[header_answer_index]
-                answer_radiobutton.click()
+                used_side_headers.append(index)
+            
+            # Set 'default' for the rest of side headers
+            if isinstance(default, str):
+                default_val = best_match(header_strs, default)
+                for index in side_header_strs:
+                    if index not in used_side_headers:
+                        used_side_headers.append(index)   #Dont need to do this but closure
+                        pairs_container_answers.append((index, default_val,))
 
-    def answer_checkboxgroup_element(self, question_key:'int|str', container_of_answers:'Sequence|Mapping'):
+        # TODO: Needs to be updated like Mapping
+        elif isinstance(container_of_answers, Sequence):
+            raise SyntaxError("You need to fix this code 1st.")
+            pairs_container_answers = enumerate(container_of_answers)
+
+        # Now, Iterate through the radiogroups and their answers
+        for radiogroup_index, option_response in pairs_container_answers:
+            """ 'option_response' is either a str or an int.
+            int: an answer corresponding to the header value
+            str: an answer (may be imperfect) that suppose to match radio button value
+            """
+            if isinstance(option_response, int):
+                # Choose header answer by index
+                header_answer_index = option_response
+            elif isinstance(option_response, str):
+                # Choose header's answer's index by string matching
+                answersQ = [header_str for header_str in header_strs if option_response in header_str]
+                # answersQ = [side_header_str for side_header_str in side_header_strs if option_response in side_header_str]
+                answersQ.sort()
+                assert len(answersQ) > 0, (header_strs, option_response)
+                answer = answersQ[0]
+                header_answer_index = header_strs.index(answer)
+
+            # Get index as an int?
+            if isinstance(radiogroup_index, str):
+                radiogroup_index = side_header_strs.index(radiogroup_index)
+
+            # Select the correct radiobutton of the radiogroup
+            xpath_radiogroup_index = Xpath.xpath_index(xpath_radiogroup, radiogroup_index)
+            xpath_radiogroup_index_radiobutton = Xpath.descendant(xpath_radiogroup_index, XPATH_RADIOBUTTON)
+            radiobuttons = self.find_elements(xpath_radiogroup_index_radiobutton)
+
+            # Select the radio button with the answer according to index
+            answer_radiobutton = radiobuttons[header_answer_index]
+            answer_radiobutton.click()
+
+    def answer_checkboxgroup_element(self, question_key:'int|str', container_of_answers:'Sequence|Mapping', default=None):
         """Answer a group of checkboxes.
         Reminiscent of 'answer_radiogroups_element'.
         """
-        # Get basic xpath strings
-        xpath_question = self.get_question_xpath(question_key)
+        
         # Get checkbox labels
+        xpath_question = self.get_question_xpath(question_key)
         xpath_checkbox_input = Xpath.descendant(xpath_question, XPATH_CHECKBOX)
         checkboxes = self.find_elements(xpath_checkbox_input)
         checkbox_label_strs = [checkbox.get_attribute('value') for checkbox in checkboxes]
-        # Convert 'container_of_answers' to a sequence of pairs
+
+        # Pick default[s] if no answers are given
+        if not container_of_answers:
+            if isinstance(default, str):
+                container_of_answers = [default,]
+            elif isinstance(default, Container) and all((isinstance(x, str) for x in default)):
+                container_of_answers = default
+        
+        # Convert 'container_of_answers' to a sequence of pairs of ...
         checkbox_answer_pairs = list()
         if isinstance(container_of_answers, Mapping):
             for label_str, answer in container_of_answers.items():
@@ -969,17 +1008,16 @@ class Selenium:
                 elif isinstance(answer, str):
                     # Convert the label to index then do as above
                     # Each ele of sequence is a label string. Therefore label will correspond to True
-                    matched_labels = [cb_l for cb_l in checkbox_label_strs if answer in cb_l]
-                    matched_labels.sort()
-                    best_checkbox_label = matched_labels[0]
-                    checkbox_index = checkbox_label_strs.index(best_checkbox_label)
+                    best_checkbox_label = best_match(checkbox_label_strs, answer)
+                    checkbox_index = checkbox_label_strs.index(best_checkbox_label) + 1
                     """Turn the answer to a bool, EXCEPT if it's 'None'. 
                     'None' is used to ignore checkbox."""
                     bool_answer = bool(answer) if answer is not None else None
                     # Add to paired sequence
                     tup = (checkbox_index, bool_answer, )
                     checkbox_answer_pairs.append(tup)
-        # Set checkbox according 
+        
+        # Set checkbox according
         for checkbox_index, bool_answer in checkbox_answer_pairs:
             # Ignore checkbox is an option
             if bool_answer is None:
@@ -1005,20 +1043,18 @@ class Selenium:
         NOT to be confused with 'answer_radiogroups_element' (shorten and w/o an 's').
         Reminiscent of 'answer_checkboxgroup_element'.
         """
-        # Get basic xpath strings
+
+        # Get radiobutton labels as strings
         xpath_question = self.get_question_xpath(question_key)
-        # Get radiobutton labels
         xpath_radiogroup = Xpath.descendant(xpath_question, XPATH_RADIOGROUP)
         xpath_radio_input = Xpath.descendant(xpath_radiogroup, XPATH_INPUT)
         input_radiobutton_elements = self.find_elements(xpath_radio_input)
         assert len(input_radiobutton_elements) > 0, xpath_radio_input
         radiobutton_label_strs = [ele.get_attribute("value") for ele in input_radiobutton_elements]
+
         # Now, match strings and choose best match as radiobutton
-        best_matches = [lbl_str for lbl_str in radiobutton_label_strs if answer.lower() in lbl_str.lower()]
-        best_matches.sort() # Choose the smallest that matched
-        assert len(best_matches) > 0, (answer, radiobutton_label_strs)
-        best_match = best_matches[0]
-        best_match_index = radiobutton_label_strs.index(best_match)
+        best_match_str = best_match(radiobutton_label_strs, answer)
+        best_match_index = radiobutton_label_strs.index(best_match_str)
         radiobutton = input_radiobutton_elements[best_match_index]
         radiobutton.click()
 
@@ -1260,29 +1296,31 @@ class Selenium:
             self.answer_dropdown_element(8, 'None')
 
             # Select Damage or Stains (DS)
-            self.answer_radiogroups_element(9, Inputs.damage_or_stains)
+            self.answer_radiogroups_element(9, Inputs.damage_or_stains, "N/A")
 
             # Select DS within range of external walls
-            self.answer_checkboxgroup_element(10, Inputs.damage_or_stains_exterior)
+            self.answer_checkboxgroup_element(10, Inputs.damage_or_stains_exterior, default="No Damage or Stains")
 
             # Select Visible Mold (VM)
-            self.answer_radiogroups_element(11, Inputs.visible_mold)
+            self.answer_radiogroups_element(11, Inputs.visible_mold, "N/A")
 
             # Select VM within range of external walls
-            self.answer_checkboxgroup_element(12, Inputs.visible_mold_exterior)
+            self.answer_checkboxgroup_element(12, Inputs.visible_mold_exterior, default="No Visible Mold")
 
             # Select Wet or Damp(WD)
-            self.answer_radiogroups_element(13, Inputs.wet_or_damp)
+            self.answer_radiogroups_element(13, Inputs.wet_or_damp, "N/A")
 
             # Select WD within range of external walls
-            self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior)
+            self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior, default="No Wet or Damp")
 
             # NOW, answer Mold Odor Option
-            mold_odor = MOLD_ODOR[Inputs.mold_odor_id]
+            # mold_odor = MOLD_ODOR[Inputs.mold_odor_id]
+            mold_odor_dict = get_keys_and_values_strs_dict(MOLD_ODOR)
+            mold_odor = best_match(mold_odor_dict, Inputs.mold_odor_id)
             self.answer_dropdown_element(8, mold_odor)
 
             # If any answer other than 'None' a new question with textarea pops-up right after
-            if Inputs.mold_odor_id != 0:
+            if Inputs.mold_odor_id != MOLD_ODOR[0]:
                 self.answer_textarea_element(9, Inputs.mold_odor_desc)
 
             # Click 'Next' Button

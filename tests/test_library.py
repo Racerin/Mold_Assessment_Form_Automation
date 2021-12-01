@@ -129,10 +129,6 @@ class TestSelenium(unittest.TestCase):
         runner.run(obj)
 
 
-class TestKeyboardManager(unittest.TestCase):
-    pass
-
-
 class TestRegularExpression(unittest.TestCase):
     def test_section_content(self):
         """Test regular expression match groupdicts."""
@@ -212,6 +208,22 @@ class TestExampleTemplate(unittest.TestCase):
         assert Inputs.damage_or_stains[1] == '2' or \
             DSVMWD[1] in Inputs.damage_or_stains, \
                 Inputs.damage_or_stains
+        # Assert 'Window' is external
+        assert DSVMWD[3] in Inputs.damage_or_stains_exterior, \
+            Inputs.damage_or_stains_exterior
+
+    def test_fill_out_form(self):
+        """ Test the filling out of form using the data from 'example template'. 
+        """
+        # Load 'Inputs' class
+        Inputs.load_user_inputs(filename=FILE_EXAMPLE_TEMPLATE)
+        Inputs.load_user_input()
+
+        # Load web form
+        selenium = Selenium()
+        runner = Runner()
+        runner.__sleep_callback = lambda *a: time.sleep(2)
+        runner.run(selenium=selenium)
 
 
 class TestLibrary(unittest.TestCase):

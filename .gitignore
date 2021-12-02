@@ -1,15 +1,18 @@
 venv
 
 # Personal
-file.tsv
 pseudo.txt
 trash
 xpath practice.py
+
+# Personal Security
+file.tsv
 .env
 
 # Noise
 *__pycache__
 *.pyc
+.~lock*
 
 # VSCode
 .vscode

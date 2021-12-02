@@ -215,14 +215,20 @@ class TestExampleTemplate(unittest.TestCase):
     def test_fill_out_form(self):
         """ Test the filling out of form using the data from 'example template'. 
         """
-        # Load 'Inputs' class
-        Inputs.load_user_inputs(filename=FILE_EXAMPLE_TEMPLATE)
-        Inputs.load_user_input()
-
         # Load web form
         selenium = Selenium()
         runner = Runner()
         runner.__sleep_callback = lambda *a: time.sleep(2)
+
+        # Load 'Inputs' class
+        Inputs.load_user_inputs(filename=FILE_EXAMPLE_TEMPLATE)
+
+        # Load 1st form
+        Inputs.load_user_input()
+        runner.run(selenium=selenium)
+
+        # Load 2nd form
+        Inputs.load_user_input()
         runner.run(selenium=selenium)
 
 

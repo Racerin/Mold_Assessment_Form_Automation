@@ -813,6 +813,46 @@ class Question:
             self._answer_question_checkbox_group(value, question_element)
 
 
+class Counter:
+    _count = 0
+    count_dict = dict()
+    test_functions = []
+
+    def get_count(self): 
+        print("This is count '{}'.".format(self._count))
+        return self._count
+    def set_count(self, val):
+        print("This is count '{}'.".format(val))
+        if isinstance(val, int):
+            self._count = val
+        else: raise ValueError("Count must be of type 'int'.")
+    count = property(get_count, set_count,)
+
+    def __init__(self, count=count):
+        self.count = count
+
+    def add_key(self, key, number=1):
+        """ Adds a key and the number it adds by. """
+        if isinstance(number, int):
+            self.count_dict.update({key:number})
+
+    def add(self, toAdd=1) -> int:
+        self.count += toAdd
+        return self.count
+
+    def then_add(self, toAdd=1) -> int:
+        to_return = self.count
+        self.count += toAdd
+        return to_return
+
+    def inside(self, key) -> int:
+        """ If the key is in the dict 'count_dict',
+        add 1 to count.
+        """
+        to_add = self.count_dict.get(key, 0)
+        return self.add(to_add)
+
+
 class Selenium:
     """Use Selenium to traverse the form."""
     driver = None
@@ -1334,23 +1374,40 @@ class Selenium:
                 yield YIELD.NEXT_PAGE
                 yield YIELD.PAGE_TWO
 
+            # counter = Counter(1)
+            # counter.add_key('N/A')
+            count = 0
+
             # Ceiling materials affected
-            self.ans_radiogroup_element(1, Inputs.ceiling_materials)
+            # self.ans_radiogroup_element(counter.then_add(), Inputs.ceiling_materials)
+            self.ans_radiogroup_element(count+1, Inputs.ceiling_materials)
+            count += 0 if Inputs.ceiling_materials=='N/A' else 1
+            # counter.inside(Inputs.ceiling_materials)
 
             # Wall materials affected
-            self.ans_radiogroup_element(2, Inputs.wall_materials)
+            self.ans_radiogroup_element(count+2, Inputs.wall_materials)
+            count += 0 if Inputs.wall_materials=='N/A' else 1
+            # counter.inside(Inputs.wall_materials)
 
             # Floor materials affected
-            self.ans_radiogroup_element(3, Inputs.floor_materials)
+            self.ans_radiogroup_element(count+3, Inputs.floor_materials)
+            count += 0 if Inputs.floor_materials=='N/A' else 1
+            # counter.inside(Inputs.floor_materials)
 
             # Windows type affected
-            self.ans_radiogroup_element(4, Inputs.windows_materials)
+            self.ans_radiogroup_element(count+4, Inputs.windows_materials)
+            count += 0 if Inputs.windows_materials=='N/A' else 1
+            # counter.inside(Inputs.windows_materials)
 
             # Furnishings affected
-            self.ans_radiogroup_element(5, Inputs.furnishing_materials)
+            self.ans_radiogroup_element(count+5, Inputs.furnishing_materials)
+            count += 0 if Inputs.furnishing_materials=='N/A' else 1
+            # counter.inside(Inputs.furnishing_materials)
 
             # HVAC System affected
-            self.ans_radiogroup_element(6, Inputs.hvac_materials)
+            self.ans_radiogroup_element(count+6, Inputs.hvac_materials)
+            count += 0 if Inputs.hvac_materials=='N/A' else 1
+            # counter.inside(Inputs.hvac_materials)
 
             # Supplies and Materials affected
             self.answer_checkboxgroup_element(7, Inputs.supplies_and_materials)

@@ -479,11 +479,12 @@ class Inputs:
                     raise AttributeError("Attribute '{}' cannot be found in '{}'.".format(input_name, input_cls))
 
     observer_name : str = "John Doe"
+    date : str = today_date()
+
     room_name : str = ""
     floor_id : int = None
     room_type_id : int = None
     building_id : int = None
-    date : str = today_date()
 
     others_arguments = list()
     parser_for_other_arguments = list()
@@ -551,13 +552,53 @@ class Inputs:
         cls.completed_row_inputs = load_excel_file(excel_save_file)
 
     @classmethod
+    def set_default_values(cls, include:Container=[], exclude:Container=[]):
+        """ Set the default values for this class 'Inputs'.
+        Attributes; observer_name, date,
+        user_rows_inputs, current_row_inputs, completed_row_inputs,
+        are automatically excluded.
+
+        Attributes not defined in the class construct are also excluded.
+
+        N.B to myself: If 'Inputs' was setup to use instances of it, you wouldn't have to use this method.
+        Also, REMEMBER TODO to update this method whenever the default value of the class changes.
+        """
+        
+        # Set the defaults on the following attributes
+        cls.room_name = ""
+        cls.floor_id = None
+        cls.room_type_id = None
+        cls.building_id = None
+
+        cls.others_arguments = list()
+        cls.parser_for_other_arguments = list()
+
+        cls.mold_odor_id = 'None'
+        cls.mold_odor_desc = ""
+
+        cls.damage_or_stains = ANS_RADIOGROUPS_DEFAULT
+        cls.damage_or_stains_exterior = ANS_CHECKBOXES_DEFAULT
+        cls.visible_mold = ANS_RADIOGROUPS_DEFAULT
+        cls.visible_mold_exterior = ANS_CHECKBOXES_DEFAULT
+        cls.wet_or_damp = ANS_RADIOGROUPS_DEFAULT
+        cls.wet_or_damp_exterior = ANS_CHECKBOXES_DEFAULT
+
+        cls.ceiling_materials = ANS_RADIOGROUP_DEFAULT
+        cls.wall_materials = ANS_RADIOGROUP_DEFAULT
+        cls.floor_materials = ANS_RADIOGROUP_DEFAULT
+        cls.windows_materials = ANS_RADIOGROUP_DEFAULT
+        cls.furnishing_materials = ANS_RADIOGROUP_DEFAULT
+        cls.hvac_materials = ANS_RADIOGROUP_DEFAULT
+        cls.supplies_and_materials = ANS_CHECKBOX2_DEFAULT
+        cls.supplies_and_materials_desc = ANS_CHECKBOX_OTHER_DEFAULT
+        cls.additional_comments = ""
+
+
+    @classmethod
     def __floor_roomtype_building(cls, floor, roomtype, building):
         """ Returning the official string for each property. """
-        # Get 'Inputs' attributes
-        # floor_id = best_key_match(FLOORS, floor)
-        # room_type_id = best_key_match(ROOM_TYPES, roomtype)
-        # building_id = best_key_match(BUILDINGS, building)
 
+        # Get 'Inputs' attributes
         floor_id = best_match(get_keys_and_values_strs_dict(FLOORS), floor)
         room_type_id = best_match(get_keys_and_values_strs_dict(ROOM_TYPES), roomtype)
         building_id = best_match(get_keys_and_values_strs_dict(BUILDINGS), building)
@@ -568,8 +609,8 @@ class Inputs:
     @classmethod
     def set_user_input(cls, row=current_row_inputs, **kwargs):
         """Assign arguments to/in Inputs"""
+
         # Assign row variables
-        # cls.room_name, cls.floor_id, cls.room_type_id, cls.building_id, *cls.others_arguments = row
         cls.room_name, floor, room_type, building, *cls.others_arguments = row
         cls.floor_id, cls.room_type_id, cls.building_id = cls.__floor_roomtype_building(floor, room_type, building)
 
@@ -587,8 +628,13 @@ class Inputs:
         """Use factory method to parse arguments. Assign values to class immediately.
         Use the 'Inputs.Parser' class to parse through the other arguments.
         """
+        # Filter None values
+        cls.others_arguments = [x for x in cls.others_arguments if bool(x)]
+
+        # Now, parse the arguments
         for arg_str in cls.others_arguments:
-            parser = cls.Parser()
+            parser = cls().Parser()
+            parser.inputs.clear()
             parser.parse_others_cell(arg_str)
             parser.assign_to_inputs_cls(cls, to_global=False)
 
@@ -598,6 +644,9 @@ class Inputs:
         Keeps account of inputs for forms filled-out.
         task_completed: States whether the current_row_inputs were used to complete a form.
         """
+        # Set defaults
+        cls.set_default_values(include=[])
+
         # Move current user inputs over to completed
         if cls.current_row_inputs and task_completed:
             cls.completed_row_inputs.append(cls.current_row_inputs)
@@ -1016,6 +1065,7 @@ class Selenium:
         xpath_checkbox_input = Xpath.descendant(xpath_question, XPATH_CHECKBOX)
         checkboxes = self.find_elements(xpath_checkbox_input)
         checkbox_label_strs = [checkbox.get_attribute('value') for checkbox in checkboxes]
+        assert len(checkbox_label_strs) > 0, (xpath_checkbox_input,)
 
         # Pick default[s] if no answers are given
         if not container_of_answers:
@@ -1029,9 +1079,7 @@ class Selenium:
         if isinstance(container_of_answers, Mapping):
             for label_str, answer in container_of_answers.items():
                 # Get index of checkbox by string matching
-                checkboxes_label_matched = [cb_l for cb_l in checkbox_label_strs if label_str in cb_l]
-                checkboxes_label_matched.sort()
-                best_checkbox_label = checkboxes_label_matched[0]
+                best_checkbox_label = best_match(checkbox_label_strs, label_str)
                 checkbox_index = checkbox_label_strs.index(best_checkbox_label)
                 """Turn the answer to a bool, EXCEPT if it's 'None'. 
                 'None' is used to ignore checkbox."""

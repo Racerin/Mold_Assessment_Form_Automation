@@ -9,6 +9,7 @@ from random import randrange
 
 import openpyxl
 
+import library
 from library import *
 
 
@@ -85,21 +86,34 @@ class TestInputs(unittest.TestCase):
         Inputs.set_user_input(row, **kwa)
 
     def test_tsv(self):
-        """Test the saving and loading of tsv files function."""
-        # Inputs
-        # filename = os.path.join(os.getcwd(), 'trash', '{}.txt'.format(get_rand_str()), )
-        filename = 'trash/{}.txt'.format(get_rand_str())
+        """Test the saving and loading of completed tsv files."""
+
         container = [
-            [1, 2, 3, 4],
+            [1, 2, 3, 4, 5],
             ['a', 'b', 'c', 'd'],
         ]
-        # Save file
-        Inputs.save_tsv(container, filename=filename)
-        # Load file
-        loaded_container = Inputs.load_user_inputs(filename=filename)
-        # Checks
-        assert container[1] in loaded_container
-        assert [str(ele) for ele in container[0]] in loaded_container
+
+        try:
+            _, filename = tempfile.mkstemp(suffix='.tsv', dir=os.getcwd())
+            library.tsv_complete_file = filename
+            
+            # Save file
+            Inputs.completed_row_inputs = container
+            Inputs.save_completed()
+
+            # Load file
+            Inputs.load_completed()
+            from_complete = Inputs.completed_row_inputs
+                
+            # Checks
+            assert len(from_complete) == len(container), from_complete
+            assert container[1][0] in from_complete[1], from_complete
+            assert container[1] == from_complete[1], from_complete
+
+        finally:
+            # Clean-up
+            if os.path.exists(filename):
+                os.remove(filename)
 
 
 class TestSelenium(unittest.TestCase):

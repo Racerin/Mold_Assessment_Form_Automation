@@ -104,10 +104,11 @@ Follow the instructions ahead to fill-out the Microsoft Forms based on the inofr
 4. Activate the virtual environment using the following command depending on your Operating ystem:
     * Microsoft: *Scripts/venv/bin/activate*
     * Linux: *source venv/bin/activate*
-5. Install the python dependencies using the command terminal:  
+5. Install the chromedriver compatible with your personal system and chrome version. (Look-up an online tutorial).
+6. Install the python dependencies using the command terminal:  
 *'python3 -m pip install -r requirements.txt'*
-6. Change the values in the file 'config.json' to their appropriate values.
-7. Run the script: *'python3 app.py'*
+7. Change the values in the file 'config.json' to their appropriate values.
+8. Run the script: *'python3 app.py'*
 
 
 

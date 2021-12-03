@@ -906,10 +906,13 @@ class Selenium:
     """Use Selenium to traverse the form."""
     driver = None
 
-    def __init__(self):
-        if Selenium.driver is None:
+    def create_driver(self, force=False):
+        if Selenium.driver is None or force:
             self.driver = selenium.webdriver.Chrome()
             self.driver.maximize_window()
+
+    def __init__(self):
+        self.create_driver()
 
     def find_element(self, xpath:str) -> 'selenium.webdriver.remote.webelement.WebElement':
         """Shortcut for finding xpath element."""
@@ -1458,13 +1461,13 @@ class Selenium:
             # counter.inside(Inputs.hvac_materials)
 
             # Supplies and Materials affected
-            self.answer_checkboxgroup_element(7, Inputs.supplies_and_materials)
+            self.answer_checkboxgroup_element(count+7, Inputs.supplies_and_materials)
 
             # Supplies and Materials Description (Checkbox options with other)
-            self.answer_checkboxgroup_other_element(8, Inputs.supplies_and_materials_desc)
+            self.answer_checkboxgroup_other_element(count+8, Inputs.supplies_and_materials_desc)
 
             # Additional comments
-            self.answer_textarea_element(9, Inputs.additional_comments)
+            self.answer_textarea_element(count+9, Inputs.additional_comments)
             submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
             if yield_:
                 yield YIELD.BEFORE_NEXT_PAGE
@@ -1549,6 +1552,10 @@ class Runner:
         """Run 'Selenium' object according to config.
         Return control to Runner at each yield point and execute yield according to settings.
         """
+        # Create a new session ad hoc
+        selenium.create_driver(force=True)
+
+        # Now iterate through each yield while processessing operations between each yield
         for _yield in selenium.main_instructions(**self.main_instruction_args()):
             self.yield_handler(_yield)
             

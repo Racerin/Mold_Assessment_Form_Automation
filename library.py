@@ -237,9 +237,6 @@ class Config():
 
 class KeyboardManager():
 
-    class Intermission():
-        pass
-
     end = False
     pause = False
 
@@ -260,81 +257,7 @@ class KeyboardManager():
             pass
 
 
-class Action:
-    str : str = ""
-    actions = list()
 
-    def __init__(self, str1:str=""):
-        """Create an action object by parsing str1"""
-        self.get_driver()
-        self.factory_parse_string(str1)
-
-    def factory_parse_string(self, str1:str):
-        """Parse str1 to define object"""
-        self.str = str1
-        if str1.lower().startswith("odor"):
-            # Deal with mold odor
-            # Get partitions
-            try:
-                _odor, intensity, message = str1.split(' ', 2)
-            except ValueError:
-                _odor, intensity = str1.split(' ', 1)
-                message = ""
-            intensity_option = best_match(MOLD_ODOR, intensity)
-            # Add actions to object
-            self.actions = [
-                # Open 'Mold Odor' dropdown
-                partial(self.click_by, By.ID, "SelectId_4_placeholder", ),
-                # Select intensity
-                partial(self.click_by, By.CSS_SELECTOR, '[aria-label="{}"]'.format(intensity_option), ),
-                # Input text: Describing Source of Mold Odor
-                partial(self.send_keys_to_x(By.CSS_SELECTOR, "textarea", message, silent=True))
-            ]
-        elif str1.lower().startwith(""):
-            pass
-        elif str1.lower().startwith(""):
-            pass
-
-    def get_driver(self) -> selenium.webdriver:
-        """Get driver from Selenium"""
-        self.driver = Selenium.driver
-        return self.driver
-
-    def click_by_x(self, method:By, key, silent=False) -> selenium.webdriver.remote.webelement.WebElement:
-        """Use driver to click on an element by method."""
-        print("This is 'By' method:", method)
-        try:
-            element = self.driver.find_element(method, key)
-            element.click()
-        except selenium.common.exceptions.NoSuchElementException as err:
-            if silent:
-                pass
-            else:
-                raise err from None
-        return element
-
-    def send_keys_to_x(self, method:By, key, message, silent=False) -> selenium.webdriver.remote.webelement.WebElement:
-        """ Send text/'send_keys to html element, text input.
-        Search for element by method and with key.
-        """
-        try:
-            element = self.driver.find_element(method, key)
-            element.send_keys(message)
-        except selenium.common.exceptions.NoSuchElementException as err:
-            if silent:
-                pass
-            else:
-                # https://stackoverflow.com/a/18188660/6556801
-                raise err from None
-        return element
-
-    def run(self):
-        """Carry-out the functions in action."""
-        for func in self.actions:
-            func()
-
-
-#Inputs
 @dataclasses.dataclass
 class Inputs:
 
@@ -716,191 +639,6 @@ class Xpath:
             raise AttributeError("Key not of proper format({}).".format(types_str))
 
 
-@dataclasses.dataclass
-class Question:
-    label : str
-    page : int
-    element_type : ELEMENT_TYPE
-    
-    # Do not put in question_no unless you will be using it
-    question_no : int = None
-
-    def __post_init__(self):
-        self.get_driver()
-
-    def get_driver(self) -> selenium.webdriver:
-        """Get driver from Selenium"""
-        self.driver = Selenium.driver
-        return self.driver
-
-    def find_element(self, xpath:str) -> selenium.webdriver.remote.webelement.WebElement:
-        """Shortcut for finding xpath element."""
-        return self.driver.find_element(By.XPATH, xpath)
-
-    def find_elements(self, xpath:str) -> 'list[selenium.webdriver.remote.webelement.WebElement]':
-        """Shortcut for finding xpath elements."""
-        return self.driver.find_elements(By.XPATH, xpath)
-
-    def _answer_question_get_index(self, headings:'list[str]', answer:'int|str')->int:
-        if isinstance(answer, str):
-            # Select radio button according to header
-            index = headings.index(answer)
-        elif isinstance(answer, int):
-            # Select radio button according to position
-            index = answer
-        else:
-            AttributeError("You dont have an index.")
-        return index
-
-    def _answer_question_radiobutton_group(self, answer_container:Container, question_element:'selenium.webdriver.remote.webelement.WebElement'):
-        """Abstraction level for evaluating 'answer_question' 
-        for radiobutton group.
-        """
-        # Get header texts
-        header_element = question_element.find_elements(By.XPATH, '.'+XPATH_RADIOGROUP_HEADER)
-        spans = header_element.find_elements(By.XPATH, '.'+XPATH_SPAN)
-        headings = [span.text for span in spans]
-        # Get radio button groups
-        radiogroup_elements = question_element.find_elements(By.XPATH, '.'+XPATH_RADIOGROUP)
-        # Select rows based on container 'answer_container'.
-        if isinstance(answer_container, Sequence):
-            """Each list element deals with a row, in order."""
-            pairs = zip(radiogroup_elements, answer_container)
-            for radiogroup_element, answer_option in pairs:
-                # Get column radiobutton
-                index = self._answer_question_get_index(headings, answer_option)
-                radio_button = radiogroup_element.find_element(By.XPATH, '.'+XPATH_RADIOGROUP_BUTTON)[index]
-                # Click radio button
-                radio_button.click()
-        elif isinstance(answer_container, Mapping):
-            """Each row_header_key,answer_option pair deals with row header id, and table header selection"""
-            for row_header_key, answer_option in answer_container.items():
-                # Get row radiogroup by side header
-                xpath_radiogroup_by_side_header = XPATH_RADIOGROUP_BY_SIDE_HEADER.format(row_header_key)
-                radiogroup_element = question_element.find_element(By.XPATH, '.'+xpath_radiogroup_by_side_header)
-                # Get column radiobutton
-                index = self._answer_question_get_index(headings, answer_option)
-                radio_button = radiogroup_element.find_element(By.XPATH, '.'+XPATH_RADIOGROUP_BUTTON)[index]
-                # Click radio button
-                radio_button.click()
-
-    def _answer_question_checkbox_tick_accordingly(self, ticked:bool, tick_it:bool)->bool:
-        return bool(ticked) != bool(tick_it)    # XOR logic gate
-
-    def _answer_question_checkbox_group(self, answer_container:Container, question_element:'selenium.webdriver.remote.webelement.WebElement'):
-        """Abstraction level for evaluating 'answer_question' 
-        for checkbox group.
-        """
-        # Get check boxes
-        element_checkboxes = question_element.find_elements(By.XPATH, '.'+XPATH_CHECKBOX)
-        if isinstance(answer_container, Sequence):
-            pairs = zip(element_checkboxes, answer_container)
-            for element_checkbox, decision in pairs:
-                # Verify checkbox value before clicking it.
-                if self._answer_question_checkbox_tick_accordingly(element_checkbox.isSelected(), bool(decision)):
-                    element_checkbox.click()
-        elif isinstance(answer_container, Mapping):
-            # For each label, if there is a matching answer_container element, check it and tick checkbox accordingly.
-            label_texts = [element_checkbox.value for element_checkbox in element_checkboxes]
-            container_keys = list(answer_container.keys())
-            for i, label_text in enumerate(label_texts):
-                # Match conatiner key to label text
-                matches = [key for key in container_keys if label_text.lower() in key.lower()]
-                if matches:
-                    # Click checkbox if answer suggests that.
-                    match_key = matches[0]
-                    match_answer = answer_container[match_key]
-                    # Get checkbox
-                    element_checkbox = element_checkboxes[i]
-                    # Evaluate whether to click the button.
-                    if self._answer_question_checkbox_tick_accordingly(element_checkbox.isSelected(), bool(match_answer)):
-                        element_checkbox.click()
-                else:
-                    raise AttributeError("Something wrong")
-
-    def answer_question(self, value:'Container|str'):
-        """Select/input an answer value for the element according to its element type."""
-        # Get question (by label/index)
-        xpath1 = ""
-        if self.question_no:
-            xpath1 = XPATH_QUESTION_BY_NUMBER.format(self.question_no)
-        elif self.label:
-            xpath1 = XPATH_QUESTION_BY_LABEL.format(self.label)
-        else:
-            # NB: May not be the proper error raised.
-            raise AttributeError("There isn't a parameter to select question.")
-        # Get question element
-        question_element = self.find_element(xpath1)
-        if self.element_type == ELEMENT_TYPE.TEXT:
-            # Get input element
-            element = question_element.find_element(By.XPATH, '.'+XPATH_TEXTINPUT)
-            element.send_keys(value)
-        elif self.element_type == ELEMENT_TYPE.DROPDOWN:
-            # Get dropdown element and open dropdown
-            element_dropdown = question_element.find_element(By.XPATH, '.'+XPATH_DROPDOWN)
-            element_dropdown.click()
-            # Select dropdown
-            if isinstance(value, int):
-                # Select by order of dropdown
-                element = question_element.find_element(By.XPATH, '.'+XPATH_DROPDOWN_OPTION_INDEX)
-            elif isinstance(value, str):
-                # Select by text of dropdown option
-                element = question_element.find_element(By.XPATH, '.'+XPATH_DROPDOWN_OPTION_TEXT)
-            # Select the option
-            element.click()
-        elif self.element_type == ELEMENT_TYPE.TEXTAREA:
-            # Get textarea (should only have 1 textarea in entire page 1. Still explicit)
-            element = question_element.find_element(By.XPATH, '.'+XPATH_TEXTAREA)
-            element.send_keys(value)
-        elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON:
-            pass
-        elif self.element_type == ELEMENT_TYPE.RADIO_BUTTON_GROUP:
-            self._answer_question_radiobutton_group(value, question_element)
-        elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON:
-            pass
-        elif self.element_type == ELEMENT_TYPE.CHECK_BUTTON_GROUP:
-            self._answer_question_checkbox_group(value, question_element)
-
-
-class Counter:
-    _count = 0
-    count_dict = dict()
-    test_functions = []
-
-    def get_count(self): 
-        print("This is count '{}'.".format(self._count))
-        return self._count
-    def set_count(self, val):
-        print("This is count '{}'.".format(val))
-        if isinstance(val, int):
-            self._count = val
-        else: raise ValueError("Count must be of type 'int'.")
-    count = property(get_count, set_count,)
-
-    def __init__(self, count=count):
-        self.count = count
-
-    def add_key(self, key, number=1):
-        """ Adds a key and the number it adds by. """
-        if isinstance(number, int):
-            self.count_dict.update({key:number})
-
-    def add(self, toAdd=1) -> int:
-        self.count += toAdd
-        return self.count
-
-    def then_add(self, toAdd=1) -> int:
-        to_return = self.count
-        self.count += toAdd
-        return to_return
-
-    def inside(self, key) -> int:
-        """ If the key is in the dict 'count_dict',
-        add 1 to count.
-        """
-        to_add = self.count_dict.get(key, 0)
-        return self.add(to_add)
-
 
 class Selenium:
     """Use Selenium to traverse the form."""
@@ -1239,249 +977,131 @@ class Selenium:
         element_question = self.driver.find_element(By.XPATH, xpath)
         return element_question
 
-    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False, option=2):
+    def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False):
         """Instruction set to carry out to fill out form."""
-        if option == 1:
-            # Load webpage with form
-            self.driver.get(website_url)
-            # assert 'mold' in self.driver.title.lower()
-            if yield_:
-                yield YIELD.START
-            # Enter Date:
-            date_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/div/input[1]')
-            # date_input.send_keys(today_date())
-            date_input.send_keys(Inputs.date)
-            # Enter Observer name:
-            observer_input = self.driver.find_element(By.CSS_SELECTOR, ".office-form-question-textbox.office-form-textfield-input.form-control.office-form-theme-focus-border.border-no-radius")
-            observer_input.send_keys(Inputs.observer_name)
-            # Select Faculty/Office/Unit
-            self.driver.find_element(By.ID, "SelectId_0_placeholder").click()
-            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Faculty of Engineering"]').click()
-            if yield_:
-                yield YIELD.FIRST_PAGE_UPDATE
-            # Select Building
-            self.driver.find_elements(By.CLASS_NAME, "select-placeholder-text")[-1].click()
-            building_text = BUILDINGS[Inputs.building_id]
-            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="{}"]'.format(building_text)).click()
-            # Select Floor
-            self.driver.find_element(By.ID, "SelectId_2_placeholder").click()
-            floor_text = FLOORS[Inputs.floor_id]
-            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="{}"]'.format(floor_text)).click()
-            # Room / Area Identification
-            room_input = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[7]/div/div[2]/div/div/input')
-            room_input.send_keys(Inputs.room_name)
-            # Room/Area Type
-            self.driver.find_element(By.ID, "SelectId_3_placeholder").click()
-            rm_typ_id = Inputs.room_type_id + 1
-            self.driver.find_element(By.XPATH, '//*[@id="SelectId_3"]/div[2]/div[{}]'.format(rm_typ_id)).click()
-            # Mold Odor
-            self.driver.find_element(By.ID, "SelectId_4_placeholder").click()
-            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="None"]').click()
-            if yield_:
-                yield YIELD.FIRST_CHECKBOX
-            # Select all N/A
-            # Damage or Stains
-            for i in range(2,2+8):
-                self.driver.find_element(By.XPATH, '    /div/div/div[1]/div/div[1]/div[2]/div[2]/div[10]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
-            # Visible Mold
-            for i in range(2,2+8):
-                self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[12]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
-            # Wet or Damp
-            for i in range(2,2+8):
-                self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[14]/div/div[2]/div/div[{}]/div[6]/input'.format(i)).click()
-            # Within 3 feet of exterior wall?: 'No [whatever]' by default
-            # Damage or Stains
-            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[11]/div/div[2]/div/div[11]/div/label/input').click()
-            # Visible Mold
-            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[13]/div/div[2]/div/div[11]/div/label/input').click()
-            # Wet or Damp
-            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[2]/div[15]/div/div[2]/div/div[11]/div/label/input').click()
-            if yield_:
-                yield YIELD.MOLD_ODOR
-            if mold_odor:
-                # Select potency of mold odor
-                # Open options
-                self.driver.find_element(By.ID, "SelectId_4_placeholder").click()
-                # Select option
-                str1 = '[aria-label="{}"]'.format("Strong")
-                self.driver.find_element(By.CSS_SELECTOR, str1).click()
-            if yield_:
-                yield YIELD.BEFORE_NEXT_PAGE
-            # Press next button
-            self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button/div').click()
+        # Load webpage form
+        self.driver.get(website_url)
+
+        # Set the zoom of the webpage
+        # self.driver.execute_script("document.body.style.zoom='80%'")
+        if yield_:
+            yield YIELD.START
+            yield YIELD.PAGE_ONE
+            time.sleep(1)
+
+        # Enter Date
+        self.answer_date(1, Inputs.date)
+
+        # Enter Observer name
+        self.answer_text_element(2, Inputs.observer_name)
+
+        # Select Faculty/Office/Unit
+        self.answer_dropdown_element(3, 7)
+        if yield_:
+            yield YIELD.FIRST_PAGE_UPDATE
+
+        # Select Building
+        self.answer_dropdown_element(4, Inputs.building_id)
+
+        # Select Floor
+        self.answer_dropdown_element(5, Inputs.floor_id)
+
+        # Enter Room/Area Identification
+        self.answer_text_element(6, Inputs.room_name)
+
+        # Enter Room/Area Type
+        self.answer_dropdown_element(7, Inputs.room_type_id)
+
+        # Mold Odor, set as 'None' for now in order to progress to the next question
+        self.answer_dropdown_element(8, 'None')
+
+        # Select Damage or Stains (DS)
+        self.answer_radiogroups_element(9, Inputs.damage_or_stains, "N/A")
+
+        # Select DS within range of external walls
+        self.answer_checkboxgroup_element(10, Inputs.damage_or_stains_exterior, default="No Damage or Stains")
+
+        # Select Visible Mold (VM)
+        self.answer_radiogroups_element(11, Inputs.visible_mold, "N/A")
+
+        # Select VM within range of external walls
+        self.answer_checkboxgroup_element(12, Inputs.visible_mold_exterior, default="No Visible Mold")
+
+        # Select Wet or Damp(WD)
+        self.answer_radiogroups_element(13, Inputs.wet_or_damp, "N/A")
+
+        # Select WD within range of external walls
+        self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior, default="No Wet or Damp")
+
+        # NOW, answer Mold Odor Option
+        mold_odor_dict = get_keys_and_values_strs_dict(MOLD_ODOR)
+        mold_odor = best_match(mold_odor_dict, Inputs.mold_odor_id)
+        self.answer_dropdown_element(8, mold_odor)
+
+        # If any answer other than 'None' a new question with textarea pops-up right after
+        if Inputs.mold_odor_id != MOLD_ODOR[0]:
+            self.answer_textarea_element(9, Inputs.mold_odor_desc)
+
+        # Click 'Next' Button
+        next_button = self.find_element(XPATH_NEXT_BUTTON)
+        if yield_:
+            yield YIELD.BEFORE_NEXT_PAGE
+        next_button.click()
+
+        # NEXT PAGE
+        if yield_:
+            yield YIELD.NEXT_PAGE
+            yield YIELD.PAGE_TWO
+
+        count = 0
+
+        # Ceiling materials affected
+        self.ans_radiogroup_element(count+1, Inputs.ceiling_materials)
+        count += 0 if Inputs.ceiling_materials=='N/A' else 1
+
+        # Wall materials affected
+        self.ans_radiogroup_element(count+2, Inputs.wall_materials)
+        count += 0 if Inputs.wall_materials=='N/A' else 1
+
+        # Floor materials affected
+        self.ans_radiogroup_element(count+3, Inputs.floor_materials)
+        count += 0 if Inputs.floor_materials=='N/A' else 1
+
+        # Windows type affected
+        self.ans_radiogroup_element(count+4, Inputs.windows_materials)
+        count += 0 if Inputs.windows_materials=='N/A' else 1
+
+        # Furnishings affected
+        self.ans_radiogroup_element(count+5, Inputs.furnishing_materials)
+        count += 0 if Inputs.furnishing_materials=='N/A' else 1
+
+        # HVAC System affected
+        self.ans_radiogroup_element(count+6, Inputs.hvac_materials)
+        count += 0 if Inputs.hvac_materials=='N/A' else 1
+
+        # Supplies and Materials affected
+        self.answer_checkboxgroup_element(count+7, Inputs.supplies_and_materials)
+
+        # Supplies and Materials Description (Checkbox options with other)
+        self.answer_checkboxgroup_other_element(count+8, Inputs.supplies_and_materials_desc)
+
+        # Additional comments
+        self.answer_textarea_element(count+9, Inputs.additional_comments)
+        submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
+        if yield_:
+            yield YIELD.BEFORE_NEXT_PAGE
+            yield YIELD.SUBMIT
+            print("Not suppose to reach here.")
+        submit_button.click()
+
+        # NEXT PAGE
+        if yield_:
+            yield YIELD.NEXT_PAGE
+            yield YIELD.PAGE_THREE
             
-            # PAGE 2
-            # Now, put in mold odor info
-            if yield_:
-                yield YIELD.NEXT_PAGE
-            # Select all N/A by default, Select last input 'N/A' 7 times
-            for _ in range(7):
-                n_a = self.driver.find_elements_by_css_selector("input[value='N/A']")[-1].click()
-                # n_a = self.driver.find_elements_by_xpath("//input[@value='N/A']")[-1].click()
-            # Individual options
-            # Ceiling
-            # self.driver.find_element_by_xpath
-            # Walls
-            # Floor
-            # Windows
-            # Furnishings
-            # HVAC System
-            # Supplies and Materials
-            # Supplies and Materials Description?
-            # Additional Comments?
+        # Do another form
+            yield YIELD.BEFORE_NEXT_PAGE
 
-            if yield_:
-                yield YIELD.SUBMIT
-                yield YIELD.BEFORE_NEXT_PAGE
-            # Press submit button
-            submit_button = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[1]/div[2]/div[3]/div[1]/button[2]/div')
-            if submit:
-                submit_button.click()
-                # Next Page
-                if yield_:
-                    yield YIELD.NEXT_PAGE
-                # Submit another form
-                submit_link = self.driver.find_element(By.XPATH, '//*[@id="form-container"]/div/div/div[1]/div/div[2]/div[2]/div[2]/a')
-                if continue_it:
-                    submit_link.click()
-            if close:
-                # The End
-                self.driver.quit()
-                print("that's the end of the main instruction set.")
-        
-        elif option == 2:
-            # Load webpage form
-            self.driver.get(website_url)
-
-            # Set the zoom of the webpage
-            # self.driver.execute_script("document.body.style.zoom='80%'")
-            if yield_:
-                yield YIELD.START
-                yield YIELD.PAGE_ONE
-                time.sleep(1)
-
-            # Enter Date
-            self.answer_date(1, Inputs.date)
-
-            # Enter Observer name
-            self.answer_text_element(2, Inputs.observer_name)
-
-            # Select Faculty/Office/Unit
-            self.answer_dropdown_element(3, 7)
-            if yield_:
-                yield YIELD.FIRST_PAGE_UPDATE
-
-            # Select Building
-            self.answer_dropdown_element(4, Inputs.building_id)
-
-            # Select Floor
-            self.answer_dropdown_element(5, Inputs.floor_id)
-
-            # Enter Room/Area Identification
-            self.answer_text_element(6, Inputs.room_name)
-
-            # Enter Room/Area Type
-            self.answer_dropdown_element(7, Inputs.room_type_id)
-
-            # Mold Odor, set as 'None' for now in order to progress to the next question
-            self.answer_dropdown_element(8, 'None')
-
-            # Select Damage or Stains (DS)
-            self.answer_radiogroups_element(9, Inputs.damage_or_stains, "N/A")
-
-            # Select DS within range of external walls
-            self.answer_checkboxgroup_element(10, Inputs.damage_or_stains_exterior, default="No Damage or Stains")
-
-            # Select Visible Mold (VM)
-            self.answer_radiogroups_element(11, Inputs.visible_mold, "N/A")
-
-            # Select VM within range of external walls
-            self.answer_checkboxgroup_element(12, Inputs.visible_mold_exterior, default="No Visible Mold")
-
-            # Select Wet or Damp(WD)
-            self.answer_radiogroups_element(13, Inputs.wet_or_damp, "N/A")
-
-            # Select WD within range of external walls
-            self.answer_checkboxgroup_element(14, Inputs.wet_or_damp_exterior, default="No Wet or Damp")
-
-            # NOW, answer Mold Odor Option
-            # mold_odor = MOLD_ODOR[Inputs.mold_odor_id]
-            mold_odor_dict = get_keys_and_values_strs_dict(MOLD_ODOR)
-            mold_odor = best_match(mold_odor_dict, Inputs.mold_odor_id)
-            self.answer_dropdown_element(8, mold_odor)
-
-            # If any answer other than 'None' a new question with textarea pops-up right after
-            if Inputs.mold_odor_id != MOLD_ODOR[0]:
-                self.answer_textarea_element(9, Inputs.mold_odor_desc)
-
-            # Click 'Next' Button
-            next_button = self.find_element(XPATH_NEXT_BUTTON)
-            if yield_:
-                yield YIELD.BEFORE_NEXT_PAGE
-            next_button.click()
-
-            # NEXT PAGE
-            if yield_:
-                yield YIELD.NEXT_PAGE
-                yield YIELD.PAGE_TWO
-
-            # counter = Counter(1)
-            # counter.add_key('N/A')
-            count = 0
-
-            # Ceiling materials affected
-            # self.ans_radiogroup_element(counter.then_add(), Inputs.ceiling_materials)
-            self.ans_radiogroup_element(count+1, Inputs.ceiling_materials)
-            count += 0 if Inputs.ceiling_materials=='N/A' else 1
-            # counter.inside(Inputs.ceiling_materials)
-
-            # Wall materials affected
-            self.ans_radiogroup_element(count+2, Inputs.wall_materials)
-            count += 0 if Inputs.wall_materials=='N/A' else 1
-            # counter.inside(Inputs.wall_materials)
-
-            # Floor materials affected
-            self.ans_radiogroup_element(count+3, Inputs.floor_materials)
-            count += 0 if Inputs.floor_materials=='N/A' else 1
-            # counter.inside(Inputs.floor_materials)
-
-            # Windows type affected
-            self.ans_radiogroup_element(count+4, Inputs.windows_materials)
-            count += 0 if Inputs.windows_materials=='N/A' else 1
-            # counter.inside(Inputs.windows_materials)
-
-            # Furnishings affected
-            self.ans_radiogroup_element(count+5, Inputs.furnishing_materials)
-            count += 0 if Inputs.furnishing_materials=='N/A' else 1
-            # counter.inside(Inputs.furnishing_materials)
-
-            # HVAC System affected
-            self.ans_radiogroup_element(count+6, Inputs.hvac_materials)
-            count += 0 if Inputs.hvac_materials=='N/A' else 1
-            # counter.inside(Inputs.hvac_materials)
-
-            # Supplies and Materials affected
-            self.answer_checkboxgroup_element(count+7, Inputs.supplies_and_materials)
-
-            # Supplies and Materials Description (Checkbox options with other)
-            self.answer_checkboxgroup_other_element(count+8, Inputs.supplies_and_materials_desc)
-
-            # Additional comments
-            self.answer_textarea_element(count+9, Inputs.additional_comments)
-            submit_button = self.find_element(XPATH_SUBMIT_BUTTON)
-            if yield_:
-                yield YIELD.BEFORE_NEXT_PAGE
-                yield YIELD.SUBMIT
-                print("Not suppose to reach here.")
-            submit_button.click()
-
-            # NEXT PAGE
-            if yield_:
-                yield YIELD.NEXT_PAGE
-                yield YIELD.PAGE_THREE
-                
-            # Do another form
-                yield YIELD.BEFORE_NEXT_PAGE
 
 
 @dataclasses.dataclass

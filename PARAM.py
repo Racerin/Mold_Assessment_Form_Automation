@@ -1,5 +1,7 @@
 import enum
 
+LOGGER_FORMAT_TEST = '%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s'
+
 FILE_EXAMPLE_TEMPLATE = 'example template.xltx'
 
 CONFIG_FILE = "config.json"

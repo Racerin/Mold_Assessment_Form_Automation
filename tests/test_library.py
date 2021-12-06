@@ -12,6 +12,12 @@ import openpyxl
 import library
 from library import *
 
+logging.basicConfig(
+    filename="logging.txt", 
+    filemode='a',
+    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+    )
+
 
 def randstr(length=randrange(1,20)):
     """Create a string containing random characters."""
@@ -71,6 +77,25 @@ class Tsv_Example_Template:
     def __exit__(self, *exc):
         # Explicitly close temporary file
         self.tsv_file.close()
+
+
+class TestKeyboard(unittest.TestCase):
+    """ All to do with testing KeyboardManager. """
+
+    def test_interrupted_inputs(self):
+        """ Interactive/engaging unittest of keyboard with interrupts. """
+
+        kb = KeyboardManager()
+
+        # Put in reader function.
+
+
+        # Start test
+        logging.info("Started.")
+        kb.start()
+        for i in range(5):
+            time.sleep(5)
+        logging.info("Finished.")
 
 
 class TestInputs(unittest.TestCase):

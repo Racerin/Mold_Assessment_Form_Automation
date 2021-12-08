@@ -6,6 +6,7 @@ import uuid
 import string
 import random
 from random import randrange
+import logging
 
 import openpyxl
 
@@ -13,10 +14,14 @@ import library
 from library import *
 
 logging.basicConfig(
-    filename="logging.txt", 
-    filemode='a',
-    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+    filename="test.log", 
+    # level=logging.INFO,
+    filemode='w',
+    # encoding='utf-8',
+    format=LOGGER_FORMAT_TEST,
     )
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def randstr(length=randrange(1,20)):
@@ -82,20 +87,17 @@ class Tsv_Example_Template:
 class TestKeyboard(unittest.TestCase):
     """ All to do with testing KeyboardManager. """
 
-    def test_interrupted_inputs(self):
+    def test_logging(self):
         """ Interactive/engaging unittest of keyboard with interrupts. """
 
         kb = KeyboardManager()
 
-        # Put in reader function.
-
-
         # Start test
-        logging.info("Started.")
+        logger.debug("Started.")
         kb.start()
-        for i in range(5):
+        for _ in range(5):
             time.sleep(5)
-        logging.info("Finished.")
+        logger.debug("Finished.")
 
 
 class TestInputs(unittest.TestCase):

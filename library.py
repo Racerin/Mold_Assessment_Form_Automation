@@ -60,11 +60,7 @@ def load_tsv_file(filename, ignore_header_regex:str=None) -> list:
     """
     ans_list = list()
 
-    # Create the file if it doesn't exist
-    if not os.path.exists(filename):
-        with open(filename, mode='w+') as _:
-            pass
-    else:
+    try:
         # Read the file
         with open(filename, mode="r") as fd:
             rd = csv.reader(fd, delimiter='\t')
@@ -75,6 +71,10 @@ def load_tsv_file(filename, ignore_header_regex:str=None) -> list:
                     if re.search(ignore_header_regex, first_header):
                         continue
                 ans_list.append(row)
+    except IOError:
+        # Create the file if it doesn't exist
+        with open(filename, mode='w+') as _:
+            pass
     return ans_list
 
 def save_tsv_file(filename, rows:Sequence):

@@ -250,40 +250,75 @@ class KeyboardManager():
     pause = False
 
     keys_pressed = list()
+    keys_released = list()
+    keys_pressed_and_released = list()
 
     def __init__(self):
         self.main_listener = keyboard.Listener(
-            on_press=self._main_on_press_callback, 
-            on_release=self._main_on_release_callback
+            on_press=self.main_on_press_callback, 
+            on_release=self.main_on_release_callback
             )
         
     def start(self):
         """ Start the listening, thus responding to keyboard inputs. """
         self.main_listener.start()
 
-    def _main_on_release_callback(self, key:Key):
-        try:
-            # Normal button is released.
-            logging.debug("Key pressed: '{}'".format(key.char))
-            if key.char == 'q':
-                self.end = True
-                logging.debug("Quit it.")
-            if key.char == 'p':
-                self.pause = True
-                logging.debug("Paused it.")
-        except AttributeError:
-            # Special character is released.
-            logging.debug("Special character '{}' released.".format(key))
-        finally:
-            logging.debug("Key in its pure form. '{}'".format(key))
+    def main_on_press_callback(self, key:Key):
+        """ Filters pressed keys activity into groups. """
+        # Add key to pressed keys
+        self.keys_pressed.append(key)
+        # Add key to pressed and released keys
+        self.keys_pressed_and_released.append(key)
 
-    def _main_on_press_callback(self, key:Key):
-        try:
-            # Normal button is pressed.
-            logging.debug("Key pressed: '{}'".format(key.char))
-        except AttributeError:
-            # Special character is pressed
-            logging.debug("Special character '{}' pressed.".format(key))
+    def main_on_release_callback(self, key:Key):
+        """ Filters released keys activity into groups. """
+        # Add key to pressed keys
+        self.keys_released.append(key)
+        # Add key to pressed and released keys
+        self.keys_pressed_and_released.append(key)
+
+    def key_to_string(self, key:Key) -> str:
+        """ Returns a key converted to a string. 
+        UNUSED
+        """
+        return str(key)
+
+    def read(self, clear=True) -> list:
+        """ Go through all the keys pressed and release
+        and return a list of strings.
+        Clear the keys according to 'clear' when finished.
+        """
+        keys_as_str = [str(key) for key in self.keys_pressed_and_released]
+        if clear:
+            self.keys_pressed_and_released.clear()
+        return keys_as_str
+
+    @staticmethod
+    def key_is_key(self, this_key:'str|Key', is_key:'str|Key') -> bool:
+        """ Checks whether 'this_key' is 'is_key'.
+        Takes into consideration other keys, special keys,
+        and if it is a string or of type 'Key'.
+        UNTESTED
+        """
+        
+        holder = (this_key, is_key)
+        
+        # type checking. both are either 'str' or 'Key'
+        assert all( isinstance(x, (Key, str)) for x in holder )
+
+        # Equivalence check for both of type 'Key'
+        if all((isinstance(x, Key) for x in holder)):
+            return this_key == is_key
+        # Equivalence check if atleast one is a string
+        else:
+            keys_str = [str(x) for x in holder]
+            first, second = keys_str
+            first_is_special_key = '.' in first and len(first)>3
+            second_is_special_key = '.' in second and len(second)>3
+            if first_is_special_key or second_is_special_key:
+                return first == second
+            else:
+                return (first in second) or (second in first)
 
 
 

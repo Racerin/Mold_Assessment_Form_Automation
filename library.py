@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 from os import remove, environ
 import time
 import dataclasses
@@ -58,15 +59,22 @@ def load_tsv_file(filename, ignore_header_regex:str=None) -> list:
     string if it matches.
     """
     ans_list = list()
-    with open(filename, mode="r") as fd:
-        rd = csv.reader(fd, delimiter='\t')
-        for i, row in enumerate(rd):
-            if i==0 and ignore_header_regex is not None:
-                # Ignore the first row if its 1st element matches regular expression
-                first_header = row[0]
-                if re.search(ignore_header_regex, first_header):
-                    continue
-            ans_list.append(row)
+
+    # Create the file if it doesn't exist
+    if not os.path.exists(filename):
+        with open(filename, mode='w+') as _:
+            pass
+    else:
+        # Read the file
+        with open(filename, mode="r") as fd:
+            rd = csv.reader(fd, delimiter='\t')
+            for i, row in enumerate(rd):
+                if i==0 and ignore_header_regex is not None:
+                    # Ignore the first row if its 1st element matches regular expression
+                    first_header = row[0]
+                    if re.search(ignore_header_regex, first_header):
+                        continue
+                ans_list.append(row)
     return ans_list
 
 def save_tsv_file(filename, rows:Sequence):
@@ -80,7 +88,8 @@ def save_tsv_file(filename, rows:Sequence):
             # Convert each row to a str.
             if isinstance(row, Sequence):
                 # Row data is separated by tabs.
-                row_str = '\t'.join(row)
+                row_of_strings = [str(x) for x in row]
+                row_str = '\t'.join(row_of_strings)
             else:
                 row_str = str(row)
             ans_row_strs.append(row_str)
@@ -180,7 +189,7 @@ def best_match(container:Container, to_match:str) -> typing.Any:
 ## Global Configure
 
 # Files
-tsv_save_file = "completed.tsv"
+tsv_complete_file = "completed.tsv"
 excel_load_file = "file.xlsx"
 excel_save_file = "completed.xlsx"
 
@@ -240,21 +249,41 @@ class KeyboardManager():
     end = False
     pause = False
 
-    def __init__(self):
-        self.main_listener = keyboard.Listener(on_release=self._main_on_release_callback)
+    keys_pressed = list()
 
-    @classmethod
-    def _main_on_release_callback(cls, key:Key):
+    def __init__(self):
+        self.main_listener = keyboard.Listener(
+            on_press=self._main_on_press_callback, 
+            on_release=self._main_on_release_callback
+            )
+        
+    def start(self):
+        """ Start the listening, thus responding to keyboard inputs. """
+        self.main_listener.start()
+
+    def _main_on_release_callback(self, key:Key):
         try:
+            # Normal button is released.
+            logging.debug("Key pressed: '{}'".format(key.char))
             if key.char == 'q':
-                cls.end = True
-                print("Quit it.")
+                self.end = True
+                logging.debug("Quit it.")
             if key.char == 'p':
-                # print("I am printing.")
-                cls.pause = True
-                print("Paused it.")
+                self.pause = True
+                logging.debug("Paused it.")
         except AttributeError:
-            pass
+            # Special character is released.
+            logging.debug("Special character '{}' released.".format(key))
+        finally:
+            logging.debug("Key in its pure form. '{}'".format(key))
+
+    def _main_on_press_callback(self, key:Key):
+        try:
+            # Normal button is pressed.
+            logging.debug("Key pressed: '{}'".format(key.char))
+        except AttributeError:
+            # Special character is pressed
+            logging.debug("Special character '{}' pressed.".format(key))
 
 
 
@@ -458,6 +487,7 @@ class Inputs:
         """Load user input data into memory.
         Have the option to extend previous values with new values.
         """
+
         ans_list = load_excel_file(filename, ignore_header_regex='Room ')
         if extend:
             cls.user_rows_inputs.extend(ans_list)
@@ -467,12 +497,13 @@ class Inputs:
     @classmethod
     def save_completed(cls):
         """Saves completed rows into a file"""
-        save_tsv_file(tsv_save_file, cls.completed_row_inputs)
+        save_tsv_file(tsv_complete_file, cls.completed_row_inputs)
 
     @classmethod
     def load_completed(cls):
         """Loads row files into memory"""
-        cls.completed_row_inputs = load_excel_file(excel_save_file)
+        # cls.completed_row_inputs = load_excel_file(excel_save_file)
+        cls.completed_row_inputs = load_tsv_file(tsv_complete_file)
 
     @classmethod
     def set_default_values(cls, include:Container=[], exclude:Container=[]):
@@ -562,10 +593,12 @@ class Inputs:
             parser.assign_to_inputs_cls(cls, to_global=False)
 
     @classmethod
-    def load_user_input(cls, index=0, task_completed:bool=True):
+    def load_user_input(cls, index=0, task_completed:bool=True) -> bool:
         """Loads one row of user inputs into memory.
         Keeps account of inputs for forms filled-out.
         task_completed: States whether the current_row_inputs were used to complete a form.
+
+        returns bool: Whether entire method was successful or was interrupted.
         """
         # Set defaults
         cls.set_default_values(include=[])
@@ -575,12 +608,18 @@ class Inputs:
             cls.completed_row_inputs.append(cls.current_row_inputs)
 
         # Get next current_row_inputs
-        cls.current_row_inputs = cls.user_rows_inputs.pop(index)
-        assert len(cls.current_row_inputs) > 4, cls.current_row_inputs
+        try:
+            cls.current_row_inputs = cls.user_rows_inputs.pop(index)
+            assert len(cls.current_row_inputs) > 4, cls.current_row_inputs
+        except IndexError:
+            return False
         
         # Set and parse user inputs if not in 'completeed_row_inputs'
         if cls.current_row_inputs not in cls.completed_row_inputs:
             cls.set_user_input(row=cls.current_row_inputs)
+        
+        # Successful processing
+        return True
 
 
 class Xpath:
@@ -1109,6 +1148,8 @@ class Runner:
     """Responsible for handling running of Selenium's 'main_instruction'
     and handling interludes/pauses.
     The yields are grouped. If the yield falls within a specific group, respond accordingly.
+
+    N.B. The runner will not submit by default (look at 'return_yields'). It must be override to submit form.
     """
     submit : bool = False
     
@@ -1119,6 +1160,13 @@ class Runner:
     keyboard_yields : dict = dataclasses.field(default_factory=dict)
 
     sleep_time : float = 1
+
+    def __init__(self, **kwargs):
+        """ Object's Initialization.
+        Add the k,v to object's attribute:property. 
+        """
+        for k,v in kwargs.items():
+            setattr(self, k, v)
 
     def __continue_it_callback(self, yield_type, *args, **kwargs):
         """ Callback for 'continue_it'. """
@@ -1179,7 +1227,7 @@ class Runner:
         for _yield in selenium.main_instructions(**self.main_instruction_args()):
             self.yield_handler(_yield)
             
-            # Return pause
+            # Return yield. Exit the iterations.
             if _yield in self.return_yields: break
 
 

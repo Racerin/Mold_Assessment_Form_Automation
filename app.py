@@ -33,6 +33,32 @@ def one_form(option=4):
         )
         runner.run(obj)
 
+def fill_out_forms():
+    """ Fill-out forms according to data in input excel file. """
+
+    selenium = Selenium()
+    runner = Runner(
+        return_yields=[],
+    )
+
+    # Load input files
+    Inputs.load_user_inputs()
+    Inputs.load_completed()
+
+    # Go through each user input form submission
+    try:
+        success = True
+        while success:
+            success = Inputs.load_user_input()
+            runner.run(selenium)
+    except Exception as err:    
+        # Save the completed forms before raising error.
+        Inputs.save_completed()
+        raise err from err
+
+    # Save the completed forms at the end.
+    Inputs.save_completed()
+
 
 if __name__ == "__main__":
     one_form()

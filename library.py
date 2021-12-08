@@ -186,6 +186,15 @@ def best_match(container:Container, to_match:str) -> typing.Any:
         return best_value
 
 
+class Singleton(type):
+    """ https://stackoverflow.com/q/6760685/6556801 : method 3 """
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
 ## Global Configure
 
 # Files
@@ -244,7 +253,7 @@ class Config():
             globals()[k] = v
 
 
-class KeyboardManager():
+class KeyboardManager(metaclass=Singleton):
 
     end = False
     pause = False
@@ -254,6 +263,8 @@ class KeyboardManager():
     keys_pressed_and_released = list()
 
     def __init__(self):
+        """ Initialization """
+
         self.main_listener = keyboard.Listener(
             on_press=self.main_on_press_callback, 
             on_release=self.main_on_release_callback
@@ -262,6 +273,12 @@ class KeyboardManager():
     def start(self):
         """ Start the listening, thus responding to keyboard inputs. """
         self.main_listener.start()
+
+    def stop(self):
+        """ Stop the listening. 
+        https://pynput.readthedocs.io/en/latest/keyboard.html#monitoring-the-keyboard
+        """
+        keyboard.Listener.stop()
 
     def main_on_press_callback(self, key:Key):
         """ Filters pressed keys activity into groups. """
@@ -1195,13 +1212,24 @@ class Runner:
     keyboard_yields : dict = dataclasses.field(default_factory=dict)
 
     sleep_time : float = 1
+    keys_function_map : Mapping = dataclasses.field(default_factory=lambda:
+    # https://stackoverflow.com/a/52064202/6556801 : where I got this syntax from 
+        {
+            'q':quit,
+            's':lambda: time.sleep(5),
+        }
+    )
 
     def __init__(self, **kwargs):
-        """ Object's Initialization.
-        Add the k,v to object's attribute:property. 
-        """
+        """  """
+
+        # Add the k,v to object's attribute:property. 
         for k,v in kwargs.items():
             setattr(self, k, v)
+
+        # Add other neccesities
+        self.keyboard_manager = KeyboardManager()
+        self.keyboard_manager.start()
 
     def __continue_it_callback(self, yield_type, *args, **kwargs):
         """ Callback for 'continue_it'. """
@@ -1223,8 +1251,19 @@ class Runner:
         return None
 
     def __keyboard_callback(self, yield_type, *args, **kwargs):
-        """ Callback for 'keyboard'. """
-        key = self.keyboard_yields[yield_type]
+        """ Callback for 'keyboard'.
+        A filtered yield_type will be sent to this function.
+        Check keyboard_manager 'keys' since the last yield and
+        and call a function in keys_function_map according to key pressed.  """
+        
+        keys = self.keyboard_manager.read()
+
+        for input_keys in keys:
+            for map_key in self.keys_function_map:
+                if KeyboardManager.key_is_key(map_key, input_keys):
+                    # Call the respective function of the map
+                    func = self.keys_function_map
+                    func()
         return None
 
     def yield_handler(self, yield_type:YIELD):

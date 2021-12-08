@@ -86,18 +86,39 @@ class Tsv_Example_Template:
 
 class TestKeyboard(unittest.TestCase):
     """ All to do with testing KeyboardManager. """
+    def setUp(self):
+        self.kbm = KeyboardManager()
+
+    def tearDown(self):
+        if hasattr(self, 'kmb'):
+            self.kbm.stop()
 
     def test_logging(self):
-        """ Interactive/engaging unittest of keyboard with interrupts. """
-
-        kb = KeyboardManager()
+        """ Actually, test the logging module in python with keyboard listener. """
 
         # Start test
         logger.debug("Started.")
-        kb.start()
+        self.kbm.start()
         for _ in range(5):
             time.sleep(5)
         logger.debug("Finished.")
+
+    def test_read_q(self):
+        """ When the tester enters 'q' within 5 seconds, pass the test. """
+
+        # Setup
+        self.kbm.start()
+        logging.info("Enter the value 'q' for testing. [You have 5 seconds to do so]")
+
+        # Enter the value 'q'
+        # time.sleep(5)
+        keyboard_controller = keyboard.Controller()
+        keyboard_controller.type('q')
+
+        # Read the KeyboardManager and assert
+        keys = self.kbm.read()
+        assert any( [True for key in keys if 'q' in str(key)] ), keys
+        logging.info("Check ended.")
 
 
 class TestInputs(unittest.TestCase):

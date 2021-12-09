@@ -120,6 +120,18 @@ class TestKeyboard(unittest.TestCase):
         assert any( [True for key in keys if 'q' in str(key)] ), keys
         logging.info("Check ended.")
 
+    def test_key_is_key(self):
+        """ Test the method 'key_is_key' """
+
+        # Assertions
+        assert KeyboardManager.key_is_key('q', 'q') is True
+        assert KeyboardManager.key_is_key('q', "'q'") is True
+        assert KeyboardManager.key_is_key('"q"', "'q'") is True
+        assert KeyboardManager.key_is_key('Q', 'q') is False
+        assert KeyboardManager.key_is_key(keyboard.Key.esc, 'q') is False
+        assert KeyboardManager.key_is_key(keyboard.Key.esc, keyboard.Key.esc) is True
+        assert KeyboardManager.key_is_key(keyboard.Key.left, keyboard.Key.esc) is False
+
 
 class TestInputs(unittest.TestCase):
 
@@ -322,3 +334,45 @@ class TestLibrary(unittest.TestCase):
         for error_input in error_input_strings:
             with self.assertRaises(ValueError):
                 switch_date_format(error_input)
+
+
+class TestRunner(unittest.TestCase):
+    """ Test behaviors and functions related to 'Runner' class. 
+    """
+
+    def test_add_keyboard_yield_key(self):
+        """ Test the method 'add_keyboard_yield_key """
+        
+        runner = Runner()
+        # original_map = runner.keys_function_map.copy()
+        original_map = Runner.keys_function_map.copy()
+
+        # Entered a key that already mapped
+        with self.assertRaises(AttributeError):
+            runner.add_keyboard_yield_key('q', lambda:None)
+
+        # Enter a key that is not mapped
+        global_variable_name = randstr()
+        global_variable_value = randstr()
+        global_func = lambda: globals().update({global_variable_name:global_variable_value})
+        runner.add_keyboard_yield_key('j', global_func)
+        # Assertions
+        assert original_map != runner.keys_function_map
+        assert 'j' in runner.keys_function_map
+        func = runner.keys_function_map['j']
+        func()
+        assert globals().get(global_variable_name) == global_variable_value, (globals().get(global_variable_name), global_variable_value,)
+
+    def test_keyboard_callback(self):
+        """ Test '__keyboard_callback' in 'Runner'. """
+
+        # Setup runner object with a keyboard yield to press key before opening the webpage
+        runner = Runner(
+            keyboard_yields=[YIELD.PRESTART]
+        )
+        runner.add_keyboard_yield_key('d', lambda: exec('raise SystemExit'))
+        selenium_obj = Selenium()
+
+        # Run the tests
+        with self.assertRaises(SystemExit):
+            runner.run(selenium=selenium_obj)

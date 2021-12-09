@@ -58,6 +58,7 @@ class ELEMENT_TYPE(enum.Enum):
 class YIELD(enum.Enum):
     """Different options for 'Runner' yield interlude."""
     NONE = enum.auto()
+    PRESTART = enum.auto()
     START = enum.auto()
     FIRST_PAGE_UPDATE = enum.auto()
     FIRST_CHECKBOX = enum.auto()

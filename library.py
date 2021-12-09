@@ -121,6 +121,10 @@ def load_excel_file(filename, ignore_header_regex:str=None) -> list:
 def match_strings(str1:str, str2:str) -> float:
     """Return the match ratio between strings based on string length.
     """
+    # Assertions
+    assert isinstance(str1, str), str1
+    assert isinstance(str2, str), str2
+    # Evaluate
     ans = l_ratio(str1, str2)
     return ans
 
@@ -389,9 +393,21 @@ class Inputs:
             params = OTHERS_SECTION_MAPPING[section]
 
             ## Match each option in content
-            # Checkbox string matching
+            # Checkbox with other string matching
             if section in OTHERS_SECTION.CHECKBOX_WITH_OTHER:
                 inputs_value = options_input
+
+            # Checkboxes
+            elif section in OTHERS_SECTION.CHECKBOXES:
+                inputs_value = list()
+
+                # Get all options as keys to match with value
+                k_v_string_dict = get_keys_and_values_strs_dict(params)
+                for option_input in options_input:
+                    # Get best matching value of param
+                    best_option_input = best_match(k_v_string_dict, option_input)
+                    # Add the best response to inputs_value
+                    inputs_value.append(best_option_input)
 
             # Check for DS, VM, WD
             elif section in OTHERS_SECTION.EXTERIOR_WALL:
@@ -419,16 +435,26 @@ class Inputs:
                     '__get_inputs_exterior_wall_filter'
                     """
                     inputs_value.update({'exterior':exteriors_values})
-            elif section in OTHERS_SECTION.RADIO_BUTTON_OPTIONS:
+
+            # Check for selection options (dropdown, radio buttons)
+            elif section in OTHERS_SECTION.SELECT_OPTIONS:
                 # Get all options as keys to match with value
                 k_v_string_dict = get_keys_and_values_strs_dict(params)
                 # Get best matching value of param
                 best_option = best_match(k_v_string_dict, content_str)
                 # inputs_value
                 inputs_value = best_option
+            
+            # Check the questions with text inputs
             elif section in OTHERS_SECTION.TEXTINPUTS:
                 assert isinstance(content_str, str), content_str
                 inputs_value = content_str
+            else:
+                raise ValueError(
+                    "Did not get an 'inputs_value'. section:'{}', content_str:'{}'".format(
+                        section, content_str
+                    )
+                )
             return inputs_value
 
         

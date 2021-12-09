@@ -294,16 +294,19 @@ class TestExampleTemplate(unittest.TestCase):
         runner = Runner()
         runner.__sleep_callback = lambda *a: time.sleep(2)
 
+        # Wait for a key to be pressed
+        def on_release(key):
+            return False
+
         # Load 'Inputs' class
         Inputs.load_user_inputs(filename=FILE_EXAMPLE_TEMPLATE)
 
-        # Load 1st form
-        Inputs.load_user_input()
-        runner.run(selenium=selenium)
-
-        # Load 2nd form
-        Inputs.load_user_input()
-        runner.run(selenium=selenium)
+        for _ in range(3):
+            # Load forms
+            Inputs.load_user_input()
+            runner.run(selenium=selenium)
+            with keyboard.Listener(on_release=on_release) as listener:
+                listener.join()
 
 
 class TestLibrary(unittest.TestCase):

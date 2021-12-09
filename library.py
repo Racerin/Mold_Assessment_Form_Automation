@@ -311,7 +311,7 @@ class KeyboardManager(metaclass=Singleton):
         return keys_as_str
 
     @staticmethod
-    def key_is_key(self, this_key:'str|Key', is_key:'str|Key') -> bool:
+    def key_is_key(this_key:'str|Key', is_key:'str|Key') -> bool:
         """ Checks whether 'this_key' is 'is_key'.
         Takes into consideration other keys, special keys,
         and if it is a string or of type 'Key'.
@@ -330,12 +330,13 @@ class KeyboardManager(metaclass=Singleton):
         else:
             keys_str = [str(x) for x in holder]
             first, second = keys_str
-            first_is_special_key = '.' in first and len(first)>3
+            """ first_is_special_key = '.' in first and len(first)>3
             second_is_special_key = '.' in second and len(second)>3
             if first_is_special_key or second_is_special_key:
                 return first == second
             else:
-                return (first in second) or (second in first)
+                return (first in second) or (second in first) """
+            return match_strings(first, second) > 0.1#, 0, 0.2,
 
 
 
@@ -1070,11 +1071,16 @@ class Selenium:
 
     def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False):
         """Instruction set to carry out to fill out form."""
+
+        if yield_:
+            yield YIELD.PRESTART
+
         # Load webpage form
         self.driver.get(website_url)
 
         # Set the zoom of the webpage
         # self.driver.execute_script("document.body.style.zoom='80%'")
+
         if yield_:
             yield YIELD.START
             yield YIELD.PAGE_ONE
@@ -1206,19 +1212,17 @@ class Runner:
     submit : bool = False
     
     # Yield Groups
-    continue_it_yields : list = dataclasses.field(default_factory=list)
-    sleep_yields : dict = dataclasses.field(default_factory=dict)
+    continue_it_yields = list()
+    sleep_yields = dict()
     return_yields = [YIELD.SUBMIT]
-    keyboard_yields : dict = dataclasses.field(default_factory=dict)
+    keyboard_yields = dict()
 
     sleep_time : float = 1
-    keys_function_map : Mapping = dataclasses.field(default_factory=lambda:
-    # https://stackoverflow.com/a/52064202/6556801 : where I got this syntax from 
-        {
+    keys_function_map = {
             'q':quit,
-            's':lambda: time.sleep(5),
+            's':lambda: time.sleep(sleep_time),
         }
-    )
+
 
     def __init__(self, **kwargs):
         """  """
@@ -1258,13 +1262,34 @@ class Runner:
         
         keys = self.keyboard_manager.read()
 
-        for input_keys in keys:
-            for map_key in self.keys_function_map:
-                if KeyboardManager.key_is_key(map_key, input_keys):
-                    # Call the respective function of the map
-                    func = self.keys_function_map
-                    func()
+        # Do not run the function again if it was runned already (check by key).
+        checked_already = set()
+
+        for input_key in keys:
+            if input_key not in checked_already:
+                for map_key in self.keys_function_map:
+                    if KeyboardManager.key_is_key(map_key, input_key):
+                        # Call the respective function of the map
+                        func = self.keys_function_map[map_key]
+                        func()
+                        checked_already.update(input_key)
         return None
+
+    def add_keyboard_yield_key(self, key, func):
+        """ Adds a new function to be mapped
+        so that the function executes when key is pressed and 'Yield' occurs.
+        Ensure it's a zero-argument function.
+        """
+
+        # Ensure 'key' is not in 'keys_function_map' before adding function.
+        to_update = dict()
+        for k in self.keys_function_map:
+            if KeyboardManager.key_is_key(k, key):
+                # break
+                raise AttributeError("The key is already in there.")
+            else:
+                to_update.update({key:func})
+        self.keys_function_map.update(to_update)
 
     def yield_handler(self, yield_type:YIELD):
         """Responsible for actions based on the pause type and configuration."""
@@ -1294,7 +1319,7 @@ class Runner:
         """Run 'Selenium' object according to config.
         Return control to Runner at each yield point and execute yield according to settings.
         """
-        # Create a new session ad hoc
+        # Create a new session ad hoc (Find a better way to reset selenium webpage)
         selenium.create_driver(force=True)
 
         # Now iterate through each yield while processessing operations between each yield

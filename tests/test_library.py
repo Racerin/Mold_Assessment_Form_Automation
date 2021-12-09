@@ -366,13 +366,42 @@ class TestRunner(unittest.TestCase):
     def test_keyboard_callback(self):
         """ Test '__keyboard_callback' in 'Runner'. """
 
+        def local_func():
+            # raise SystemExit
+            exit()
+
+        keyboard_controller = keyboard.Controller()
+
         # Setup runner object with a keyboard yield to press key before opening the webpage
         runner = Runner(
             keyboard_yields=[YIELD.PRESTART]
         )
-        runner.add_keyboard_yield_key('d', lambda: exec('raise SystemExit'))
+        runner.sleep_time = 5
         selenium_obj = Selenium()
+        runner.add_keyboard_yield_key('d', local_func)
+        
 
-        # Run the tests
+        # Press the button to trigger the YIELD
+        keyboard_controller.tap('d')
+        # Assert that system exit would happen
         with self.assertRaises(SystemExit):
             runner.run(selenium=selenium_obj)
+
+        # Assert a default button (pause for 'sleep_time' seconds)
+        keyboard_controller.tap('s')
+        # keyboard_controller.tap('d')
+        time_start = time.monotonic()
+        with self.assertRaises(Exception):
+            runner.run(selenium=selenium_obj)
+        time_end = time.monotonic()
+        time_diff = time_end - time_start
+        # TODO
+        # assert time_diff > runner.sleep_time, (time_diff, runner.sleep_time)  
+
+        # Assert q
+        keyboard_controller.tap('q')
+        # Assert that system exit would happen
+        with self.assertRaises(SystemExit):
+            runner.run(selenium=selenium_obj)
+
+

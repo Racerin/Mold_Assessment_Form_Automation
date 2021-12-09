@@ -79,6 +79,7 @@ class OTHERS_SECTION():
     O = ('O', 'Observer')
     D = ('D', 'Date')
     MO = ('MO', 'Mold Odor')
+    DSMO = ('DSMO', 'Describe Source of Mold Odor')
     DS = ('DS', 'Damage or Stains')
     VM = ('VM', 'Visible Mold')
     WD = ('WD', 'Wet or Damp')
@@ -95,11 +96,16 @@ class OTHERS_SECTION():
     DSM = ('DSM', 'Description Supplies and Materials', 'Supplies and Materials Description', 'SMD')
     EX = ('EX', 'Additional Comments')
 
-    TEXTINPUTS = (O, D, DSM, EX,)
+    TEXTINPUTS = (O, D, DSMO, DSM, EX,)
     DROPDOWNS = (MO,)
     EXTERIOR_WALL = (DS, VM, WD,)
     RADIO_BUTTON_OPTIONS = (CM, WaM, FlM, WiM, FsM, HVAC,)
+    SELECT_OPTIONS = (CM, WaM, FlM, WiM, FsM, HVAC, MO, )
+    CHECKBOXES = (SM, )
     CHECKBOX_WITH_OTHER = (DSM,)
+    # NB: There are other 'CHECKBOX_WITH_OTHERS' not accounted for.
+    # They are after each radio button on the 2nd page when an option other than 'N/A' is selected.
+    # Might include those questions in an update. Would have to update documentation and main_instructions.
     MULTIPLE_OPTIONS = (DS, VM, WD, SM,)
     EVERYONE = (O, D, MO, DS, VM, WD, CM, WaM, FlM, WiM, FsM, HVAC, SM, DSM, EX,)
 
@@ -313,6 +319,7 @@ OTHERS_SECTION_MAPPING = {
     OTHERS_SECTION.O : str,
     OTHERS_SECTION.D : str,
     OTHERS_SECTION.MO : MOLD_ODOR,
+    OTHERS_SECTION.DSMO : str,
     OTHERS_SECTION.DS : EFFECT_ZONES,
     OTHERS_SECTION.VM : EFFECT_ZONES,
     OTHERS_SECTION.WD : EFFECT_ZONES,
@@ -332,6 +339,7 @@ OTHERS_SECTION_INPUTS_MAPPING = {
     OTHERS_SECTION.O : 'observer_name',
     OTHERS_SECTION.D : 'date',
     OTHERS_SECTION.MO : 'mold_odor_id',
+    OTHERS_SECTION.DSMO : 'mold_odor_desc',
     OTHERS_SECTION.DS : 'damage_or_stains',
     OTHERS_SECTION.VM : 'visible_mold',
     OTHERS_SECTION.WD : 'wet_or_damp',
@@ -339,7 +347,7 @@ OTHERS_SECTION_INPUTS_MAPPING = {
     OTHERS_SECTION.DSE : 'damage_or_stains_exterior',
     OTHERS_SECTION.VME : 'visible_mold_exterior',
     OTHERS_SECTION.WDE : 'wet_or_damp_exterior',
-    # 
+    
     OTHERS_SECTION.CM : 'ceiling_materials',
     OTHERS_SECTION.WaM : 'wall_materials',
     OTHERS_SECTION.FlM : 'floor_materials',

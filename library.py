@@ -11,6 +11,7 @@ import json
 import re
 import pydoc
 import typing
+from typing import Iterable
 from collections.abc import Sequence, Mapping, Container
 from numbers import Number
 from functools import partial
@@ -507,7 +508,7 @@ class Inputs:
                     setattr(globals(), inputs_attribute, inputs_value)
 
                 else:
-                    raise AttributeError("Attribute '{}' cannot be found in '{}'.".format(input_name, input_cls))
+                    raise AttributeError("Attribute '{}' cannot be found in '{}'.".format(inputs_attribute, input_cls))
 
     observer_name : str = "John Doe"
     date : str = today_date()
@@ -565,6 +566,8 @@ class Inputs:
     def load_user_inputs(cls, extend=False, filename=excel_load_file) -> list:
         """Load user input data into memory.
         Have the option to extend previous values with new values.
+
+        extend: Add the new values to the previous.
         """
 
         ans_list = load_excel_file(filename, ignore_header_regex='Room ')
@@ -572,6 +575,52 @@ class Inputs:
             cls.user_rows_inputs.extend(ans_list)
         else:
             cls.user_rows_inputs = ans_list
+
+    @classmethod
+    def load_user_input(cls, index=0, task_completed:bool=True) -> bool:
+        """Loads one row of user inputs into memory.
+        Keeps account of inputs for forms filled-out.
+        task_completed: States whether the current_row_inputs were used to complete a form.
+
+        returns bool: Whether entire method was successful or was interrupted.
+        """
+        # Set defaults
+        cls.set_default_values(include=[])
+
+        # Move current user inputs over to completed
+        if cls.current_row_inputs and task_completed:
+            cls.completed_row_inputs.append(cls.current_row_inputs)
+
+        # Get next current_row_inputs
+        try:
+            cls.current_row_inputs = cls.user_rows_inputs.pop(index)
+            assert len(cls.current_row_inputs) > 4, cls.current_row_inputs
+        except IndexError:
+            return False
+        
+        # Set and parse user inputs if not in 'completeed_row_inputs'
+        if cls.current_row_inputs not in cls.completed_row_inputs:
+            cls.set_user_input(row=cls.current_row_inputs)
+        
+        # Successful processing
+        return True
+
+    @classmethod
+    def load_user_input_iter(cls, fresh=True, task_completed:bool=True) -> Iterable:
+        """ Returns a iterable for 
+        going through each user inputs from the spreadsheet
+        line by line.
+
+        fresh: Flag to load user inputs into memory.
+        task_complete: Taken from 'load_user_input'. To ignore rows if task was completed already.
+        """
+        # Load into memory the user inputs.
+        if fresh:
+            cls.load_user_inputs(extend=False)
+        # Iterate the user inputs
+        success = True
+        while success:
+            success = cls.load_user_input(task_completed=task_completed)
 
     @classmethod
     def save_completed(cls):
@@ -670,35 +719,6 @@ class Inputs:
             parser.inputs.clear()
             parser.parse_others_cell(arg_str)
             parser.assign_to_inputs_cls(cls, to_global=False)
-
-    @classmethod
-    def load_user_input(cls, index=0, task_completed:bool=True) -> bool:
-        """Loads one row of user inputs into memory.
-        Keeps account of inputs for forms filled-out.
-        task_completed: States whether the current_row_inputs were used to complete a form.
-
-        returns bool: Whether entire method was successful or was interrupted.
-        """
-        # Set defaults
-        cls.set_default_values(include=[])
-
-        # Move current user inputs over to completed
-        if cls.current_row_inputs and task_completed:
-            cls.completed_row_inputs.append(cls.current_row_inputs)
-
-        # Get next current_row_inputs
-        try:
-            cls.current_row_inputs = cls.user_rows_inputs.pop(index)
-            assert len(cls.current_row_inputs) > 4, cls.current_row_inputs
-        except IndexError:
-            return False
-        
-        # Set and parse user inputs if not in 'completeed_row_inputs'
-        if cls.current_row_inputs not in cls.completed_row_inputs:
-            cls.set_user_input(row=cls.current_row_inputs)
-        
-        # Successful processing
-        return True
 
 
 class Xpath:
@@ -1096,7 +1116,8 @@ class Selenium:
         return element_question
 
     def main_instructions(self, submit=True, continue_it=True, mold_odor=False, close=False, yield_=False):
-        """Instruction set to carry out to fill out form."""
+        """Instruction set to carry out to fill out form.
+        An iterable."""
 
         if yield_:
             yield YIELD.PRESTART

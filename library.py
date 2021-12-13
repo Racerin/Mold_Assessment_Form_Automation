@@ -216,8 +216,8 @@ if website_url is None:
 class Config():
     """ This class when instantiated;
     1. Loads information from 'config.json' file.
-    # 2. Assigns the variables to it's class according to its name
-    # 3. Assigns all other variables globally.
+    2. Assigns the variables to it's class according to its name and if the property value evaluates to False
+    3. Assigns all other variables globally.
      """
     data = dict()
 
@@ -246,10 +246,12 @@ class Config():
             # Pop dict according to class from config's data
                 dict1 = self.data.pop(class_name)
 
-            # Assign variables of dict to class
+            # Assign variables of dict to class and if original property evaluates to False
                 if isinstance(dict1, Mapping):
                     for k,v in dict1.items():
-                        setattr(_class, k, v)
+                        original = getattr(_class, k, None)
+                        if not original:
+                            setattr(_class, k, v)
                 else:
                     logging.error("You cannot assign a non-dictionary to the class {}.".format(class_name))
 
@@ -510,8 +512,10 @@ class Inputs:
                 else:
                     raise AttributeError("Attribute '{}' cannot be found in '{}'.".format(inputs_attribute, input_cls))
 
-    observer_name : str = "John Doe"
-    date : str = today_date()
+    observer_name : str = ""
+    date : str = ''
+
+    _ignore_completed = True
 
     room_name : str = ""
     floor_id : int = None
@@ -577,10 +581,10 @@ class Inputs:
             cls.user_rows_inputs = ans_list
 
     @classmethod
-    def load_user_input(cls, index=0, task_completed:bool=True) -> bool:
+    def load_user_input(cls, index=0, ignore_completed:bool=_ignore_completed) -> bool:
         """Loads one row of user inputs into memory.
         Keeps account of inputs for forms filled-out.
-        task_completed: States whether the current_row_inputs were used to complete a form.
+        ignore_completed: States whether the current_row_inputs were used to complete a form.
 
         returns bool: Whether entire method was successful or was interrupted.
         """
@@ -588,7 +592,7 @@ class Inputs:
         cls.set_default_values(include=[])
 
         # Move current user inputs over to completed
-        if cls.current_row_inputs and task_completed:
+        if cls.current_row_inputs and ignore_completed:
             cls.completed_row_inputs.append(cls.current_row_inputs)
 
         # Get next current_row_inputs
@@ -606,7 +610,7 @@ class Inputs:
         return True
 
     @classmethod
-    def load_user_input_iter(cls, fresh=True, task_completed:bool=True) -> Iterable:
+    def load_user_input_iter(cls, fresh=True, ignore_completed:bool=_ignore_completed) -> Iterable:
         """ Returns a iterable for 
         going through each user inputs from the spreadsheet
         line by line.
@@ -620,7 +624,7 @@ class Inputs:
         # Iterate the user inputs
         success = True
         while success:
-            success = cls.load_user_input(task_completed=task_completed)
+            success = cls.load_user_input(ignore_completed=ignore_completed)
 
     @classmethod
     def save_completed(cls):
@@ -1375,6 +1379,3 @@ class Runner:
             
             # Return yield. Exit the iterations.
             if _yield in self.return_yields: break
-
-
-config = Config()

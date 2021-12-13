@@ -1,5 +1,4 @@
 import unittest
-import os
 import datetime
 import tempfile
 import uuid
@@ -7,11 +6,15 @@ import string
 import random
 from random import randrange
 import logging
+from unittest.mock import MagicMock
 
 import openpyxl
+from click.testing import CliRunner
 
-import library
+
 from library import *
+import library
+import app
 
 logging.basicConfig(
     filename="test.log", 
@@ -408,3 +411,31 @@ class TestRunner(unittest.TestCase):
             runner.run(selenium=selenium_obj)
 
 
+class TestApp(unittest.TestCase):
+    """ Test the manifestation of click terminal app. """
+
+    def test_start_app(self):
+        runner = CliRunner()
+
+        app.one_form = MagicMock(return_value=None)
+        app.fill_out_forms = MagicMock(return_value=None)
+
+        # Test the default values applied
+        str_format1 = dict(
+            observer="Dan", 
+            date="12/20/2021", 
+            excel="ex.xlsx",
+            ignore_completed=False
+            )
+        result = runner.invoke(
+            app.app_automate, 
+            "--observer {observer} --date {date} --excel-load-file {excel} --ignore-completed".\
+                format(**str_format1).split(), 
+            )
+
+        assert result.exit_code == 0, result.exit_code
+        assert 'automation' in result.output
+        assert Inputs.observer_name == str_format1['observer'], (Inputs.observer_name, str_format1['observer'], )
+        assert Inputs.date == str_format1['date'], (Inputs.date, str_format1['date'], )
+        assert library.excel_load_file == str_format1['excel'], (library.excel_load_file, str_format1['excel'], )
+        assert library.Inputs._ignore_completed == str_format1['ignore_completed'], (Inputs._ignore_completed, str_format1['ignore_completed'])

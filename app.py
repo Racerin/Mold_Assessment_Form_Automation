@@ -1,5 +1,6 @@
 # Automate Fillinf-out forms
 from library import *
+import library
 import tests
 
 import click
@@ -60,5 +61,34 @@ def fill_out_forms():
     Inputs.save_completed()
 
 
+@click.command()
+@click.option('--observer', '-o', default=Inputs.observer_name, help="The name of the person who conducted the Mold Assessment.", )
+@click.option('--date', '-d', default=Inputs.date, help="The date (format: mm/dd/yyyy) that ALL the mold assessments were conducted (Do not use if the mold accessment was conducted different days.).", )
+@click.option('--excel-load-file', default=excel_load_file, show_default=True, help="The excel preadsheet file the user filled-out.", )
+@click.option('--ignore-completed', is_flag=True, default=Inputs._ignore_completed, help="Ignore a user input if it was submitted before.", )
+def app_automate(observer, date, excel_load_file, ignore_completed):
+    """ Run a terminal app to automatically submit
+    user inputs from the spreadsheet
+    onto the online Microsoft form. 
+    """
+
+    click.echo("Form automation started.")
+    config = Config()
+    
+    # Assign the values to the properties
+    click.echo("This is observer: {}".format(observer))
+    library.Inputs.observer_name = observer
+    library.Inputs.date = date
+    library.excel_load_file = excel_load_file
+    library.Inputs._ignore_completed = ignore_completed
+    # setattr(library.Inputs, '_ignore_completed', ignore_completed)
+
+    # Run through forms
+    # fill_out_forms()
+
+    click.echo("Form automation ended.")
+
+
 if __name__ == "__main__":
-    one_form()
+    # one_form()
+    app_automate()

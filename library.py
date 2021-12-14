@@ -180,7 +180,7 @@ def best_match(container:Container, to_match:str) -> typing.Any:
             return best_value
         except KeyError as err:
             raise KeyError(
-                "There was no match for '{}' in the dictionary '{}'.".format(to_match, dict1)
+                "There was no match for '{}' in the dictionary '{}'.".format(to_match, container)
                 ) from err
     elif isinstance(container, Container):
         best_value = None
@@ -577,11 +577,11 @@ class Inputs:
     def user_input_prompt(cls):
         """Prompt user for input data."""
         # observer_name = input(OBSERVER_NAME_PROMPT)
-        cls.room_name = input(ROOM_NAME_PROMPT)
-        cls.floor_id = int(input(FLOOR_PROMPT))
-        cls.room_type_id = int(input(ROOM_TYPE_PROMPT))
-        cls.building_id = int(input(BUILDING_PROMPT))
-        date_response = input(BUILDING_PROMPT)
+        cls.room_name = input(PROMPT_ROOM_NAME)
+        cls.floor_id = int(input(PROMPT_FLOOR))
+        cls.room_type_id = int(input(PROMPT_ROOM_TYPE))
+        cls.building_id = int(input(PROMPT_BUILDING))
+        date_response = input(PROMPT_BUILDING)
         cls.date = int(date_response) if date_response else today_date()
 
     @classmethod
@@ -1296,10 +1296,14 @@ class Runner:
             'q':quit,
             's':lambda: time.sleep(sleep_time),
         }
+    # pause_at_form_end = False
 
 
     def __init__(self, **kwargs):
         """  """
+
+        # Shortcut to pause at form end
+        # self._pause_at_form_end()
 
         # Add the k,v to object's attribute:property. 
         for k,v in kwargs.items():
@@ -1308,6 +1312,16 @@ class Runner:
         # Add other neccesities
         self.keyboard_manager = KeyboardManager()
         self.keyboard_manager.start()
+
+    def _pause_at_form_end(self):
+        """ Setup for pausing at form end. """
+        if self.pause_at_form_end:
+            if isinstance(self.pause_at_form_end, Container):
+                all_strs = all((isinstance(x,str) for x in self.pause_at_form_end))
+                if all_strs:
+                    # Proceed to create a keyboard callback for end of form creation
+                    self.keyboard_yields.update()
+                    # STOPPED. Not compatable data structure
 
     def __continue_it_callback(self, yield_type, *args, **kwargs):
         """ Callback for 'continue_it'. """

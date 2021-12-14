@@ -3,7 +3,10 @@
     .temp {
         text-indent: 100px;
     }
+    
 </style> -->
+
+<!-- https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax -->
 # Welcome
 
 This is documentation for the 'filling-out' of the Mold assessment form.
@@ -68,18 +71,28 @@ Follow the instructions below to complete the task.
 
 
 
+# Quickstart
+
+1. Open the 'template.xltx' spreadsheet file and save it as 'file.xlsx'.
+2. For each assessment form:
+    - fill-out; 'Room name', 'Floor Name', 'Room Type', 'Building Name'
+    - Under 'Others', place a [Section:Content](#section_content) in that column and rows going to the right.
+3. After filling out the form submissions: hand over file to admin to submit forms.
+
+
+
 # Start
 
 ## User
 1. Open the file 'template.xltx' in Microsoft Excel. If not found, open a new spreadsheet.
 2. In this spreadsheet, enter the information for each 'Mold Assessment' Form. Follow the following instructions to complete the task.
-    * Each row represents a single form submission.
-    * Look at the Heading on top/row 1 (Room Name, Floor Name/ID, Room Type(Name/ID), Building, Name/ID, Others). These are your **headings**. Each heading is assigned its own column except for **'Others'**
+    * Each row represents a single assessment form submission.
+    * Look at the Heading on top/row 1 (Room Name, Floor Name/ID, Room Type(Name/ID), Building, Name/ID, Others). These are your **headings**. Each heading is assigned its own column (except for **'Others'**).
     * Each column containing a header that has an 'ID' tag can be filled-out with IDs (Look at [appendix 2](#section_content) for more information).
     * **Others**:
-        * The heading **'Others'** is unique. It is used to assign additional details to the form. No entries under 'Others' equates to default values and no additional information entered. The 'Others' column allows for entries **below** and **below right** of its header i.e. the Others header covers multiple columns and the remainder of the spreadsheet going to the right.
-        * Each **section** requires its own **column**: 
-        * A section and its content is formatted in a single cell as follows: **[section]:[content]**
+        * The heading **'Others'** is unique. It is used to assign additional details to the form. If nothing is inserted under 'Others' default values will be used (YAY) and no additional information will be submitted. The 'Others' column allows for entries **below** and **below right** of its header i.e. the Others header covers multiple columns and the remainder of the spreadsheet going to the right.
+        * Each **Section** requires its own **Column**: 
+        * A Section and its Content is formatted in a single cell as follows: **[Section]:[Content]**
         * There are 15 sections under Others:
             * Observer (O)
             * Date (D)
@@ -91,24 +104,25 @@ Follow the instructions below to complete the task.
             * Supplies & Materials (SM)
             * Describe Supplies & Materials (DSM)
             * Additional Comments (EX)
-        * The **content** for a given **section** can be filled out using codes shown in 'Appendix 2'.  Look at **Examples** to better understand the syntax for filling out the spreadsheet.
-3. Save the file as 'file.tsv'.
-4. Pass the file to admin to fill-out form.
+        * The **Content** for a given **section** can be filled out using codes shown in 'Appendix 2'.  **Look at 'Examples' to better understand the syntax for filling out the spreadsheet.**
+3. Save the file as 'file.tsv' or 'file.xlsx'.
+4. Pass the file to admin to automate filling-out of Mold Assessment orms.
 
 
 ## Admin
-Follow the instructions ahead to fill-out the Microsoft Forms based on the inofrmation entered in the 'file.tsv' file.
-1. Copy the git repository [here](https://github.com/Racerin/Mold_Assessment_Form_Automation).
-2. Install Python version 3.8.10 or older.
-3. Open the command terminal and change the working directory to the copied repository is step 1.
-4. Activate the virtual environment using the following command depending on your Operating ystem:
-    * Microsoft: *Scripts/venv/bin/activate*
-    * Linux: *source venv/bin/activate*
-5. Install the chromedriver compatible with your personal system and chrome version. (Look-up an online tutorial).
-6. Install the python dependencies using the command terminal:  
+Follow the instructions ahead to fill-out the Microsoft Forms based on the information entered in the 'file.tsv'/'file.xlsx' file.
+1. Run a Python Environment:
+    1. Copy the git repository [here](https://github.com/Racerin/Mold_Assessment_Form_Automation).
+    2. Install Python version 3.8.10 or older.
+    3. Open the command terminal and change the working directory to the copied repository is step 1.
+    4. Activate the virtual environment using the following command depending on your Operating ystem:
+        * Microsoft: *Scripts/venv/bin/activate*
+        * Linux: *source venv/bin/activate*
+2. Install the chromedriver compatible with your personal system and chrome version. (Look-up an online tutorial).
+3. Install the python dependencies using the command terminal:  
 *'python3 -m pip install -r requirements.txt'*
-7. Change the values in the file 'config.json' to their appropriate values.
-8. Run the script: *'python3 app.py'*
+4. Change the values in the file 'config.json' to their appropriate values.
+5. Run the script: *'python3 app.py'*. It's a command line interface (CLI) application so add '--help' at the end of command for more information.
 
 
 
@@ -118,13 +132,13 @@ Look at 'example template.xltx' for more information.
 
 
 # Appendix
-Fill-out the spreadsheet according to; **headers** and **section/content** as follows.
+Fill-out the spreadsheet according to; **Headers** and **Section/Content** as follows.
 
 
 ## 1. Headers:
 1. **Room name** - Enter a room name. A good format for readability is;  
 '*Block number, Room number, Room name*'
-2. **Floor name** - Select a floor by entering an ID code or unique subset of characters of floor name (e.g. 'base'). **N.B.** The index starts with '0'.
+2. **Floor name** - Select a floor by entering an ID code or unique subset of characters of floor name (e.g. 'base' for 'Basement'). **N.B.** The indices starts with '0'.
     * 0 : Basement
     * 1 : Ground
     * 2 : Floor 1
@@ -155,19 +169,19 @@ Fill-out the spreadsheet according to; **headers** and **section/content** as fo
 
 
 ## 2. <a name="section_content">*'Others'* > Sections/Content:</a>  
-The ID of the *'section'* is in parenthesis. Each content contains one or more *options* with their own ID listed below in bulletin.
+The ID of the *'section'* is in parenthesis. Each Content contains one or more *options* with their own ID listed below in bulletin.
 
-* **Observer (O)** - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
-* **Date (D)** - The date when the evaluation was carried out. It **must** follow the format: *mm/dd/yyy*. **N.B.** The default value is found in 'config.json' and will be override when changed on spreadsheet.
-* **Mold Odor (MO)** - Put in the number/letter corresponding to the Mold Odor smelled. **N.B.** The index starts with '0'.
+* **Observer (O)** - The name of the person that carried-out the evaluation. **N.B.** The default value is found in 'config.json' and will be overridden when changed in the spreadsheet with this input **and for all forms submitted going forward** (i.e. for this row and all after).
+* **Date (D)** - The date when the evaluation was carried out. It **must** follow the format: *mm/dd/yyy*. **N.B.** The default value is found in 'config.json' and will be overridden when changed in the spreadsheet with this input **and for all forms submitted going forward** (i.e. for this row and all after).
+* **Mold Odor (MO)** - Put in the number/letter corresponding to the Mold Odor smelled. Default is '**None**'. **N.B.** The index starts with '0'.
     * 0 : None
     * 1 : Mild
     * 2 : Moderate
     * 3 : Strong
-* **Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD)** - All these 3 *sections* has the same *content/options* below.  
+* **Damage or Stains (DS), Visible Mold (VM), Wet or Damp (WD)** - All these 3 *sections* has the same **Content/Options** below (not *Section/Content*).  
 Each option can be tagged with a number 0-3 corresponding to the size of area affected. If not tagged, a default of **'0'** will be set.  
 Any option not selected will be given an automatic **'N/A'**.  
-Each option can be tagged with the symbol '+' to state that it is close to an external wall (External Zone). (look at [appendix 3](#advance)).  
+Each option can be tagged with the symbol '+' to state that it is close to an **external wall** (External Zone). (look at [appendix 3](#advance)).  
 Several options can be selected by placing a comma between them.  e.g. Ceiling2, Walls3+, Windows+
     * Ceiling
     * Walls
@@ -221,17 +235,17 @@ Several options can be selected by placing a comma between them.  e.g. Ceiling2,
     * 2 : Unit Ventilator
     * 3 : Window Unit
     * 4 : N/A
-* **Supplies and Materials [in room] (SM**) - Put in the number/letter corresponding to the supplies and materials affected.
+* **Supplies and Materials [in room] (SM**) - Put in the number/letter corresponding to the supplies and materials affected. (Multiple Options)
     * 0 : Books
     * 1 : Boxes
     * 2 : Equipment
     * 3 : N/A
-* **Describe Supplies and Materials [in room] (DSM**) - Put in the number/letter corresponding to the floor affected.
+* **Describe Supplies and Materials [in room] (DSM**) - Put in the number/letter corresponding to the floor affected. (Multiple Options)
     * 0 : Wrinkled pages
     * 1 : Crumpled boxes
     * 2 : Other
-* **Additional Comment (EX**) - Enter a string of comments in parenthesis.  
-e.g. EX(This is my additional message.)
+* **Additional Comment (EX**) - Enter a string of comments after the colon.  
+e.g. EX:This is my additional message.
 
 
 ## 3. <a name="advance">*'Others'* Advance:</a>
@@ -240,11 +254,11 @@ e.g. EX(This is my additional message.)
     * 1 : The size of a sheet of paper
     * 2 : More than a sheet of paper to the size of a standard door
     * 3 : More than the size of a standard door
-* '+' - Add the tag '+' to the end of the option in DS, VM, WD to state that it is within 3 feet of external wall.
+* '+' - Add the tag '+' to the end of the option in DS, VM, WD to state that it is within 3 feet of external wall (e.g **'DS:Walls2+'** construction is [Section]:[Content][Option][Close to exterior wall] ).
 
 
 ## 4. <a name="config">Config:</a>
-View/Edit the 'config.json' config file to change some default values.  
+View and edit the config file **'config.json'** to change some default values.  
 **N.B.** Changing these values especially file names can lead to irregular behavior.  
 Also, maintain 'JSON' syntax within file to prevent errors.
 * Observer name : Name of person who carried-out the assessments. This value is overridden individually per spreadsheet entry when user inputs 'Obeserver name' under 'Others'.

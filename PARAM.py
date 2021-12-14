@@ -8,9 +8,9 @@ CONFIG_FILE = "config.json"
 
 TSV_HEADER = ["Room Name", "Floor ID", "Room Type ID", "Building ID", "FUTURE"]
 
-ROOM_NAME_PROMPT = "Enter the Room/Area name: "
+PROMPT_ROOM_NAME = "Enter the Room/Area name: "
 
-FLOOR_PROMPT = """Enter the corresponding number for the Floor.
+PROMPT_FLOOR = """Enter the corresponding number for the Floor.
 0. Basement
 1. Ground
 2. Floor 1
@@ -20,13 +20,13 @@ FLOOR_PROMPT = """Enter the corresponding number for the Floor.
 6. Floor 5
 """
 
-ROOM_TYPE_PROMPT = """Enter the corresponding number for the Room/Area type.
+PROMPT_ROOM_TYPE = """Enter the corresponding number for the Room/Area type.
 0. Office, 1. Classroom, 2. Kitchen, 3. Workshop, 4. Lab, 
 5. Store Room, 6. Washroom, 7. Conference Room, 
 8. Meeting Room, 9. Changing/Locker Room, 10. Electrical Room
 """
 
-BUILDING_PROMPT = """Enter the corresponding number for the Building that the room is in.
+PROMPT_BUILDING = """Enter the corresponding number for the Building that the room is in.
 0. Geomatics Engineering and Land Management, 
 1. George Moonsammy Building (Block 9), 
 2. Systems Lab (Block 11), 
@@ -36,12 +36,15 @@ BUILDING_PROMPT = """Enter the corresponding number for the Building that the ro
 6. Civil/Chemical/Mechanical Labs
 """
 
-OBSERVER_NAME_PROMPT = """What was the obeserver's name?
+PROMPT_OBSERVER_NAME = """What is the obeserver's name?
 """
 
-INTERLUDE_LISTENER_OPTIONS = """q:quit, space:next,
+PROPMPT_INTERLUDE_LISTENER_OPTIONS = """q:quit, space:next,
 """
 
+PROMPT_IGNORE_COMPLETED = "Do you want to skip previously submitted forms?"
+
+PROMPT_PAUSE_AT_FORM_END = "Do you want to pause at the end of each created form?"
 
 class ELEMENT_TYPE(enum.Enum):
     """Enum for 'Selenium' Web Element"""
@@ -128,6 +131,7 @@ RE_DATE = r"\d\d\/\d\d\/20\d\d"     # --/--/20--
 RE_DATE_PLACEHOLDER_USA_SHORT = r"M\/d"
 RE_DATE_PLACEHOLDER_WORLD_SHORT = r"d\/M"
 RE_DATE_SWITCH = r"(?P<ww>\d\d)\/(?P<xx>\d\d)\/(?P<yyyy>\d{4})"
+RE_EXCEL_FILE_EXT = r"\.xl\w{0,2}"
 
 
 # Selenium Answers

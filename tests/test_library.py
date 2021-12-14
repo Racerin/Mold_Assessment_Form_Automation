@@ -291,13 +291,16 @@ class TestExampleTemplate(unittest.TestCase):
 
     def test_fill_out_form(self):
         """ Test the filling out of form using the data from 'example template'. 
+        Pause at the end to allow to view each form to submit (optional).
         """
+        # Arguments for tester.
+        keyboard_pause = True
+
         # Load web form
         selenium = Selenium()
         runner = Runner()
         runner.__sleep_callback = lambda *a: time.sleep(2)
 
-        # Wait for a key to be pressed
         def on_release(key):
             return False
 
@@ -308,8 +311,11 @@ class TestExampleTemplate(unittest.TestCase):
             # Load forms
             Inputs.load_user_input()
             runner.run(selenium=selenium)
-            with keyboard.Listener(on_release=on_release) as listener:
-                listener.join()
+            
+            # Wait for a key to be pressed
+            if keyboard_pause:
+                with keyboard.Listener(on_release=on_release) as listener:
+                    listener.join()
 
 
 class TestLibrary(unittest.TestCase):
@@ -346,6 +352,11 @@ class TestRunner(unittest.TestCase):
     """ Test behaviors and functions related to 'Runner' class. 
     """
 
+    @classmethod
+    def setUpClass(cls):
+        cls.keyboard_controller = keyboard.Controller()
+        return super().setUpClass()
+
     def test_add_keyboard_yield_key(self):
         """ Test the method 'add_keyboard_yield_key """
         
@@ -376,7 +387,6 @@ class TestRunner(unittest.TestCase):
             # raise SystemExit
             exit()
 
-        keyboard_controller = keyboard.Controller()
 
         # Setup runner object with a keyboard yield to press key before opening the webpage
         runner = Runner(
@@ -388,14 +398,14 @@ class TestRunner(unittest.TestCase):
         
 
         # Press the button to trigger the YIELD
-        keyboard_controller.tap('d')
+        self.keyboard_controller.tap('d')
         # Assert that system exit would happen
         with self.assertRaises(SystemExit):
             runner.run(selenium=selenium_obj)
 
         # Assert a default button (pause for 'sleep_time' seconds)
-        keyboard_controller.tap('s')
-        # keyboard_controller.tap('d')
+        self.keyboard_controller.tap('s')
+        # self.keyboard_controller.tap('d')
         time_start = time.monotonic()
         with self.assertRaises(Exception):
             runner.run(selenium=selenium_obj)
@@ -405,10 +415,42 @@ class TestRunner(unittest.TestCase):
         # assert time_diff > runner.sleep_time, (time_diff, runner.sleep_time)  
 
         # Assert q
-        keyboard_controller.tap('q')
+        self.keyboard_controller.tap('q')
         # Assert that system exit would happen
         with self.assertRaises(SystemExit):
             runner.run(selenium=selenium_obj)
+
+    def test_keyboard_wait_callback(self):
+        """ Test the static method 'keyboard_wait_callback'.
+        NB. Careful where your typing cursor is. You could type string within your code.
+         """
+
+        # Default value
+        func = KeyboardManager.create_wait_callback()
+        listener = keyboard.Listener(on_release=func)
+        listener.start()
+        self.keyboard_controller.tap('a')
+        assert not listener.running
+
+        # With some characters
+        func = KeyboardManager.create_wait_callback(['a', 'b', 'c'])
+        listener = keyboard.Listener(on_release=func)
+        listener.start()
+        self.keyboard_controller.tap('a')
+        assert not listener.running
+
+        # Wrong character
+        func = KeyboardManager.create_wait_callback({'a','b','c'})
+        listener = keyboard.Listener(on_release=func)
+        listener.start()
+        self.keyboard_controller.tap('d')
+        assert listener.running
+        listener.stop()
+
+        # Assert right input type
+        func = KeyboardManager.create_wait_callback('abc')
+        with self.assertRaises(ValueError):
+            func = KeyboardManager.create_wait_callback(50)
 
 
 class TestApp(unittest.TestCase):

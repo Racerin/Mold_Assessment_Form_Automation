@@ -84,7 +84,7 @@ def app_automate(observer, date, excel_load_file, ignore_completed):
     # setattr(library.Inputs, '_ignore_completed', ignore_completed)
 
     # Run through forms
-    # fill_out_forms()
+    fill_out_forms()
 
     click.echo("Form automation ended.")
 

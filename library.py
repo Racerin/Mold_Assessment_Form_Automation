@@ -1,3 +1,4 @@
+import collections
 import datetime
 import logging
 import os
@@ -12,13 +13,13 @@ import re
 import pydoc
 import typing
 from typing import Iterable
-from collections.abc import Sequence, Mapping, Container
+from collections.abc import Sequence, Mapping, Container, Callable
 from numbers import Number
 from functools import partial
 
 import openpyxl
 from pynput import keyboard
-from pynput.keyboard import Key
+from pynput.keyboard import Key, KeyCode
 from Levenshtein import jaro
 from Levenshtein import ratio as l_ratio
 
@@ -318,20 +319,20 @@ class KeyboardManager(metaclass=Singleton):
         return keys_as_str
 
     @staticmethod
-    def key_is_key(this_key:'str|Key', is_key:'str|Key') -> bool:
+    def key_is_key(this_key:'str|Key|KeyCode', is_key:'str|Key|KeyCode') -> bool:
         """ Checks whether 'this_key' is 'is_key'.
         Takes into consideration other keys, special keys,
         and if it is a string or of type 'Key'.
         UNTESTED
         """
         
-        holder = (this_key, is_key)
+        holder = this_key, is_key
         
-        # type checking. both are either 'str' or 'Key'
-        assert all( isinstance(x, (Key, str)) for x in holder )
+        # type checking. both are either 'str', 'Key' or 'KeyCode'
+        assert all( isinstance(x, (Key, KeyCode, str)) for x in holder ), (holder, [type(x) for x in holder], )
 
         # Equivalence check for both of type 'Key'
-        if all((isinstance(x, Key) for x in holder)):
+        if all((isinstance(x, (Key, KeyCode)) for x in holder)):
             return this_key == is_key
         # Equivalence check if atleast one is a string
         else:
@@ -344,6 +345,28 @@ class KeyboardManager(metaclass=Singleton):
             else:
                 return (first in second) or (second in first) """
             return match_strings(first, second) > 0.1#, 0, 0.2,
+
+
+    @staticmethod
+    def create_wait_callback(keys:Container=list()) -> Callable:
+        """ Create and return a callback for keyboard press/release 
+        that continues if button is pressed. 
+        if 'keys' is empty, any key press will continue.
+        """
+
+        # Assert keys are container
+        if not isinstance(keys, Container):
+            raise ValueError("'keys' input is of the wrong type. Must be a Container: '{}'".format(keys))
+
+        func = lambda key:False
+        if keys:
+            func = lambda key: not any((KeyboardManager.key_is_key(k, key) for k in keys))
+            """ def func(key):
+                matches = [KeyboardManager.key_is_key(k, key) for k in keys]
+                if any(matches):
+                    return False """
+        return func
+
 
 
 

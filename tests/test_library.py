@@ -269,22 +269,20 @@ class TestExampleTemplate(unittest.TestCase):
         # Load Inputs
         Inputs.load_user_inputs(filename=FILE_EXAMPLE_TEMPLATE)
         assert isinstance(Inputs.user_rows_inputs, list)
-        assert len(Inputs.user_rows_inputs) == 1, len(Inputs.user_rows_inputs)
+        assert len(Inputs.user_rows_inputs) > 2, len(Inputs.user_rows_inputs)
         
         # Now, load a user input
         Inputs.load_user_input()
         assert len(Inputs.current_row_inputs) > 0, Inputs.current_row_inputs
         assert "Main Classroom" in Inputs.current_row_inputs[0], Inputs.current_row_inputs[0]
-        assert Inputs.mold_odor_id is None, Inputs.mold_odor_id
+        assert Inputs.mold_odor_id is 'None', Inputs.mold_odor_id
         assert re.match(RE_DATE, Inputs.date), Inputs.date
         # Assert 'Ceiling' was not selected
-        assert Inputs.damage_or_stains[0] == 'N/A' or \
-            DSVMWD[0] not in Inputs.damage_or_stains, \
-                Inputs.damage_or_stains
+        assert DSVMWD[0] not in Inputs.damage_or_stains, \
+            Inputs.damage_or_stains
         # Assert 'Walls' was selected
-        assert Inputs.damage_or_stains[1] == '2' or \
-            DSVMWD[1] in Inputs.damage_or_stains, \
-                Inputs.damage_or_stains
+        assert DSVMWD[1] in Inputs.damage_or_stains, \
+            Inputs.damage_or_stains
         # Assert 'Window' is external
         assert DSVMWD[3] in Inputs.damage_or_stains_exterior, \
             Inputs.damage_or_stains_exterior

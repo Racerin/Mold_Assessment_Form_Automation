@@ -643,6 +643,7 @@ class Inputs:
 
         fresh: Flag to load user inputs into memory.
         task_complete: Taken from 'load_user_input'. To ignore rows if task was completed already.
+        TODO: Testing
         """
         # Load into memory the user inputs.
         if fresh:

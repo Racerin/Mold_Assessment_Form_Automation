@@ -10,6 +10,7 @@ test.log
 # Personal Security
 file.tsv
 file.xl*
+completed*
 .env
 
 # Noise

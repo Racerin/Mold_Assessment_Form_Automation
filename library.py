@@ -22,6 +22,7 @@ from pynput import keyboard
 from pynput.keyboard import Key, KeyCode
 from Levenshtein import jaro
 from Levenshtein import ratio as l_ratio
+from dotenv import load_dotenv
 
 import selenium
 import selenium.webdriver
@@ -32,6 +33,8 @@ from selenium.webdriver.support.select import Select
 
 from PARAM import *
 
+
+load_dotenv()
 
 def today_date(option="world") -> str:
     "Returns today's date for form."
@@ -206,7 +209,7 @@ class Singleton(type):
 # Files
 tsv_complete_file = "completed.tsv"
 excel_load_file = "file.xlsx"
-excel_save_file = "completed.xlsx"
+# excel_save_file = "completed.xlsx"
 
 # Website url (NB. By default, a secret to remote repository)
 website_url = environ.get('WEBSITE_URL', None)
@@ -1262,7 +1265,6 @@ class Selenium:
         if yield_:
             yield YIELD.BEFORE_NEXT_PAGE
             yield YIELD.SUBMIT
-            print("Not suppose to reach here.")
         submit_button.click()
 
         # NEXT PAGE
@@ -1288,7 +1290,8 @@ class Runner:
     # Yield Groups
     continue_it_yields = list()
     sleep_yields = dict()
-    return_yields = [YIELD.SUBMIT]
+    # return_yields = [YIELD.SUBMIT]
+    return_yields = list()
     keyboard_yields = dict()
 
     sleep_time : float = 1
